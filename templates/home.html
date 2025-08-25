@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>智创2502班·学生管理系统</title>
+</head>
+<body>
+    <form method="post" action="/">
+        <table>
+            <tr>
+                <th><label for="name">学生姓名：</label></th>
+                <td><input type="text" id="name" name="name"></td>
+            </tr>
+            <tr>
+                <th><label for="student_id">学号：</label></th>
+                <td><input type="text" id="student_id" name="student_id"></td>
+            </tr>
+            <tr>
+                <th><label for="sex">性别：</label></th>
+                <td>
+                    <select id="sex" name="sex">
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </td>
+            </tr>
+<!--            <tr>-->
+<!--                <th><label for="hometown">生源地：</label></th>-->
+<!--                <td><input type="text" id="hometown" name="hometown"></td>-->
+<!--            </tr>-->
+            <tr>
+                <th><input type="submit" value="保存"></th>
+            </tr>
+        </table>
+    </form>
+<!--    <table>-->
+<!--        <tr>-->
+<!--            <th>学生姓名</th>-->
+<!--            <th>性别</th>-->
+<!--            <th>初中学校</th>-->
+<!--            <th>高中班级</th>-->
+<!--        </tr>-->
+<!--        {% for r in rs %}-->
+<!--        <tr>-->
+<!--            <td>{{ r.0 }}</td>-->
+<!--            <td>{{ r.1 }}</td>-->
+<!--            <td>{{ r.2 }}</td>-->
+<!--            <td>{{ r.3 }}</td>-->
+<!--        </tr>-->
+<!--        {% endfor %}-->
+<!--    </table>-->
+</body>
+</html>
