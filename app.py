@@ -30,30 +30,31 @@ def form():
         student = request.form.to_dict()
 
         # 数据库操作
+        # 打开数据库连接
+        db = pymysql.connect(host='localhost',
+                             user='root',
+                             password='12345qazxc',
+                             database='AIIC_student_info')
+
+        # 使用cursor()方法创建一个游标对象cursor
+        cursor = db.cursor()
+
+        # 获取student_info_aiic2502的所有字段及中文名
+        cursor.execute('select * from student_info_AIIC2502_field')
+        result_field = cursor.fetchall()
+        # 所有已有的名字、学号
+        cursor.execute('select name, student_ID from student_info_aiic2502')
+        result_info = cursor.fetchall()  # 用于比对姓名、学号
+        # 得到表单中选中的所有字段名
+        fields = request.form.getlist('field')
+
         # 更新操作
         if student['method'] == 'update':
-            # 打开数据库连接
-            db = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='12345qazxc',
-                                 database='AIIC_student_info')
-
-            # 使用cursor()方法创建一个游标对象cursor
-            cursor = db.cursor()
-
-            # 获取student_info_aiic2502的所有字段及中文名
-            cursor.execute('select * from student_info_AIIC2502_field')
-            result_field = cursor.fetchall()
-            # 所有已有的名字、学号
-            cursor.execute('select name, student_ID from student_info_aiic2502')
-            result_info = cursor.fetchall()     # 用于比对姓名、学号
-
             # 限定只能选择一项
-            field = request.form.getlist('field')
-            if len(field) != 1:
+            if len(fields) != 1:
                 return '<script> alert("更新时请只选择一个选项！");window.open("/");</script>'
             else:
-                field = field[0]        # 确定字段名
+                field = fields[0]        # 确定字段名
 
             # 针对“其他”字段，翻译字段名为英语，并为表添加相应内容
             if field == 'other':
@@ -90,16 +91,10 @@ def form():
             if method == 0:
                 # 若姓名没有重复，则添加数据
                 sql_str = f"insert into student_info_aiic2502 (name, student_ID, {field}) " \
-                          f"values ('{student['name']}', {student['student_id']}, '{field_value}');"
+                          f"values ('{student['name']}', '{student['student_id']}', '{field_value}');"
             elif method == 1:
                 # 若姓名重复，则更改数据
-                # 字符串
-                if isinstance(field_value, str):
-                    sql_str = f"update student_info_aiic2502 set {field}='{field_value}' where name='{student['name']}'"
-                # 数字
-                elif isinstance(field_value, int):
-                    sql_str = f"update student_info_aiic2502 set {field}={field_value} where name='{student['name']}'"
-
+                sql_str = f"update student_info_aiic2502 set {field}='{field_value}' where name='{student['name']}'"
             cursor.execute(sql_str)
 
             # 数据提交
@@ -113,8 +108,31 @@ def form():
 
         # 查询操作
         elif student['method'] == 'select':
-            # 重定向到同一页
-            return redirect(request.url)
+            field_str = ''
+            for i in range(len(fields)):
+                # 将表单中选择的字段转化为符合mysql语法的字符串字符串
+                field_str = field_str + fields[i] + ","
+                # 将表单中选择的字段转化为中文
+                for f in result_field:
+                    if f[0] == fields[i]:
+                        fields[i] = f[1]
+            field_str = field_str[:-1]
+
+            # 判断是否要进行条件查询
+            sql_str_where = ''
+            if student['name'] != '':
+                sql_str_where = f" where name = '{student['name']}'"
+
+            # 拼接字符串，进行查询操作
+            sql_str = f"select {field_str} from student_info_aiic2502" + sql_str_where
+            cursor.execute(sql_str)
+            result_table = cursor.fetchall()
+
+            # 关闭游标和数据库连接
+            cursor.close()
+            db.close()
+            # 重新渲染页面
+            return render_template('home.html', fields=result_field, table=result_table, field_select=fields)
 
     else:
         # 获取表格student_info_aiic2502的所有字段，用以渲染网页
@@ -134,7 +152,7 @@ def form():
         cursor.close()
         db.close()
 
-        return render_template('home.html', fields=result_field, field='字段')
+        return render_template('home.html', fields=result_field)
 
 
 if __name__ == '__main__':
