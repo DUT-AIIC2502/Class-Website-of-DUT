@@ -27,19 +27,33 @@
             <form method="post" action="/">
                 <h2>查询信息</h2>
                 <div class="form-group">
+                    <!-- 输入姓名 -->
                     <label for="name">学生姓名：</label>
                     <input type="text" id="name" name="name" placeholder="请输入学生姓名">
                 </div>
                 <div class="form-group">
+                    <!-- 输入学号 -->
                     <label for="student_id">学号：</label>
                     <input type="number" id="student_id" name="student_id" placeholder="请输入11位整数学号">
                 </div>
+                <div class="form-group">
+                    <!-- 选择需要特异性查询的字段，并输入需要查询的值 -->
+                    <h4>条件查询</h4>
+                    <select id="filed_to_select" name="filed_to_select">
+                        {% for row in fields %}
+                            <option value={{row.0}} {{row.3}}>{{row.1}}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" id="filed_to_select_value"
+                           name="filed_to_select_value" value="{{ filed_to_select_value }}">
+                </div>
                 <hr>
                 <div class="form-group">
-                    <h3>选择字段：</h3>
+                    <h3>选择要展示的字段：</h3>
+                    <!-- 输出该表中所有字段，并默认标记某些字段 -->
                     {% for row in fields %}
                         <label class="checkbox-container">{{row.1}}
-                            <input type="checkbox" name="field" value={{row.0}} {{row.2}}>
+                            <input type="checkbox" name="field_to_show" value={{row.0}} {{row.2}}>
                             <span class="checkmark"></span>
                         </label>
                     {% endfor %}
