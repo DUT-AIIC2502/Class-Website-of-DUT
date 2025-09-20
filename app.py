@@ -6,6 +6,13 @@ from translate import Translator
 app = Flask(__name__)
 
 
+class my_DB:
+    host = 'localhost'
+    user = 'root'
+    pw = '12345qazxc'
+    database = 'AIIC_student_info'
+
+
 def translate(chinese_str):
     translator = Translator(from_lang='Chinese', to_lang='English')
     translation_1 = translator.translate(chinese_str)
@@ -25,20 +32,19 @@ def translate(chinese_str):
 def form():
     sql_str = ''
 
+    # 数据库操作
+    # 打开数据库连接
+    db = pymysql.connect(host=my_DB.host,
+                         user=my_DB.user,
+                         password=my_DB.pw,
+                         database=my_DB.database)
+
+    # 使用cursor()方法创建一个游标对象cursor
+    cursor = db.cursor()
+
     if request.method == 'POST':
         # 获取表单数据
         student = request.form.to_dict()
-
-        # 数据库操作
-        # 打开数据库连接
-        db = pymysql.connect(host='localhost',
-                             user='root',
-                             password='12345qazxc',
-                             database='AIIC_student_info')
-
-        # 使用cursor()方法创建一个游标对象cursor
-        cursor = db.cursor()
-
         # 获取student_info_aiic2502的所有字段及中文名
         cursor.execute('select * from student_info_AIIC2502_field')
         result_field = cursor.fetchall()
@@ -132,19 +138,10 @@ def form():
             cursor.close()
             db.close()
             # 重新渲染页面
-            return render_template('home.html', fields=result_field, table=result_table, field_select=fields)
+            return render_template('info_manage.html', fields=result_field, table=result_table, field_select=fields)
 
     else:
         # 获取表格student_info_aiic2502的所有字段，用以渲染网页
-        # 打开数据库连接
-        db = pymysql.connect(host='localhost',
-                             user='root',
-                             password='12345qazxc',
-                             database='AIIC_student_info')
-
-        # 使用cursor()方法创建一个游标对象cursor
-        cursor = db.cursor()
-        # 获取所有字段
         cursor.execute('select * from student_info_AIIC2502_field')
         result_field = cursor.fetchall()
 
@@ -152,7 +149,7 @@ def form():
         cursor.close()
         db.close()
 
-        return render_template('home.html', fields=result_field)
+        return render_template('info_manage.html', fields=result_field)
 
 
 if __name__ == '__main__':

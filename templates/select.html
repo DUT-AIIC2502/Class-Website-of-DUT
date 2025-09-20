@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智创2502班·学生管理系统</title>
+    <link rel="stylesheet" type="text/css" href="../static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>智创2502班·学生管理系统</h1>
+            <p>制作者：罗问然</p>
+        </div>
+
+        <div class="content">
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <p>1. 输入姓名（和学号）</p>
+                <p>2. 在复选框中选择需要更新的字段，并输入更新数据</p>
+                <p>3. 点击"更新"按钮可以将数据更新至数据库</p>
+            </div>
+
+            <div class="checkbox-list" id="checkboxList">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="item1" value="项目一">
+                    <label for="item1">项目一：网页设计与开发</label>
+                    <div class="order-badge" id="badge1"></div>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="item2" value="项目二">
+                    <label for="item2">项目二：用户体验优化</label>
+                    <div class="order-badge" id="badge2"></div>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="item3" value="项目三">
+                    <label for="item3">项目三：响应式布局实现</label>
+                    <div class="order-badge" id="badge3"></div>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="item4" value="项目四">
+                    <label for="item4">项目四：交互效果设计</label>
+                    <div class="order-badge" id="badge4"></div>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="item5" value="项目五">
+                    <label for="item5">项目五：前端性能优化</label>
+                    <div class="order-badge" id="badge5"></div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-primary" id="sortBtn">按选择顺序排序</button>
+                <button class="btn btn-secondary" id="resetBtn">重置选择</button>
+            </div>
+
+            <div class="result">
+                <h3>排序结果</h3>
+                <ul class="selected-list" id="selectedList">
+                    <li>您选择的项目将显示在这里</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>按选择顺序排序的复选框实现 &copy; 2023</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const sortBtn = document.getElementById('sortBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const selectedList = document.getElementById('selectedList');
+
+            // 存储选择顺序的数组
+            let selectionOrder = [];
+
+            // 为每个复选框添加点击事件监听器
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.addEventListener('click', function() {
+                    const value = this.value;
+                    const badge = document.getElementById(`badge${index + 1}`);
+
+                    if (this.checked) {
+                        // 如果复选框被选中，添加到选择顺序数组
+                        selectionOrder.push(value);
+                        badge.textContent = selectionOrder.length;
+                    } else {
+                        // 如果取消选中，从数组中移除
+                        const position = selectionOrder.indexOf(value);
+                        if (position !== -1) {
+                            selectionOrder.splice(position, 1);
+
+                            // 更新所有徽章编号
+                            updateBadges();
+                        } else {
+                            badge.textContent = '';
+                        }
+                    }
+                });
+            });
+
+            // 更新所有徽章编号
+            function updateBadges() {
+                checkboxes.forEach((checkbox, index) => {
+                    const badge = document.getElementById(`badge${index + 1}`);
+                    const value = checkbox.value;
+                    const position = selectionOrder.indexOf(value);
+
+                    if (checkbox.checked && position !== -1) {
+                        badge.textContent = position + 1;
+                    } else {
+                        badge.textContent = '';
+                    }
+                });
+            }
+
+            // 排序按钮点击事件
+            sortBtn.addEventListener('click', function() {
+                if (selectionOrder.length === 0) {
+                    selectedList.innerHTML = '<li>请先选择至少一个项目</li>';
+                    return;
+                }
+
+                // 清空结果列表
+                selectedList.innerHTML = '';
+
+                // 按选择顺序添加项目到结果列表
+                selectionOrder.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="order">${index + 1}</span> ${item}`;
+                    selectedList.appendChild(li);
+                });
+            });
+
+            // 重置按钮点击事件
+            resetBtn.addEventListener('click', function() {
+                // 取消所有复选框的选中状态
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+
+                // 清空选择顺序数组
+                selectionOrder = [];
+
+                // 清空所有徽章
+                checkboxes.forEach((checkbox, index) => {
+                    const badge = document.getElementById(`badge${index + 1}`);
+                    badge.textContent = '';
+                });
+
+                // 重置结果列表
+                selectedList.innerHTML = '<li>您选择的项目将显示在这里</li>';
+            });
+        });
+    </script>
+</body>
+</html>
