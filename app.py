@@ -143,13 +143,29 @@ def form():
     else:
         # 获取表格student_info_aiic2502的所有字段，用以渲染网页
         cursor.execute('select * from student_info_AIIC2502_field')
-        result_field = cursor.fetchall()
+        result_field_tup = cursor.fetchall()
+
+        # 将获取的二维数组转化为列表，同时标记默认复选框
+        result_field_list = []
+        for field_tup in result_field_tup:
+            field_list = []
+            for element in field_tup:
+                field_list.append(element)
+
+            # 标记默认复选框
+            if field_list[0] == "name" or field_list[0] == "student_ID":
+                field_list.append("checked")
+            else:
+                field_list.append("")
+
+            # 将此列表添加到总列表中
+            result_field_list.append(field_list)
 
         # 关闭游标和数据库连接
         cursor.close()
         db.close()
 
-        return render_template('info_manage.html', fields=result_field)
+        return render_template('info_manage.html', fields=result_field_list)
 
 
 if __name__ == '__main__':
