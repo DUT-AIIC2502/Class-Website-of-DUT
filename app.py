@@ -175,6 +175,7 @@ def form():
             result_field_list = mark_default(result_field_list, option_to_mark, 'select')
 
             # 判断是否要进行条件查询
+            sql_str_where = ''
             if form_get['name'] != '' or form_get['student_id'] != '' \
                     or form_get['filed_to_select_value'] != '':
                 sql_str_where = ' where '
