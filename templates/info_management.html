@@ -16,6 +16,7 @@
 
         <h1>智创2502班·学生信息</h1>
 
+        <!-- 使用说明板块 -->
         <div class="instructions">
             <h3>使用说明</h3>
             <p>1. 输入姓名/学号/（空）</p>
@@ -23,8 +24,9 @@
             <p>3. 点击"查询"按钮即可查询需要的信息</p>
         </div>
 
+        <!-- 表单板块 -->
         <div class="card">
-            <form method="post" action="/">
+            <form method="post" action="/info_management">
                 <h2>查询信息</h2>
                 <div class="form-group">
                     <!-- 输入姓名 -->
@@ -77,6 +79,7 @@
             </form>
         </div>
 
+        <!-- 输出结果板块 -->
         {% if table %}
             <div class="card">
                 <h2>查询结果</h2>
@@ -94,6 +97,9 @@
                                 {% for value in row_value %}
                                     <td>{{value}}</td>
                                 {% endfor %}
+                                <td>
+                                    <a herf="/info/{{row_value.1}}"><button class="btn btn-primary">详情</button></a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>

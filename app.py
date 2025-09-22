@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 import pymysql.cursors
 from translate import Translator
 
@@ -6,13 +6,15 @@ from translate import Translator
 app = Flask(__name__)
 
 
-class My_DB:
+"""描述数据库的类"""
+class MyDB:
     host = 'localhost'
     user = 'root'
     pw = '12345qazxc'
     database = 'AIIC_student_info'
 
 
+"""将中文翻译为特定格式的英文，用于将字段的中文名转化为字段"""
 def translate(chinese_str):
     translator = Translator(from_lang='Chinese', to_lang='English')
     translation_1 = translator.translate(chinese_str)
@@ -28,6 +30,7 @@ def translate(chinese_str):
     return translation_3
 
 
+"""将任意维数的元组转化为列表"""
 def tuple_to_list(target_tuple):
     result_list = []
     for item in target_tuple:
@@ -38,6 +41,7 @@ def tuple_to_list(target_tuple):
     return result_list
 
 
+"""用于标记需要默认选中的复选框或下拉列表"""
 def mark_default(list_to_mark, mark_fields, type):
     type_str = ''
     if type == 'checkbox':
@@ -57,25 +61,48 @@ def mark_default(list_to_mark, mark_fields, type):
     return result
 
 
-@app.route('/', methods=['GET', 'POST'])
-def form():
+
+"""跳转至需要的页面"""
+@app.route('/', methods=['GET'])
+def get_redirect():
+    return redirect(url_for('info_management'), code=302, Response=None)
+
+
+"""学生信息查询界面"""
+@app.route('/info_management', methods=['GET', 'POST'])
+def info_management():
     # 用来执行的mysql语句
     sql_str = ''
 
-    # # list[3]，储存该表拥有的字段、字段名、是否被标记为默认选中
-    # result_field_list = []
-
     # 数据库操作
     # 打开数据库连接
-    db = pymysql.connect(host=My_DB.host,
-                         user=My_DB.user,
-                         password=My_DB.pw,
-                         database=My_DB.database)
+    db = pymysql.connect(host=MyDB.host,
+                         user=MyDB.user,
+                         password=MyDB.pw,
+                         database=MyDB.database)
 
     # 使用cursor()方法创建一个游标对象cursor
     cursor = db.cursor()
 
-    if request.method == 'POST':
+    if request.method == 'GET':
+        # 获取表格student_info_aiic2502的所有字段，用以渲染网页
+        cursor.execute('select * from student_info_AIIC2502_field')
+        result_field_tup = cursor.fetchall()
+
+        # 需要被标记为默认选中的字段
+        checkboxs_to_mark = ('name', 'student_id')
+        # 将获取的二维数组转化为列表
+        result_field_list = tuple_to_list(result_field_tup)
+        # 标记默认复选框
+        result_field_list = mark_default(result_field_list, checkboxs_to_mark, 'checkbox')
+
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.close()
+
+        return render_template('info_management.html', fields=result_field_list)
+
+    elif request.method == 'POST':
         # 获取表单数据
         form_get = request.form.to_dict()
         # 获取表单中选中的所有字段名
@@ -195,26 +222,35 @@ def form():
             cursor.close()
             db.close()
             # 重新渲染页面
-            return render_template('info_manage.html', fields=result_field_list, table=result_table,
+            return render_template('info_management.html', fields=result_field_list, table=result_table,
                                    field_select=fields, filed_to_select_value=form_get['filed_to_select_value'])
 
-    else:
-        # 获取表格student_info_aiic2502的所有字段，用以渲染网页
-        cursor.execute('select * from student_info_AIIC2502_field')
-        result_field_tup = cursor.fetchall()
 
-        # 需要被标记为默认选中的字段
-        checkboxs_to_mark = ('name', 'student_id', 'sex')
-        # 将获取的二维数组转化为列表
-        result_field_list = tuple_to_list(result_field_tup)
-        # 标记默认复选框
-        result_field_list = mark_default(result_field_list, checkboxs_to_mark, 'checkbox')
+"""学生信息的详细界面"""
+@app.route('/info/<student_id>', methods=['GET', 'POST'])
+def student_info(student_id):
+    # 用来执行的mysql语句
+    sql_str = ''
 
-        # 关闭游标和数据库连接
-        cursor.close()
-        db.close()
+    # 数据库操作
+    # 打开数据库连接
+    db = pymysql.connect(host=MyDB.host,
+                         user=MyDB.user,
+                         password=MyDB.pw,
+                         database=MyDB.database)
 
-        return render_template('info_manage.html', fields=result_field_list)
+    # 使用cursor()方法创建一个游标对象cursor
+    cursor = db.cursor()
+
+    if request.method == 'GET':
+
+
+
+        return render_template('')
+
+    elif request.method == 'POST':
+
+        return render_template('')
 
 
 if __name__ == '__main__':
