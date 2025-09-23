@@ -56,9 +56,15 @@
                     <!-- 输出该表中所有字段，并默认标记某些字段 -->
                     {% for row in fields %}
                         <label class="checkbox-container">{{row.1}}
-                            <input type="checkbox" name="field_to_show" value={{row.0}} {{row.2}}>
+                            {% if row.0 == 'name' or row.0 == 'student_id' %}
+                                <input type="checkbox" name="field_to_show" value={{row.0}} {{row.2}}
+                                       onclick="return false;">
+                            {% else %}
+                                <input type="checkbox" name="field_to_show" value={{row.0}} {{row.2}}>
+                            {% endif %}
                             <span class="checkmark"></span>
                         </label>
+
                     {% endfor %}
 <!--                    <div class="form-group">-->
 <!--                        <label class="checkbox-container">其他：-->
@@ -72,6 +78,7 @@
 <!--                        <input type="text" id="field_value" name="field_value" placeholder="请输入需要更新的值">-->
 <!--                    </div>-->
                 </div>
+                <!-- 查询按钮 -->
                 <div class="form-group">
 <!--                    <button class="btn btn-primary" name="method" value="update">更新</button>-->
                     <button class="btn btn-primary" name="method" value="select">查询</button>
@@ -89,6 +96,7 @@
                             {% for f in field_select %}
                                 <th>{{f}}</th>
                             {% endfor %}
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,7 +106,12 @@
                                     <td>{{value}}</td>
                                 {% endfor %}
                                 <td>
-                                    <a herf="/info/{{row_value.1}}"><button class="btn btn-primary">详情</button></a>
+<!--                                    <from action="/student_info/{{row_value.1}}" method="get">-->
+<!--                                        <button class="btn btn-primary" type="submit">详情</button>-->
+<!--                                    </from>-->
+                                    <a href="/student_info/{{row_value.1}}" target="_self" title="">
+                                        <button class="btn btn-primary" type="button">详情</button>
+                                    </a>
                                 </td>
                             </tr>
                         {% endfor %}

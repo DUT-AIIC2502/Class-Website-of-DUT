@@ -6,16 +6,16 @@ from translate import Translator
 app = Flask(__name__)
 
 
-"""描述数据库的类"""
 class MyDB:
+    """描述数据库的类"""
     host = 'localhost'
     user = 'root'
     pw = '12345qazxc'
     database = 'AIIC_student_info'
 
 
-"""将中文翻译为特定格式的英文，用于将字段的中文名转化为字段"""
 def translate(chinese_str):
+    """将中文翻译为特定格式的英文，用于将字段的中文名转化为字段"""
     translator = Translator(from_lang='Chinese', to_lang='English')
     translation_1 = translator.translate(chinese_str)
 
@@ -30,8 +30,8 @@ def translate(chinese_str):
     return translation_3
 
 
-"""将任意维数的元组转化为列表"""
 def tuple_to_list(target_tuple):
+    """将任意维数的元组转化为列表"""
     result_list = []
     for item in target_tuple:
         if isinstance(item, tuple):
@@ -41,8 +41,8 @@ def tuple_to_list(target_tuple):
     return result_list
 
 
-"""用于标记需要默认选中的复选框或下拉列表"""
 def mark_default(list_to_mark, mark_fields, type):
+    """用于标记需要默认选中的复选框或下拉列表"""
     type_str = ''
     if type == 'checkbox':
         type_str = 'checked'
@@ -61,16 +61,15 @@ def mark_default(list_to_mark, mark_fields, type):
     return result
 
 
-
-"""跳转至需要的页面"""
 @app.route('/', methods=['GET'])
 def get_redirect():
+    """跳转至需要的页面"""
     return redirect(url_for('info_management'), code=302, Response=None)
 
 
-"""学生信息查询界面"""
 @app.route('/info_management', methods=['GET', 'POST'])
 def info_management():
+    """学生信息查询界面"""
     # 用来执行的mysql语句
     sql_str = ''
 
@@ -84,10 +83,11 @@ def info_management():
     # 使用cursor()方法创建一个游标对象cursor
     cursor = db.cursor()
 
+    # 获取student_info_aiic2502的所有字段及中文名
+    cursor.execute('select * from student_info_AIIC2502_field')
+    result_field_tup = cursor.fetchall()
+
     if request.method == 'GET':
-        # 获取表格student_info_aiic2502的所有字段，用以渲染网页
-        cursor.execute('select * from student_info_AIIC2502_field')
-        result_field_tup = cursor.fetchall()
 
         # 需要被标记为默认选中的字段
         checkboxs_to_mark = ('name', 'student_id')
@@ -107,12 +107,10 @@ def info_management():
         form_get = request.form.to_dict()
         # 获取表单中选中的所有字段名
         fields = request.form.getlist('field_to_show')
-        # 获取student_info_aiic2502的所有字段及中文名
-        cursor.execute('select * from student_info_AIIC2502_field')
-        result_field_tup = cursor.fetchall()
+
         # 获取所有已有的名字、学号
         cursor.execute('select name, student_ID from student_info_aiic2502')
-        result_info = cursor.fetchall()  # 用于比对姓名、学号
+        result_basic_info = cursor.fetchall()  # 用于比对姓名、学号
 
         # 更新操作
         if form_get['method'] == 'update':
@@ -144,12 +142,12 @@ def info_management():
 
             # 进行比对，避免重复输入
             method = 0  # 用于判断进行添加还是更新操作
-            if len(result_info) != 0:
-                for index in range(len(result_info)):
+            if len(result_basic_info) != 0:
+                for index in range(len(result_basic_info)):
                     # 名字重复
-                    if form_get['name'] == result_info[index][0]:
+                    if form_get['name'] == result_basic_info[index][0]:
                         # 未输入学号 或 学号重复
-                        if form_get['student_id'] == '' or form_get['student_id'] == result_info[index][1]:
+                        if form_get['student_id'] == '' or form_get['student_id'] == result_basic_info[index][1]:
                             method = 1
                         break
             # method为0则添加，1则修改
@@ -226,12 +224,26 @@ def info_management():
                                    field_select=fields, filed_to_select_value=form_get['filed_to_select_value'])
 
 
-"""学生信息的详细界面"""
-@app.route('/info/<student_id>', methods=['GET', 'POST'])
-def student_info(student_id):
-    # 用来执行的mysql语句
-    sql_str = ''
+def select_to_show(cursor, student_id, result_field_tup):
+    """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
+    # 查询该学生的详细信息
+    sql_str = f"select * from student_info_aiic2502 where student_id = '{student_id}'"
+    cursor.execute(sql_str)
+    result_student = cursor.fetchall()[0]
 
+    # 用来渲染前端的数组，默认只读
+    fields_values = []
+    for index in range(len(result_student)):
+        row = [result_field_tup[index][0], result_field_tup[index][1],
+               result_student[index]]
+        fields_values.append(row)
+
+    return fields_values
+
+
+@app.route('/student_info/<student_id>', methods=['GET', 'POST'])
+def student_info(student_id):
+    """学生信息的详细界面"""
     # 数据库操作
     # 打开数据库连接
     db = pymysql.connect(host=MyDB.host,
@@ -242,15 +254,71 @@ def student_info(student_id):
     # 使用cursor()方法创建一个游标对象cursor
     cursor = db.cursor()
 
+    # 获取student_info_aiic2502的所有字段及中文名
+    cursor.execute('select * from student_info_AIIC2502_field')
+    result_field_tup = cursor.fetchall()
+
+    # # 说明是否锁定的状态
+    # whether_lock = 1  # 0表示解锁，1表示锁定
+
     if request.method == 'GET':
+        """进入页面"""
+        # 标记为锁定
+        if_readonly = 'readonly'
 
+        # 获得用来渲染前端的数组
+        fields_values = select_to_show(cursor, student_id, result_field_tup)
 
-
-        return render_template('')
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.close()
+        return render_template('student_info.html', fields_values=fields_values,
+                               student_id=student_id, if_readonly=if_readonly)
 
     elif request.method == 'POST':
+        """提交表单后刷新页面"""
+        # 获取表单数据
+        form_get = request.form.to_dict()
 
-        return render_template('')
+        # 默认可编辑
+        if_readonly = ''
+        # 标记锁定状态
+        if form_get['method'] == 'unlock':
+            # whether_lock = 0
+            if_readonly = ''
+        elif form_get['method'] == 'lock':
+            # whether_lock = 1
+            if_readonly = 'readonly'
+
+        # 进行更新操作
+        elif form_get['method'] == 'update':
+            # 产生待执行的mysql语句
+            sql_str = 'update student_info_aiic2502 set '
+            for field in result_field_tup:
+                field_str = field[0]
+                sql_str += f"{field_str}='{form_get[field_str]}', "
+            sql_str = sql_str[:-2]
+            # 添加更新条件
+            sql_str += f" where student_id='{student_id}'"
+
+            cursor.execute(sql_str)
+
+        elif form_get['method'] == 'delete_field':
+            print()
+
+        # 进行删除操作
+        elif form_get['method'] == 'delete_all':
+            print()
+
+        # 进行查询操作，并形成列表
+        fields_values = select_to_show(cursor, student_id, result_field_tup)
+
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.commit()
+        db.close()
+        return render_template('student_info.html', fields_values=fields_values,
+                               student_id=student_id, if_readonly=if_readonly)
 
 
 if __name__ == '__main__':

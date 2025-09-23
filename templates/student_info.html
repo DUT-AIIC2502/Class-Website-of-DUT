@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>详细信息</title>
+    <link rel="stylesheet" type="text/css" href="../static/style_0.css">
+</head>
+<body>
+    <!-- 返回上一个页面 -->
+    <div class="card">
+        <h3><b>{{fields_values.0.2}}</b></h3>
+        <a href="/info_management" target="_self" title="">
+            <button class="btn btn-primary" type="button">返回上一页</button>
+        </a>
+    </div>
+
+    <!-- 呈现详细信息的表单 -->
+    <div class="card">
+        <form method="post" action="/student_info/{{student_id}}">
+            <!-- 分条输出该学生的详细信息 -->
+            {% for field in fields_values %}
+                <div class="form-group">
+                    <label for="{{field.0}}">{{field.1}}：</label>
+                    <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" {{if_readonly}}>
+                </div>
+            {% endfor %}
+            <!-- 按钮 -->
+            <div class="form-group">
+                {% if if_readonly == 'readonly' %}
+                    <label>现在输入框处于只读状态：</label>
+                    <button class="btn btn-primary" name="method" value="unlock">解锁</button>
+                {% else %}
+                    <label>现在输入框处于可编辑状态：</label>
+                    <button class="btn btn-primary" name="method" value="lock">锁定</button>
+                {% endif %}
+                <button class="btn btn-primary" name="method" value="update">更新</button>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-warning" name="method" value="delete_field">删除该字段</button>
+                <button class="btn btn-danger" name="method" value="delete_all">删除该学生的所有信息</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

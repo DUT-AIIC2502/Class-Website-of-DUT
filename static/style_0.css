@@ -144,7 +144,8 @@ a:hover {
 }
 
 label {
-    display: block;
+    display: inline;
+    /*min-width: 300px;*/
     margin-bottom: 8px;
     font-weight: 500;
     color: var(--dark);
@@ -157,6 +158,7 @@ input[type="number"],
 textarea,
 select {
     width: 100%;
+    max-width: 300px;
     padding: 15px;
     border: 2px solid #ddd;
     border-radius: var(--border-radius);
