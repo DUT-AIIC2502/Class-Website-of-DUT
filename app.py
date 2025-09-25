@@ -289,9 +289,6 @@ def student_info(student_id):
     cursor.execute('select * from student_info_AIIC2502_field')
     result_field_tup = cursor.fetchall()
 
-    # # 说明是否锁定的状态
-    # whether_lock = 1  # 0表示解锁，1表示锁定
-
     if request.method == 'GET':
         """进入页面"""
         # 标记为锁定
@@ -321,6 +318,17 @@ def student_info(student_id):
 
         # 进行更新操作
         elif form_get['method'] == 'update':
+            if student_id != form_get['student_id']:
+                """若修改了学号，则需要检查学号是否与已有的重复"""
+                # 获取所有已有的名字、学号
+                cursor.execute('select name, student_ID from student_info_aiic2502')
+                result_basic_info = cursor.fetchall()  # 用于比对姓名、学号
+
+                # 检查学号是否重复
+                for row in result_basic_info:
+                    if form_get['student_id'] == row[1]:
+                        return "学号重复，请重新输入！！！"
+
             # 产生待执行的mysql语句
             sql_str = 'update student_info_aiic2502 set '
             for field in result_field_tup:
@@ -343,6 +351,8 @@ def student_info(student_id):
             # elif authenticate == 1:
             #     """在确认页面确认后，再次点击，执行删除操作"""
 
+        # 更新学号
+        student_id = form_get['student_id']
         # 进行查询操作，并形成列表
         fields_values = select_to_show(cursor, student_id, result_field_tup)
 
@@ -380,9 +390,6 @@ def authenticate_one(student_id, if_authenticate):
         db.commit()
         db.close()
         return redirect(url_for('info_management'), code=302, Response=None)
-
-
-
 
 
 if __name__ == '__main__':
