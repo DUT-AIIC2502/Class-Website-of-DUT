@@ -2,13 +2,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>详细信息</title>
-    <link rel="stylesheet" type="text/css" href="../static/style_0.css">
+    <title>{{fields_values.0.2}}的详细信息</title>
+    <link rel="stylesheet" type="text/css" href="/static/style_0.css">
 </head>
 <body>
     <!-- 返回上一个页面 -->
-    <div class="card">
-        <h3><b>{{fields_values.0.2}}</b></h3>
+    <div class="instructions">
+        <h3><b>{{fields_values.0.2}}</b>的详细信息</h3>
+        <p>在此页面，你可以：</p>
+        <p>1. 浏览该学生的详细信息</p>
+        <p>2. 更改该学生的信息</p>
+        <p>3. 删除该学生的信息</p>
         <a href="/info_management" target="_self" title="">
             <button class="btn btn-primary" type="button">返回上一页</button>
         </a>
@@ -16,7 +20,7 @@
 
     <!-- 呈现详细信息的表单 -->
     <div class="card">
-        <form method="post" action="/student_info/{{student_id}}">
+        <form method="post" action="/info_management/student_info/{{student_id}}">
             <!-- 分条输出该学生的详细信息 -->
             {% for field in fields_values %}
                 <div class="form-group">
@@ -35,8 +39,10 @@
                 {% endif %}
                 <button class="btn btn-primary" name="method" value="update">更新</button>
             </div>
+
+        </form>
+        <form method="post" action="/info_management/student_info/{{student_id}}/0">
             <div class="form-group">
-                <button class="btn btn-warning" name="method" value="delete_field">删除该字段</button>
                 <button class="btn btn-danger" name="method" value="delete_all">删除该学生的所有信息</button>
             </div>
         </form>

@@ -223,6 +223,37 @@ def info_management():
             return render_template('info_management.html', fields=result_field_list, table=result_table,
                                    field_select=fields, filed_to_select_value=form_get['filed_to_select_value'])
 
+        # elif form_get['method'] == 'delete':
+        #     return
+
+
+@app.route('/info_management/<if_authenticate>')
+def authenticate_few(if_authenticate):
+    """确认删除页面"""
+    if if_authenticate == '0':
+        return render_template('authenticate_few.html')
+
+    elif if_authenticate == '1':
+        # 数据库操作
+        # 打开数据库连接
+        db = pymysql.connect(host=MyDB.host,
+                             user=MyDB.user,
+                             password=MyDB.pw,
+                             database=MyDB.database)
+
+        # 使用cursor()方法创建一个游标对象cursor
+        cursor = db.cursor()
+
+        # # 产生待执行的mysql语句
+        # sql_str = f"delete from student_info_aiic2502 where student_id='{student_id}'"
+        # cursor.execute(sql_str)
+
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.commit()
+        db.close()
+        return redirect(url_for('info_management'), code=302, Response=None)
+
 
 def select_to_show(cursor, student_id, result_field_tup):
     """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
@@ -241,7 +272,7 @@ def select_to_show(cursor, student_id, result_field_tup):
     return fields_values
 
 
-@app.route('/student_info/<student_id>', methods=['GET', 'POST'])
+@app.route('/info_management/student_info/<student_id>', methods=['GET', 'POST'])
 def student_info(student_id):
     """学生信息的详细界面"""
     # 数据库操作
@@ -284,10 +315,8 @@ def student_info(student_id):
         if_readonly = ''
         # 标记锁定状态
         if form_get['method'] == 'unlock':
-            # whether_lock = 0
             if_readonly = ''
         elif form_get['method'] == 'lock':
-            # whether_lock = 1
             if_readonly = 'readonly'
 
         # 进行更新操作
@@ -303,12 +332,16 @@ def student_info(student_id):
 
             cursor.execute(sql_str)
 
-        elif form_get['method'] == 'delete_field':
-            print()
-
         # 进行删除操作
         elif form_get['method'] == 'delete_all':
-            print()
+            """点击时，跳转至确认页面"""
+            # 关闭游标和数据库连接
+            cursor.close()
+            db.close()
+            return render_template('authenticate_one.html', student_id=student_id)
+
+            # elif authenticate == 1:
+            #     """在确认页面确认后，再次点击，执行删除操作"""
 
         # 进行查询操作，并形成列表
         fields_values = select_to_show(cursor, student_id, result_field_tup)
@@ -319,6 +352,37 @@ def student_info(student_id):
         db.close()
         return render_template('student_info.html', fields_values=fields_values,
                                student_id=student_id, if_readonly=if_readonly)
+
+
+@app.route('/info_management/student_info/<student_id>/<if_authenticate>', methods=['get', 'post'])
+def authenticate_one(student_id, if_authenticate):
+    """确认删除页面"""
+    if if_authenticate == '0':
+        return render_template('authenticate_one.html', student_id=student_id)
+
+    elif if_authenticate == '1':
+        # 数据库操作
+        # 打开数据库连接
+        db = pymysql.connect(host=MyDB.host,
+                             user=MyDB.user,
+                             password=MyDB.pw,
+                             database=MyDB.database)
+
+        # 使用cursor()方法创建一个游标对象cursor
+        cursor = db.cursor()
+
+        # 产生待执行的mysql语句
+        sql_str = f"delete from student_info_aiic2502 where student_id='{student_id}'"
+        cursor.execute(sql_str)
+
+        # 关闭游标和数据库连接
+        cursor.close()
+        db.commit()
+        db.close()
+        return redirect(url_for('info_management'), code=302, Response=None)
+
+
+
 
 
 if __name__ == '__main__':

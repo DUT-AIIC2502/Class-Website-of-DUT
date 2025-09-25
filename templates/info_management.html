@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>智创2502班·学生信息</title>
-    <link rel="stylesheet" type="text/css" href="../static/style_0.css">
+    <link rel="stylesheet" type="text/css" href="/static/style_0.css">
 </head>
 <body>
     <div class="container">
@@ -80,7 +80,6 @@
                 </div>
                 <!-- 查询按钮 -->
                 <div class="form-group">
-<!--                    <button class="btn btn-primary" name="method" value="update">更新</button>-->
                     <button class="btn btn-primary" name="method" value="select">查询</button>
                 </div>
             </form>
@@ -93,6 +92,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th></th>
                             {% for f in field_select %}
                                 <th>{{f}}</th>
                             {% endfor %}
@@ -100,21 +100,29 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row_value in table %}
-                            <tr>
-                                {% for value in row_value %}
-                                    <td>{{value}}</td>
-                                {% endfor %}
-                                <td>
-<!--                                    <from action="/student_info/{{row_value.1}}" method="get">-->
-<!--                                        <button class="btn btn-primary" type="submit">详情</button>-->
-<!--                                    </from>-->
-                                    <a href="/student_info/{{row_value.1}}" target="_self" title="">
-                                        <button class="btn btn-primary" type="button">详情</button>
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                        <form method="post" action="/info_management/0">
+                             <div class="form-group">
+                                <button class="btn btn-danger" name="method" value="delete">删除选中项</button>
+                            </div>
+                            {% for row_value in table %}
+                                <tr>
+                                    <td>
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" name="info_to_delete" value={{row_value.1}}>
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </td>
+                                    {% for value in row_value %}
+                                        <td>{{value}}</td>
+                                    {% endfor %}
+                                    <td>
+                                        <a href="/info_management/student_info/{{row_value.1}}" target="_self" title="">
+                                            <button class="btn btn-primary" type="button">详情</button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </form>
                     </tbody>
                 </table>
             </div>
