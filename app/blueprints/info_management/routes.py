@@ -2,6 +2,7 @@
 from flask import Blueprint, session
 from flask import render_template, request, redirect, url_for
 from sqlalchemy import text
+import pickle
 from translate import Translator
 
 
@@ -16,196 +17,273 @@ info_management_bp = Blueprint('info_management', __name__,
 @info_management_bp.route('/', methods=['GET', 'POST'])
 def info_management():
     """学生信息查询界面"""
-    table_name = "student_info_AIIC2502"
+    # 标记详细信息页面只读
+    session["whether_readonly"] = 1
 
-    # 获取student_info_aiic2502的所有字段及中文名
-    sql = f"select * from {table_name}_field"
-    result_proxy = db.session.execute(text(sql))
-    result_field = [list(row) for row in result_proxy.fetchall()]
+    if 1 == 1:
+        """获取目标表的表名和字段信息（字段、中文名）"""
+        table_name = get_session_value("table_name")
+        # 执行查询操作
+        sql = f"select * from {table_name}_field"
+        result_proxy = db.session.execute(text(sql))
+        table_field = [list(row) for row in result_proxy.fetchall()]
+        # 上传至session
+        result_field_str = pickle.dumps(table_field)
+        session["table_field"] = result_field_str
 
     if request.method == 'GET':
         """加载页面"""
-        # 需要被标记为默认选中的字段
-        checkboxs_to_mark = ('name', 'student_id')
-        # 标记默认复选框
-        result_field = mark_default(result_field, checkboxs_to_mark, 'checkbox')
 
-        return render_template('info_management.html', fields=result_field)
+        if 1 == 1:
+            """获取session中的值"""
+            # 表单提交的值，主要为input的值
+            form_get_default = {'filed_to_select': '', 'filed_to_select_value': ''}
+            form_get_str = get_session_value("info_management_select_form_data")
+            form_get = load_session_value(form_get_str, form_get_default)
+            # 复选框选中的表单，默认为“姓名”、“学号”
+            fields_str = get_session_value("info_management_select_fields_data")
+            fields = load_session_value(fields_str, ['name', 'student_id'])
+            # 搜索结果，以表格形式呈现给用户
+            table_str = get_session_value("info_management_select_table_data")
+            table = load_session_value(table_str)
+
+        if 1 == 1:
+            """标记复选框、下拉框默认值"""
+            # 复选框默认或恢复选中的字段
+            mark_list = [fields, 'checkbox']
+            # 标记默认复选框
+            table_field = mark_default(table_field, mark_list)
+
+            # 下拉默认或恢复选中的字段
+            mark_list = [[form_get['filed_to_select'], ], 'select']
+            # 标记默认下拉框
+            table_field = mark_default(table_field, mark_list)
+
+        if 1 == 1:
+            """将fields的每一项转化为中文"""
+            for index in range(len(fields)):
+                for row in table_field:
+                    if fields[index] == row[0]:
+                        fields[index] = row[1]
+                        break
+
+        return render_template('info_management.html',
+                               fields=table_field,
+                               table=table,
+                               field_select=fields,
+                               filed_to_select_value=form_get['filed_to_select_value'])
 
     elif request.method == 'POST':
         # 获取表单数据
         form_get = request.form.to_dict()
 
-        # 获取所有已有的名字、学号
-        sql = f"select name, student_ID from {table_name}"
-        result_proxy = db.session.execute(text(sql))
-        result_basic_info = [list(row) for row in result_proxy.fetchall()]  # 用于比对姓名、学号
-
-        # 查询操作
         if form_get['method'] == 'select':
+            """查询操作"""
             # 获取表单中选中的所有字段名
             fields = request.form.getlist('field_to_show')
 
-            # 需要被标记为默认选中复选框的字段，用来恢复查询前的页面
-            checkboxs_to_mark = ()
-            option_to_mark = (form_get['filed_to_select'],)
+            if 1 == 1:
+                """执行查询操作"""
+                # 处理得到本次选中的字段，得到mysql字符串
+                field_str = ''
+                for f in fields:
+                    # 将表单中选择的字段转化为符合mysql语法的字符串
+                    field_str += f + ","
+                field_str = field_str[:-1]
 
-            # 处理得到本次选中的字段
-            field_str = ''
-            for index in range(len(fields)):
-                # 将表单中选择的字段转化为符合mysql语法的字符串字符串
-                field_str = field_str + fields[index] + ","
+                # 判断是否要进行条件查询，并输入参数化占位符
+                sql_where = ''
+                field_to_select = form_get['filed_to_select']
+                if form_get['name'] != '' or form_get['student_id'] != '' \
+                        or form_get['filed_to_select_value'] != '':
+                    sql_where = ' where '
+                    if form_get['name'] != '':
+                        sql_where += f"name = :name "
+                    elif form_get['student_id'] != '':
+                        sql_where += f"student_id = :student_id' "
+                    elif form_get['filed_to_select_value'] != '':
+                        sql_where += f"{field_to_select} = :{field_to_select} "
 
-                # 标记本次选中的复选框
-                checkboxs_to_mark += (fields[index],)
+                # 拼接字符串，进行查询操作
+                sql = f"select {field_str} from {table_name}" + sql_where
+                result_proxy = db.session.execute(text(sql), {'name': form_get['name'],
+                                                              'student_id': form_get['student_id'],
+                                                              field_to_select: form_get['filed_to_select_value']})
+                result_table = [list(row) for row in result_proxy.fetchall()]
 
-                # 将表单中选择的字段转化为中文
-                for f in result_field:
-                    if f[0] == fields[index]:
-                        fields[index] = f[1]
-            field_str = field_str[:-1]
+            if 1 == 1:
+                """将本次表单提交的数据保存至session"""
+                # form_get
+                form_get_str = pickle.dumps(form_get)
+                session["info_management_select_form_data"] = form_get_str
+                # fields
+                fields_str = pickle.dumps(fields)
+                session["info_management_select_fields_data"] = fields_str
+                # table
+                table_str = pickle.dumps(result_table)
+                session["info_management_select_table_data"] = table_str
 
-            # 标记选项，以恢复原来的表单
-            # 标记默认复选框
-            result_field = mark_default(result_field, checkboxs_to_mark, 'checkbox')
-            # 标记默认单选项
-            result_field = mark_default(result_field, option_to_mark, 'select')
+            # 重定向至GET
+            return redirect("/info_management/", 302, Response=None)
 
-            # 判断是否要进行条件查询，并输入参数化占位符
-            sql_where = ''
-            field_to_select = form_get['filed_to_select']
-            if form_get['name'] != '' or form_get['student_id'] != '' \
-                    or form_get['filed_to_select_value'] != '':
-                sql_where = ' where '
-                if form_get['name'] != '':
-                    sql_where += f"name = :name "
-                elif form_get['student_id'] != '':
-                    sql_where += f"student_id = :student_id' "
-                elif form_get['filed_to_select_value'] != '':
-                    sql_where += f"{field_to_select} = :{field_to_select} "
+        elif 'detail' in form_get['method']:
+            """进入详情页面"""
+            if 1 == 1:
+                """更新session中的学号信息"""
+                student_id_one = form_get['method'][7:]
+                student_ids = [student_id_one]
+                # 上传至session
+                student_ids_str = pickle.dumps(student_ids)
+                session["student_ids"] = student_ids_str
 
-            # 拼接字符串，进行查询操作
-            sql = f"select {field_str} from {table_name}" + sql_where
-            result_proxy = db.session.execute(text(sql), {'name': form_get['name'],
-                                                          'student_id': form_get['student_id'],
-                                                          field_to_select: form_get['filed_to_select_value']})
-            result_table = [list(row) for row in result_proxy.fetchall()]
-            # 重新渲染页面
-            return render_template('info_management.html', fields=result_field, table=result_table,
-                                   field_select=fields, filed_to_select_value=form_get['filed_to_select_value'])
+            return redirect(url_for("info_management.detail_info"))
 
         elif form_get['method'] == 'delete':
-            # 将表单中复选框的选中信息转化为mysql语句
-            infos = request.form.getlist('field_to_show')
-            # 储存选中的学生的学号
-            student_ids_str = ''
+            """进行删除操作"""
+            if 1 == 1:
+                """更新session中的学号信息"""
+                # 将表单中复选框的选中信息形成列表，并上传至session
+                student_ids = request.form.getlist('info_to_delete')
+                student_ids_str = pickle.dumps(student_ids)
+                session["student_ids"] = student_ids_str
 
-            for row in infos:
-                student_ids_str += f"{row}, "
-            student_ids_str = student_ids_str[:-2]
-
-            return redirect(f"/info_management/{student_ids_str}/0/")
-
-
-# @info_management_bp.route('/authenticate/<student_ids>/<if_authenticate>')
-# def authenticate_few(if_authenticate):
-#     table_name = "student_info_AIIC2502"
-#     """确认删除页面"""
-#     if if_authenticate == '0':
-#         return render_template('authenticate_few.html')
-#
-#     elif if_authenticate == '1':
-#         # 产生待执行的mysql语句
-#         sql = f"delete from {table_name} where student_id = :student_id"
-#
-#         return redirect(url_for('info_management'), code=302, Response=None)
+            return redirect(url_for("info_management.auth_delete"))
 
 
-@info_management_bp.route('/student_info/<student_id>/', methods=['GET', 'POST'])
-def student_info(student_id):
-    table_name = "student_info_AIIC2502"
-    """学生信息的详细界面"""
-    # 获取student_info_aiic2502的所有字段及中文名
-    sql = f"select * from {table_name}_field"
-    result_proxy = db.session.execute(text(sql))
-    result_field_tup = [list(row) for row in result_proxy.fetchall()]
+@info_management_bp.route('/detail_info/', methods=['GET', 'POST'])
+def detail_info():
+    """单个学生的详细信息页面"""
+
+    if 1 == 1:
+        """从session获取信息"""
+        # 表名
+        table_name = get_session_value("table_name")
+        # 表的字段信息
+        talbe_field_str = get_session_value("table_field")
+        table_field = load_session_value(talbe_field_str)
+        # 单个学号
+        student_ids_str = get_session_value("student_ids")
+        student_ids = load_session_value(student_ids_str)
+        student_id = student_ids[0]
 
     if request.method == 'GET':
         """进入页面"""
-        # 标记为锁定
-        if_readonly = 'readonly'
+        if 1 == 1:
+            """根据session['whether_readonly']的值来标记只读状态"""
+            if_readonly = 'readonly'
+            print(session['whether_readonly'])
+            if session['whether_readonly'] == 1:
+                # 默认只读
+                pass
+            elif session['whether_readonly'] == 0:
+                if_readonly = ''
 
-        # 获得用来渲染前端的数组
-        fields_values = select_to_show(db, student_id, result_field_tup)
-        return render_template('student_info.html', fields_values=fields_values,
-                               student_id=student_id, if_readonly=if_readonly)
+        if 1 == 1:
+            """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
+            # 查询该学生的详细信息
+            sql = f"select * from {table_name} where student_id = '{student_id}'"
+            result_proxy = db.session.execute(text(sql))
+            result_student = [list(row) for row in result_proxy.fetchall()][0]
+
+            # 用来渲染前端的数组，默认只读
+            fields_values = []
+            for index in range(len(result_student)):
+                row = [table_field[index][0], table_field[index][1],
+                       result_student[index]]
+                fields_values.append(row)
+
+        if 1 == 1:
+            """获取session中的值"""
+
+        return render_template('detail_info.html',
+                               fields_values=fields_values,
+                               student_id=student_id,
+                               if_readonly=if_readonly)
 
     elif request.method == 'POST':
         """提交表单后刷新页面"""
         # 获取表单数据
         form_get = request.form.to_dict()
 
-        # 默认可编辑
-        if_readonly = ''
-        # 标记锁定状态
-        if form_get['method'] == 'unlock':
-            if_readonly = ''
-        elif form_get['method'] == 'lock':
-            if_readonly = 'readonly'
+        if 1 == 1:
+            """通过“锁定”/“解锁”按钮，切换只读状态"""
+            if form_get['method'] == 'unlock':
+                session["whether_readonly"] = 0
+            elif form_get['method'] == 'lock':
+                session["whether_readonly"] = 1
 
-        # 进行更新操作
-        elif form_get['method'] == 'update':
-            if student_id != form_get['student_id']:
-                """若修改了学号，则需要检查学号是否与已有的重复"""
-                # 获取所有已有的名字、学号
-                sql = f'select name, student_ID from {table_name}'
-                result_proxy = db.session.execute(text(sql))
-                result_basic_info = [list(row) for row in result_proxy.fetchall()]  # 用于比对姓名、学号
-
-                # 检查学号是否重复
-                for row in result_basic_info:
-                    if form_get['student_id'] == row[1]:
-                        return "学号重复，请重新输入！！！"
-
+        if form_get['method'] == 'update':
+            """进行更新操作"""
             # 产生待执行的mysql语句
-            sql = 'update student_info_aiic2502 set '
-            for field in result_field_tup:
+            sql = f'update {table_name} set '
+            for field in table_field:
                 field_str = field[0]
                 sql += f"{field_str}='{form_get[field_str]}', "
             sql = sql[:-2]
             # 添加更新条件
             sql += f" where student_id='{student_id}'"
-
             # 执行并提交更新操作
             db.session.execute(text(sql))
             db.session.commit()
 
         # 进行删除操作
-        elif form_get['method'] == 'delete_all':
+        elif form_get['method'] == 'delete':
             """点击时，跳转至确认页面"""
-            return render_template('authenticate_one.html', student_id=student_id)
+            return redirect(url_for("info_management.auth_delete"))
 
-        # 更新学号
-        student_id = form_get['student_id']
-        # 进行查询操作，并形成列表
-        fields_values = select_to_show(db, student_id, result_field_tup)
-
-        return render_template('student_info.html', fields_values=fields_values,
-                               student_id=student_id, if_readonly=if_readonly)
+        return redirect(url_for("info_management.detail_info"), 302, Response=None)
 
 
-@info_management_bp.route('/student_info/<student_id>/<if_authenticate>/', methods=['get', 'post'])
-def authenticate_one(student_id, if_authenticate):
+@info_management_bp.route('/auth_delete/', methods=['get', 'post'])
+def auth_delete():
+    if 1 == 1:
+        """从session获取信息"""
+        # 表名
+        table_name = get_session_value("table_name")
+        # 表的字段信息
+        talbe_field_str = get_session_value("table_field")
+        table_field = load_session_value(talbe_field_str)
+        # 学号集合
+        student_ids_str = get_session_value("student_ids")
+        student_ids = load_session_value(student_ids_str)
+
+    if 1 == 1:
+        """获取学号对应的学生信息"""
+        # 将学号信息转化为mysql语句
+        sql_student_id = ''
+        for student_id in student_ids:
+            sql_student_id += f"'{student_id}', "
+        sql_student_id = sql_student_id[:-2]
+        # 获取条件语句
+        sql_where = f"where student_id in ({sql_student_id})"
+
     """确认删除页面"""
-    if if_authenticate == '0':
-        return render_template('authenticate_one.html', student_id=student_id)
+    if request.method == 'GET':
+        if 1 == 1:
+            """获取学号对应的学生信息"""
+            # 拼接字符串，进行查询操作
+            sql = f"select name, student_id from {table_name} {sql_where}"
+            result_proxy = db.session.execute(text(sql))
+            result_student = [list(row) for row in result_proxy.fetchall()]
 
-    elif if_authenticate == '1':
-        # 执行的mysql语句
-        sql = f"delete from student_info_aiic2502 where student_id=:student_id"
-        db.session.execute(text(sql), {'student_id': student_id})
-        db.session.commit()
-        return redirect(url_for('info_management'), code=302, Response=None)
+        if 1 == 1:
+            """获取用于渲染html的数据"""
+            # 选中的学生姓名
+            student_name = ''
+            for row in result_student:
+                student_name += row[0] + '，'
+            student_name = student_name[:-1]
+
+        return render_template('auth_delete.html', student_name=student_name)
+
+    elif request.method == 'POST':
+        if 1 == 1:
+            """执行删除操作"""
+            sql = f"delete from {table_name} {sql_where}"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        return redirect(url_for('info_management.info_management'), code=302, Response=None)
 
 
 def translate(chinese_str):
@@ -235,8 +313,9 @@ def translate(chinese_str):
 #     return result_list
 
 
-def mark_default(list_to_mark, mark_fields, op_type):
-    """用于标记需要默认选中的复选框或下拉列表"""
+def mark_default(list_to_mark, mark_fields):
+    """用于标记需要默认选中的复选框或下拉列表，会为每一行的列表新增一项"""
+    op_type = mark_fields[1]
     type_str = ''
     if op_type == 'checkbox':
         type_str = 'checked'
@@ -246,7 +325,7 @@ def mark_default(list_to_mark, mark_fields, op_type):
     result = []
     for item in list_to_mark:
         item.append('')
-        for field in mark_fields:
+        for field in mark_fields[0]:
             if item[0] == field:
                 item[-1] = type_str
                 break
@@ -255,18 +334,53 @@ def mark_default(list_to_mark, mark_fields, op_type):
     return result
 
 
-def select_to_show(my_db, student_id, result_field_tup):
-    """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
-    # 查询该学生的详细信息
-    sql = "select * from student_info_aiic2502 where student_id = :student_id"
-    result_proxy = my_db.session.execute(text(sql), {'student_id': student_id})
-    result_student = [list(row) for row in result_proxy.fetchall()]
+# def select_to_show(my_db, student_id, result_field_tup):
+    # """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
+    # # 查询该学生的详细信息
+    # sql = "select * from student_info_aiic2502 where student_id = :student_id"
+    # result_proxy = my_db.session.execute(text(sql), {'student_id': student_id})
+    # result_student = [list(row) for row in result_proxy.fetchall()]
+    #
+    # # 用来渲染前端的数组，默认只读
+    # fields_values = []
+    # for index in range(len(result_student)):
+    #     row = [result_field_tup[index][0], result_field_tup[index][1],
+    #            result_student[index]]
+    #     fields_values.append(row)
+    #
+    # return fields_values
 
-    # 用来渲染前端的数组，默认只读
-    fields_values = []
-    for index in range(len(result_student)):
-        row = [result_field_tup[index][0], result_field_tup[index][1],
-               result_student[index]]
-        fields_values.append(row)
 
-    return fields_values
+def is_session_key_empty(key):
+    """检查session中特定键是否为空"""
+    if key not in session:
+        return True
+
+    value = session[key]
+
+    # 检查各种空值情况
+    if value is None:
+        return True
+    elif isinstance(value, str) and value.strip() == '':
+        return True
+    elif isinstance(value, (list, dict)) and len(value) == 0:
+        return True
+    elif value == '' or value == 0 or value == False:
+        return True
+
+    return False
+
+
+def get_session_value(key, default=None):
+    """安全获取session值，如果为空返回默认值"""
+    if is_session_key_empty(key):
+        return default
+    return session[key]
+
+
+def load_session_value(value, default=None):
+    if value is None:
+        return default
+    else:
+        result = pickle.loads(value)
+        return result

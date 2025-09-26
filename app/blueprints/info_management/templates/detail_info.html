@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{fields_values.0.2}}的详细信息</title>
-    <link rel="stylesheet" type="text/css" href="/CSS/basic_style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
 </head>
 <body>
     <!-- 返回上一个页面 -->
@@ -13,19 +13,23 @@
         <p>1. 浏览该学生的详细信息</p>
         <p>2. 更改该学生的信息</p>
         <p>3. 删除该学生的信息</p>
-        <a href="/info_management" target="_self" title="">
+        <a href="/info_management/" target="_self" title="">
             <button class="btn btn-primary" type="button">返回上一页</button>
         </a>
     </div>
 
     <!-- 呈现详细信息的表单 -->
     <div class="card">
-        <form method="post" action="/info_management/student_info/{{student_id}}">
+        <form method="post" action="/info_management/detail_info/">
             <!-- 分条输出该学生的详细信息 -->
             {% for field in fields_values %}
                 <div class="form-group">
                     <label for="{{field.0}}">{{field.1}}：</label>
-                    <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" {{if_readonly}}>
+                    {% if field.0 == 'student_id' %}
+                        <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" readonly>（不可更改）
+                    {% else %}
+                        <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" {{if_readonly}}>
+                    {% endif %}
                 </div>
             {% endfor %}
             <!-- 按钮 -->
@@ -40,9 +44,9 @@
                 <button class="btn btn-primary" name="method" value="update">更新</button>
             </div>
         </form>
-        <form method="post" action="/info_management/student_info/{{student_id}}/0">
+        <form method="get" action="/info_management/auth_delete">
             <div class="form-group">
-                <button class="btn btn-danger" name="method" value="delete_all">删除该学生的所有信息</button>
+                <button class="btn btn-danger" name="method" value="delete">删除该学生的所有信息</button>
             </div>
         </form>
     </div>

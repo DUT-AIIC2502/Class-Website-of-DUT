@@ -1,4 +1,5 @@
 """配置文件"""
+from datetime import timedelta
 
 
 class Config(object):
@@ -17,3 +18,4 @@ class Config(object):
     DEBUG = True
     # TESTING = False
     SESSION_KEY = '12345qazxc'
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)

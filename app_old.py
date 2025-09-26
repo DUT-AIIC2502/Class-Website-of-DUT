@@ -318,7 +318,7 @@
 #         # 关闭游标和数据库连接
 #         cursor.close()
 #         db.close()
-#         return render_template('student_info.html', fields_values=fields_values,
+#         return render_template('detail_info.html', fields_values=fields_values,
 #                                student_id=student_id, if_readonly=if_readonly)
 #
 #     elif request.method == 'POST':
@@ -364,7 +364,7 @@
 #             # 关闭游标和数据库连接
 #             cursor.close()
 #             db.close()
-#             return render_template('authenticate_one.html', student_id=student_id)
+#             return render_template('auth_delete.html', student_id=student_id)
 #
 #             # elif authenticate == 1:
 #             #     """在确认页面确认后，再次点击，执行删除操作"""
@@ -378,7 +378,7 @@
 #         cursor.close()
 #         db.commit()
 #         db.close()
-#         return render_template('student_info.html', fields_values=fields_values,
+#         return render_template('detail_info.html', fields_values=fields_values,
 #                                student_id=student_id, if_readonly=if_readonly)
 #
 #
@@ -386,7 +386,7 @@
 # def authenticate_one(student_id, if_authenticate):
 #     """确认删除页面"""
 #     if if_authenticate == '0':
-#         return render_template('authenticate_one.html', student_id=student_id)
+#         return render_template('auth_delete.html', student_id=student_id)
 #
 #     elif if_authenticate == '1':
 #         # 数据库操作

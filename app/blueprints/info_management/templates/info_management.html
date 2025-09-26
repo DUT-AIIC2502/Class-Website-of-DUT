@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>智创2502班·学生信息</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
-<!--    <link rel="stylesheet" type="text/css" href="style_0.css">-->
-
 </head>
 <body>
     <div class="container">
@@ -24,6 +22,7 @@
             <p>1. 输入姓名/学号/（空）</p>
             <p>2. 在复选框中选择需要查询的字段</p>
             <p>3. 点击"查询"按钮即可查询需要的信息</p>
+            <p>提示：如需获取最新数据，不能仅仅刷新页面，而是需要再次查询</p>
         </div>
 
         <!-- 表单板块 -->
@@ -33,12 +32,12 @@
                 <div class="form-group">
                     <!-- 输入姓名 -->
                     <label for="name">学生姓名：</label>
-                    <input type="text" id="name" name="name" placeholder="请输入学生姓名">
+                    <input type="text" id="name" name="name" value="{{ name }}" placeholder="请输入学生姓名">
                 </div>
                 <div class="form-group">
                     <!-- 输入学号 -->
                     <label for="student_id">学号：</label>
-                    <input type="number" id="student_id" name="student_id" placeholder="请输入11位整数学号">
+                    <input type="number" id="student_id" name="student_id" value="{{ student_id }}" placeholder="请输入11位整数学号">
                 </div>
                 <div class="form-group">
                     <!-- 选择需要特异性查询的字段，并输入需要查询的值 -->
@@ -102,10 +101,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <form method="post" action="/info_management/0/">
+                        <form method="post" action="/info_management/">
                             <div class="form-group">
                                 <button class="btn btn-primary" name="method" value="insert_info">添加一条信息</button>
-                                <button class="btn-primary" name="method" value="insert_field">添加新的字段</button>
+                                <button class="btn btn-primary" name="method" value="insert_field">添加新的字段</button>
                                 <button class="btn btn-danger" name="method" value="delete">删除选中项</button>
                             </div>
                             {% for row_value in table %}
@@ -120,9 +119,8 @@
                                         <td>{{value}}</td>
                                     {% endfor %}
                                     <td>
-                                        <a href="/info_management/student_info/{{row_value.1}}/" target="_self" title="">
-                                            <button class="btn btn-primary" type="button">详情</button>
-                                        </a>
+                                        <button class="btn btn-primary" name="method"
+                                                value="detail-{{row_value.1}}">详情</button>
                                     </td>
                                 </tr>
                             {% endfor %}
