@@ -33,9 +33,10 @@
 
 1. `form_get`：dict，是将表单提交的数据转化为 python 的 dict。
 2. `fileds`：一维list，包含表单选中的所有字段（English）。之后，转化为中文名，传输给前端，用于渲染查询结果的表头。
-3. `result_field_tup`：二维tuple，从数据库获取，储存数据表的字段和字段名。
-4. `result_basic_info`：二维tuple，从数据库获取，包含所有学生的姓名、学号信息。
-5. `result_table`：二维tuple，从数据库获取，包含查询结果，每一个元素都是一名学生的信息。
+3. `infos`：一维list，包含表单选中的所有信息（学号）。
+4. `result_field`：二维list，从数据库获取，储存数据表的字段和字段名。
+5. `result_basic_info`：二维tuple，从数据库获取，包含所有学生的姓名、学号信息。
+6. `result_table`：二维tuple，从数据库获取，包含查询结果，每一个元素都是一名学生的信息。
 
 ### 前端传入（表单）
 

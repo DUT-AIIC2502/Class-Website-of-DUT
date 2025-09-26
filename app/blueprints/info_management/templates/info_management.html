@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>智创2502班·学生信息</title>
-    <link rel="stylesheet" type="text/css" href="/static/style_0.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
+<!--    <link rel="stylesheet" type="text/css" href="style_0.css">-->
+
 </head>
 <body>
     <div class="container">
@@ -26,7 +28,7 @@
 
         <!-- 表单板块 -->
         <div class="card">
-            <form method="post" action="/info_management">
+            <form method="post" action="/info_management/">
                 <h2>查询信息</h2>
                 <div class="form-group">
                     <!-- 输入姓名 -->
@@ -100,8 +102,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <form method="post" action="/info_management/0">
-                             <div class="form-group">
+                        <form method="post" action="/info_management/0/">
+                            <div class="form-group">
+                                <button class="btn btn-primary" name="method" value="insert_info">添加一条信息</button>
+                                <button class="btn-primary" name="method" value="insert_field">添加新的字段</button>
                                 <button class="btn btn-danger" name="method" value="delete">删除选中项</button>
                             </div>
                             {% for row_value in table %}
@@ -116,7 +120,7 @@
                                         <td>{{value}}</td>
                                     {% endfor %}
                                     <td>
-                                        <a href="/info_management/student_info/{{row_value.1}}" target="_self" title="">
+                                        <a href="/info_management/student_info/{{row_value.1}}/" target="_self" title="">
                                             <button class="btn btn-primary" type="button">详情</button>
                                         </a>
                                     </td>
