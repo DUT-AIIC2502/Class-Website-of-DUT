@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导入excel文件</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>导入excel文件</h1>
+
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>1. 上传符合规范的excel文件</p>
+            <p>2. 点击“导入至数据库”按钮，完成导入操作</p>
+            <a href="/info_management/" target="_self" title="">
+                <button class="btn btn-primary" type="button">返回查询页面</button>
+            </a>
+        </div>
+
+        <div class="card">
+            <form method="post" action="/info_management/import_file/" enctype="multipart/form-data">
+                <!-- 基本文件输入框 -->
+                <div class="file-input-container">
+                    <label class="file-input-label">excel文件上传</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="file-input" id="fileInput" name="file">
+                        <div class="file-input-custom">
+                            <span class="file-input-text" id="fileInputText">选择文件或拖放到此处</span>
+                            <span class="file-input-button">浏览文件</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 文件预览区域 -->
+                <div class="file-preview" id="filePreview">
+                    <div class="preview-title">已选择文件:</div>
+                    <div id="previewList"></div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <input type="radio" name="method" id="append" value="append" checked>
+                <label for="append">添加在已有表的末尾</label>
+
+                <input type="radio" name="method" id="replace" value="replace">
+                <label for="replace">替换整个表</label>
+
+                <button class="btn btn-primary" name="import" value="import">导入至数据库</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const fileInputText = document.getElementById('fileInputText');
+        const filePreview = document.getElementById('filePreview');
+        const previewList = document.getElementById('previewList');
+
+        const fileInput2 = document.getElementById('fileInput2');
+        const fileInputText2 = document.getElementById('fileInputText2');
+
+        const fileInput3 = document.getElementById('fileInput3');
+        const fileInputText3 = document.getElementById('fileInputText3');
+
+        // 文件大小格式化函数
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 获取文件图标函数
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': 'PDF',
+                'doc': 'DOC',
+                'docx': 'DOC',
+                'xls': 'XLS',
+                'xlsx': 'XLS',
+                'ppt': 'PPT',
+                'pptx': 'PPT',
+                'jpg': 'IMG',
+                'jpeg': 'IMG',
+                'png': 'IMG',
+                'gif': 'IMG',
+                'zip': 'ZIP',
+                'rar': 'ZIP'
+            };
+            return icons[ext] || 'FILE';
+        }
+
+        // 处理文件选择
+        function handleFileSelect(input, textElement, previewContainer, isMultiple) {
+            return function(e) {
+                const files = e.target.files;
+
+                if (files.length > 0) {
+                    if (isMultiple) {
+                        textElement.textContent = `已选择 ${files.length} 个文件`;
+
+                        // 清空预览区域
+                        previewContainer.innerHTML = '';
+
+                        // 添加每个文件的预览
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const fileItem = document.createElement('div');
+                            fileItem.className = 'preview-item';
+                            fileItem.innerHTML = `
+                                <div class="file-icon">${getFileIcon(file.name)}</div>
+                                <div class="file-info">
+                                    <div class="file-name">${file.name}</div>
+                                    <div class="file-size">${formatFileSize(file.size)}</div>
+                                </div>
+                                <button class="remove-file" data-index="${i}">×</button>
+                            `;
+                            previewContainer.appendChild(fileItem);
+                        }
+
+                        // 显示预览区域
+                        filePreview.classList.add('active');
+
+                        // 添加移除文件事件
+                        const removeButtons = previewContainer.querySelectorAll('.remove-file');
+                        removeButtons.forEach(button => {
+                            button.addEventListener('click', function() {
+                                const index = parseInt(this.getAttribute('data-index'));
+                                // 在实际应用中，这里需要从文件列表中移除对应文件
+                                // 由于input.files是只读的，这里只是演示UI移除
+                                this.parentElement.remove();
+
+                                // 如果没有文件了，隐藏预览区域
+                                if (previewContainer.children.length === 0) {
+                                    filePreview.classList.remove('active');
+                                    textElement.textContent = '选择文件或拖放到此处';
+                                } else {
+                                    textElement.textContent = `已选择 ${previewContainer.children.length} 个文件`;
+                                }
+                            });
+                        });
+                    } else {
+                        textElement.textContent = files[0].name;
+                    }
+                } else {
+                    textElement.textContent = '选择文件或拖放到此处';
+                    if (isMultiple) {
+                        filePreview.classList.remove('active');
+                    }
+                }
+            };
+        }
+
+        // 绑定事件
+        fileInput.addEventListener('change', handleFileSelect(fileInput, fileInputText, previewList, true));
+        fileInput2.addEventListener('change', handleFileSelect(fileInput2, fileInputText2, null, false));
+        fileInput3.addEventListener('change', handleFileSelect(fileInput3, fileInputText3, null, false));
+
+        // 添加拖放功能
+        const fileInputWrapper = document.querySelector('.file-input-wrapper');
+
+        fileInputWrapper.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.querySelector('.file-input-custom').style.borderColor = '#3498db';
+            this.querySelector('.file-input-custom').style.backgroundColor = '#e1f0fa';
+        });
+
+        fileInputWrapper.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.querySelector('.file-input-custom').style.borderColor = '#bdc3c7';
+            this.querySelector('.file-input-custom').style.backgroundColor = '#f8f9fa';
+        });
+
+        fileInputWrapper.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.querySelector('.file-input-custom').style.borderColor = '#bdc3c7';
+            this.querySelector('.file-input-custom').style.backgroundColor = '#f8f9fa';
+
+            // 将拖放的文件设置到input中
+            fileInput.files = e.dataTransfer.files;
+
+            // 触发change事件
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        });
+    </script>
+</body>
+</html>

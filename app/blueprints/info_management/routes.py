@@ -1,8 +1,10 @@
 """学生信息管理页面的蓝图"""
-from flask import Blueprint, session
+from flask import Blueprint, session, jsonify
 from flask import render_template, request, redirect, url_for
-from sqlalchemy import text
+from sqlalchemy import text, types
 import pickle
+import pandas
+import re
 from translate import Translator
 
 from dbconnection import db
@@ -19,15 +21,15 @@ def info_management():
     # 标记详细信息页面只读
     session["whether_readonly"] = 1
 
+    """获取目标表的表名和字段信息（字段、中文名）"""
     if 1 == 1:
-        """获取目标表的表名和字段信息（字段、中文名）"""
         table_field = update_table_field()
 
     if request.method == 'GET':
         """加载页面"""
 
+        """获取session中的值"""
         if 1 == 1:
-            """获取session中的值"""
             # 表单提交的值，主要为input的值
             form_get_default = {'filed_to_select': '', 'filed_to_select_value': ''}
             form_get_str = get_session_value("info_management_select_form_data")
@@ -39,8 +41,8 @@ def info_management():
             table_str = get_session_value("info_management_select_table_data")
             table = load_session_value(table_str)
 
+        """标记复选框、下拉框默认值"""
         if 1 == 1:
-            """标记复选框、下拉框默认值"""
             # 复选框默认或恢复选中的字段
             mark_list = [fields, 'checkbox']
             # 标记默认复选框
@@ -51,8 +53,8 @@ def info_management():
             # 标记默认下拉框
             table_field = mark_default(table_field, mark_list)
 
+        """将fields的每一项转化为中文"""
         if 1 == 1:
-            """将fields的每一项转化为中文"""
             for index in range(len(fields)):
                 for row in table_field:
                     if fields[index] == row[0]:
@@ -69,14 +71,14 @@ def info_management():
         # 获取表单数据
         form_get = request.form.to_dict()
 
+        """查询操作"""
         if form_get['method'] == 'select':
-            """查询操作"""
             table_name = get_session_value("table_name")
             # 获取表单中选中的所有字段名
             fields = request.form.getlist('field_to_show')
 
+            """执行查询操作"""
             if 1 == 1:
-                """执行查询操作"""
                 # 处理得到本次选中的字段，得到mysql字符串
                 field_str = ''
                 for f in fields:
@@ -104,8 +106,8 @@ def info_management():
                                                               field_to_select: form_get['filed_to_select_value']})
                 result_table = [list(row) for row in result_proxy.fetchall()]
 
+            """将本次表单提交的数据保存至session"""
             if 1 == 1:
-                """将本次表单提交的数据保存至session"""
                 # form_get
                 form_get_str = pickle.dumps(form_get)
                 session["info_management_select_form_data"] = form_get_str
@@ -121,8 +123,9 @@ def info_management():
 
         elif 'detail' in form_get['method']:
             """进入详情页面"""
+
+            """更新session中的学号信息"""
             if 1 == 1:
-                """更新session中的学号信息"""
                 student_id_one = form_get['method'][7:]
                 student_ids = [student_id_one]
                 # 上传至session
@@ -142,8 +145,9 @@ def info_management():
 
         elif form_get['method'] == 'delete':
             """进行删除操作"""
+
+            """更新session中的学号信息"""
             if 1 == 1:
-                """更新session中的学号信息"""
                 # 将表单中复选框的选中信息形成列表，并上传至session
                 student_ids = request.form.getlist('info_to_delete')
                 student_ids_str = pickle.dumps(student_ids)
@@ -151,16 +155,16 @@ def info_management():
 
             return redirect(url_for("info_management.auth_delete"))
 
-        # elif form_get['method'] == 'import':
-        #
-        #     return
+        elif form_get['method'] == 'import':
+            return redirect(url_for("info_management.import_file"))
 
 
 @info_management_bp.route('/insert_info/', methods=['GET', 'POST'])
 def insert_info():
     """添加单条信息页面"""
+
+    """从session获取信息"""
     if 1 == 1:
-        """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
         # 表的字段信息
@@ -179,8 +183,8 @@ def insert_info():
         # 获取表单数据
         form_get = request.form.to_dict()
 
+        """检查学号是否重复"""
         if 1 == 1:
-            """检查学号是否重复"""
             # 获取所有的学号信息
             sql = f"select student_id from {table_name}"
             result_proxy = db.session.execute(text(sql))
@@ -191,8 +195,8 @@ def insert_info():
                     return f"<script> alert('学号重复！！！请重新输入。');" \
                            f"window.open('{url_for('info_management.insert_info')}');</script>"
 
+        """执行插入操作"""
         if 1 == 1:
-            """执行插入操作"""
             sql_value = ""
             for field in table_field:
                 sql_value += f"'{form_get[field[0]]}', "
@@ -202,8 +206,8 @@ def insert_info():
             db.session.execute(text(sql))
             db.session.commit()
 
+        """将新插入的学号上传至session"""
         if 1 == 1:
-            """将新插入的学号上传至session"""
             """更新session中的学号信息"""
             student_id = form_get['student_id']
             student_ids = [student_id]
@@ -216,8 +220,8 @@ def insert_info():
 
 @info_management_bp.route('/insert_field/', methods=['GET', 'POST'])
 def insert_field():
+    """从session获取信息"""
     if 1 == 1:
-        """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
         # 表的字段信息
@@ -225,8 +229,8 @@ def insert_field():
         table_field = load_session_value(talbe_field_str)
 
     if request.method == "GET":
+        """生成现有字段的展示字符串"""
         if 1 == 1:
-            """生成现有字段的展示字符串"""
             table_field_str = ''
             for field in table_field:
                 table_field_str += f"{field[1]}，"
@@ -239,35 +243,29 @@ def insert_field():
         # 获取表单数据
         form_get = request.form.to_dict()
 
+        """判断字段名是否重复"""
         if 1 == 1:
-            """判断字段名是否重复"""
             for field in table_field:
                 if form_get["field_to_insert"] == field[1]:
                     return f"<script> alert('字段名重复！');" \
                            f"window.open('{url_for('info_management.insert_field')}');</script>"
 
+        """将字段名翻译为英文，作为新的字段"""
         if 1 == 1:
-            """将字段名翻译为英文，作为新的字段"""
             field_name_ch = form_get['field_to_insert']
             field_name_en = translate(field_name_ch)
             # # 新的字段信息
             # new_field = [field_name_en, field_name_ch]
 
+        """执行添加字段操作"""
         if 1 == 1:
-            """执行添加字段操作"""
-            # 1. 为目标表添加字段
+            # 为目标表添加字段
             sql = f"alter table {table_name} add {field_name_en} char(50) comment '{field_name_ch}';"
             db.session.execute(text(sql))
             db.session.commit()
 
-            # 2. 为目标表的字段表同步更新
-            sql = f"insert into {table_name}_field (field, field_name) " \
-                  f"values ('{field_name_en}', '{field_name_ch}');"
-            db.session.execute(text(sql))
-            db.session.commit()
-
+        """设置字段的默认值"""
         if 1 == 1:
-            """设置字段的默认值"""
             default_value = ''
             if form_get['field_default_value']:
                 default_value = form_get['field_default_value']
@@ -276,8 +274,8 @@ def insert_field():
             db.session.execute(text(sql))
             db.session.commit()
 
+        """更新session中的字段信息"""
         if 1 == 1:
-            """更新session中的字段信息"""
             update_table_field()
 
         return redirect(url_for("info_management.insert_field"))
@@ -285,8 +283,8 @@ def insert_field():
 
 @info_management_bp.route('/delete_field/', methods=['GET', 'POST'])
 def delete_field():
+    """从session获取信息"""
     if 1 == 1:
-        """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
         # 表的字段信息
@@ -301,25 +299,18 @@ def delete_field():
         # 获取表单数据
         form_get = request.form.to_dict()
 
-        if 1 == 1:
-            """得到要删除的字段的信息"""
-            field_en = form_get["field_to_delete"]
+        """得到要删除的字段的信息"""
+        field_en = form_get["field_to_delete"]
 
+        """执行删除字段操作"""
         if 1 == 1:
-            """执行删除字段操作"""
-            # 1. 为目标表删除字段
+            # 为目标表删除字段
             sql = f"alter table {table_name} drop {field_en}"
             db.session.execute(text(sql))
             db.session.commit()
 
-            # 2. 为目标表的字段表同步更新
-            sql = f"delete from {table_name}_field where field='{field_en}'"
-            db.session.execute(text(sql))
-            db.session.commit()
-
-        if 1 == 1:
-            """更新session中的字段信息"""
-            update_table_field()
+        """更新session中的字段信息"""
+        update_table_field()
 
         return redirect(url_for("info_management.delete_field"))
 
@@ -328,8 +319,8 @@ def delete_field():
 def detail_info():
     """单个学生的详细信息页面"""
 
+    """从session获取信息"""
     if 1 == 1:
-        """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
         # 表的字段信息
@@ -342,8 +333,9 @@ def detail_info():
 
     if request.method == 'GET':
         """进入页面"""
+
+        """根据session['whether_readonly']的值来标记只读状态"""
         if 1 == 1:
-            """根据session['whether_readonly']的值来标记只读状态"""
             if_readonly = 'readonly'
             print(session['whether_readonly'])
             if session['whether_readonly'] == 1:
@@ -352,8 +344,8 @@ def detail_info():
             elif session['whether_readonly'] == 0:
                 if_readonly = ''
 
+        """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
         if 1 == 1:
-            """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
             # 查询该学生的详细信息
             sql = f"select * from {table_name} where student_id = '{student_id}'"
             result_proxy = db.session.execute(text(sql))
@@ -376,8 +368,8 @@ def detail_info():
         # 获取表单数据
         form_get = request.form.to_dict()
 
+        """通过“锁定”/“解锁”按钮，切换只读状态"""
         if 1 == 1:
-            """通过“锁定”/“解锁”按钮，切换只读状态"""
             if form_get['method'] == 'unlock':
                 session["whether_readonly"] = 0
             elif form_get['method'] == 'lock':
@@ -407,19 +399,16 @@ def detail_info():
 
 @info_management_bp.route('/auth_delete/', methods=['get', 'post'])
 def auth_delete():
+    """从session获取信息"""
     if 1 == 1:
-        """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
-        # # 表的字段信息
-        # talbe_field_str = get_session_value("table_field")
-        # table_field = load_session_value(talbe_field_str)
         # 学号集合
         student_ids_str = get_session_value("student_ids")
         student_ids = load_session_value(student_ids_str)
 
+    """获取学号对应的学生信息"""
     if 1 == 1:
-        """获取学号对应的学生信息"""
         # 将学号信息转化为mysql语句
         sql_student_id = ''
         for student_id in student_ids:
@@ -428,17 +417,18 @@ def auth_delete():
         # 获取条件语句
         sql_where = f"where student_id in ({sql_student_id})"
 
-    """确认删除页面"""
     if request.method == 'GET':
+        """确认删除页面"""
+
+        """获取学号对应的学生信息"""
         if 1 == 1:
-            """获取学号对应的学生信息"""
             # 拼接字符串，进行查询操作
             sql = f"select name, student_id from {table_name} {sql_where}"
             result_proxy = db.session.execute(text(sql))
             result_student = [list(row) for row in result_proxy.fetchall()]
 
+        """获取用于渲染html的数据"""
         if 1 == 1:
-            """获取用于渲染html的数据"""
             # 选中的学生姓名
             student_name = ''
             for row in result_student:
@@ -448,13 +438,112 @@ def auth_delete():
         return render_template('auth_delete.html', student_name=student_name)
 
     elif request.method == 'POST':
+        """执行删除操作"""
         if 1 == 1:
-            """执行删除操作"""
             sql = f"delete from {table_name} {sql_where}"
             db.session.execute(text(sql))
             db.session.commit()
 
         return redirect(url_for('info_management.info_management'), code=302, Response=None)
+
+
+@info_management_bp.route('/import_file/', methods=['get', 'post'])
+def import_file():
+    if request.method == "GET":
+        return render_template("import_file.html")
+
+    elif request.method == "POST":
+        """安全验证"""
+        if 1 == 1:
+            if 'file' not in request.files:
+                return f"<script> alert('没有选择文件！');" \
+                       f"window.open('{url_for('info_management.import_file')}');</script>"
+
+            # 获取上传的FileStorage对象
+            file = request.files['file']
+
+            if file.filename == '':
+                return f"<script> alert('没有选择文件！');" \
+                       f"window.open('{url_for('info_management.import_file')}');</script>"
+
+            # 验证文件类型为excel
+            if not file.filename.endswith(('.xlsx', '.xls')):
+                return jsonify({'error': '只支持Excel文件'}), 400
+
+        table_name = get_session_value("table_name")
+        """读取excel文件，并与数据库的表的字段匹配"""
+        if 1 == 1:
+            # 使用pandas读取文件，df是二维表结构
+            df = pandas.read_excel(file, header=0)
+
+            """将表格的列名与数据库表的字段名匹配"""
+            if 1 == 1:
+                # 读取表格第一行
+                first_row = pandas.read_excel(file, nrows=0)
+
+                # 用于提取中文的正则表达式
+                # pattern_ch = re.compile()
+                # # 用于提取英文的正则表达式
+                # pattern_en = re.compile()
+
+                # 将中文名和英文名信息分离， 用fields储存表的字段信息（英文+中文）
+                fields = []
+                for column in first_row:
+                    # 提取中文
+                    field_ch = re.findall(r'[\u4e00-\u9fa5]+', column)[0]
+                    # 提取英文
+                    field_en = re.findall(r'[A-Za-z]+', column)[0]
+                    fields.append([field_en, field_ch])
+
+                    # 确保Excel中的字段名与数据库表字段名匹配
+                    # 如果需要，可以在这里重命名DataFrame的列以匹配数据库表
+                    df.rename(columns={column: field_en}, inplace=True)
+
+        """将数据导入MySQL数据库表"""
+        if 1 == 1:
+            form_get = request.form.to_dict()
+            method = form_get['method']
+
+            # if_exists='append' 表示在现有数据后追加；'replace' 表示替换整个表
+            # df格式使engine对表的大小写敏感，要改为小写
+            df.to_sql(table_name.lower(),
+                      con=db.engine,
+                      if_exists=method,
+                      index=False,
+                      dtype=types.String(length=20))
+
+        """为每一个字段添加备注"""
+        if 1 == 1:
+            for field in fields:
+                sql = f"alter table {table_name} change {field[0]} {field[0]} char(20) comment '{field[1]}';"
+                db.session.execute(text(sql))
+                db.session.commit()
+
+            # 更新table_field
+            update_table_field()
+
+        return f"<script> alert('导入成功！');" \
+               f"window.open('{url_for('info_management.import_file')}');</script>"
+
+
+def update_table_field():
+    # 获取表名
+    table_name = get_session_value("table_name")
+    # 查询表的所有信息
+    sql = f"SHOW FULL COLUMNS FROM {table_name}"
+    result_proxy = db.session.execute(text(sql))
+    table_full_info = [list(row) for row in result_proxy.fetchall()]
+
+    # 获取字段名和备注
+    table_field = []
+    for row in table_full_info:
+        table_field.append([row[0], row[8]])
+
+    # 上传至session
+    result_field_str = pickle.dumps(table_field)
+    session["table_field"] = result_field_str
+
+    return table_field
 
 
 def translate(chinese_str):
@@ -471,17 +560,6 @@ def translate(chinese_str):
     # 将空格替换为下划线
     translation_3 = translation_2.replace(" ", "_")
     return translation_3
-
-
-# def tuple_to_list(target_tuple):
-#     """将任意维数的元组转化为列表"""
-#     result_list = []
-#     for item in target_tuple:
-#         if isinstance(item, tuple):
-#             result_list.append(tuple_to_list(item))
-#         else:
-#             result_list.append(item)
-#     return result_list
 
 
 def mark_default(list_to_mark, mark_fields):
@@ -538,17 +616,3 @@ def load_session_value(value, default=None):
     else:
         result = pickle.loads(value)
         return result
-
-
-def update_table_field():
-    # 获取表名
-    table_name = get_session_value("table_name")
-    # 查询表的字段信息
-    sql = f"select * from {table_name}_field"
-    result_proxy = db.session.execute(text(sql))
-    table_field = [list(row) for row in result_proxy.fetchall()]
-    # 上传至session
-    result_field_str = pickle.dumps(table_field)
-    session["table_field"] = result_field_str
-
-    return table_field
