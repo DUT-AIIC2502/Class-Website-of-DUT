@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>选择字段删除</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
+</head>
+<body>
+    <!-- 返回查询页面 -->
+    <div class="instructions">
+        <h3>选择字段删除</h3>
+        <p>在此页面，你可以：</p>
+        <p>1. 选择你想删除的字段</p>
+        <p>2. 点击“删除”，完成删除字段操作</p>
+        <a href="/info_management/" target="_self" title="">
+            <button class="btn btn-primary" type="button">返回查询页面</button>
+        </a>
+    </div>
+
+    <form method="post" action="/info_management/delete_field/">
+        <select id="field_to_delete" name="field_to_delete">
+            {% for row in fields %}
+                <option value={{row.0}}>{{row.1}}</option>
+            {% endfor %}
+        </select>
+        <div class="form-group">
+            <button class="btn btn-danger" name="method" value="delete">确定删除此字段</button>
+        </div>
+    </form>
+</body>

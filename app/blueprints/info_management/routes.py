@@ -5,7 +5,6 @@ from sqlalchemy import text
 import pickle
 from translate import Translator
 
-
 from dbconnection import db
 
 # 定义蓝图
@@ -22,14 +21,7 @@ def info_management():
 
     if 1 == 1:
         """获取目标表的表名和字段信息（字段、中文名）"""
-        table_name = get_session_value("table_name")
-        # 执行查询操作
-        sql = f"select * from {table_name}_field"
-        result_proxy = db.session.execute(text(sql))
-        table_field = [list(row) for row in result_proxy.fetchall()]
-        # 上传至session
-        result_field_str = pickle.dumps(table_field)
-        session["table_field"] = result_field_str
+        table_field = update_table_field()
 
     if request.method == 'GET':
         """加载页面"""
@@ -79,6 +71,7 @@ def info_management():
 
         if form_get['method'] == 'select':
             """查询操作"""
+            table_name = get_session_value("table_name")
             # 获取表单中选中的所有字段名
             fields = request.form.getlist('field_to_show')
 
@@ -138,6 +131,15 @@ def info_management():
 
             return redirect(url_for("info_management.detail_info"))
 
+        elif form_get["method"] == "insert_info":
+            return redirect(url_for("info_management.insert_info"))
+
+        elif form_get["method"] == "insert_field":
+            return redirect(url_for("info_management.insert_field"))
+
+        elif form_get["method"] == "delete_field":
+            return redirect(url_for("info_management.delete_field"))
+
         elif form_get['method'] == 'delete':
             """进行删除操作"""
             if 1 == 1:
@@ -148,6 +150,178 @@ def info_management():
                 session["student_ids"] = student_ids_str
 
             return redirect(url_for("info_management.auth_delete"))
+
+        # elif form_get['method'] == 'import':
+        #
+        #     return
+
+
+@info_management_bp.route('/insert_info/', methods=['GET', 'POST'])
+def insert_info():
+    """添加单条信息页面"""
+    if 1 == 1:
+        """从session获取信息"""
+        # 表名
+        table_name = get_session_value("table_name")
+        # 表的字段信息
+        talbe_field_str = get_session_value("table_field")
+        table_field = load_session_value(talbe_field_str)
+
+    if request.method == "GET":
+        # 设置学号为空
+        student_id = None
+
+        return render_template('detail_info.html',
+                               fields_values=table_field,
+                               student_id=student_id)
+
+    elif request.method == "POST":
+        # 获取表单数据
+        form_get = request.form.to_dict()
+
+        if 1 == 1:
+            """检查学号是否重复"""
+            # 获取所有的学号信息
+            sql = f"select student_id from {table_name}"
+            result_proxy = db.session.execute(text(sql))
+            result_student_ids = [list(row) for row in result_proxy.fetchall()]
+
+            for row in result_student_ids:
+                if form_get["student_id"] == row[0]:
+                    return f"<script> alert('学号重复！！！请重新输入。');" \
+                           f"window.open('{url_for('info_management.insert_info')}');</script>"
+
+        if 1 == 1:
+            """执行插入操作"""
+            sql_value = ""
+            for field in table_field:
+                sql_value += f"'{form_get[field[0]]}', "
+            sql_value = sql_value[:-2]
+
+            sql = f"insert into {table_name} values ({sql_value})"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        if 1 == 1:
+            """将新插入的学号上传至session"""
+            """更新session中的学号信息"""
+            student_id = form_get['student_id']
+            student_ids = [student_id]
+            # 上传至session
+            student_ids_str = pickle.dumps(student_ids)
+            session["student_ids"] = student_ids_str
+
+        return redirect(url_for("info_management.detail_info"))
+
+
+@info_management_bp.route('/insert_field/', methods=['GET', 'POST'])
+def insert_field():
+    if 1 == 1:
+        """从session获取信息"""
+        # 表名
+        table_name = get_session_value("table_name")
+        # 表的字段信息
+        talbe_field_str = get_session_value("table_field")
+        table_field = load_session_value(talbe_field_str)
+
+    if request.method == "GET":
+        if 1 == 1:
+            """生成现有字段的展示字符串"""
+            table_field_str = ''
+            for field in table_field:
+                table_field_str += f"{field[1]}，"
+            table_field_str = table_field_str[:-1]
+
+        return render_template("insert_field.html",
+                               table_fields=table_field_str)
+
+    elif request.method == "POST":
+        # 获取表单数据
+        form_get = request.form.to_dict()
+
+        if 1 == 1:
+            """判断字段名是否重复"""
+            for field in table_field:
+                if form_get["field_to_insert"] == field[1]:
+                    return f"<script> alert('字段名重复！');" \
+                           f"window.open('{url_for('info_management.insert_field')}');</script>"
+
+        if 1 == 1:
+            """将字段名翻译为英文，作为新的字段"""
+            field_name_ch = form_get['field_to_insert']
+            field_name_en = translate(field_name_ch)
+            # # 新的字段信息
+            # new_field = [field_name_en, field_name_ch]
+
+        if 1 == 1:
+            """执行添加字段操作"""
+            # 1. 为目标表添加字段
+            sql = f"alter table {table_name} add {field_name_en} char(50) comment '{field_name_ch}';"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+            # 2. 为目标表的字段表同步更新
+            sql = f"insert into {table_name}_field (field, field_name) " \
+                  f"values ('{field_name_en}', '{field_name_ch}');"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        if 1 == 1:
+            """设置字段的默认值"""
+            default_value = ''
+            if form_get['field_default_value']:
+                default_value = form_get['field_default_value']
+
+            sql = f"update {table_name} set {field_name_en}={default_value}"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        if 1 == 1:
+            """更新session中的字段信息"""
+            update_table_field()
+
+        return redirect(url_for("info_management.insert_field"))
+
+
+@info_management_bp.route('/delete_field/', methods=['GET', 'POST'])
+def delete_field():
+    if 1 == 1:
+        """从session获取信息"""
+        # 表名
+        table_name = get_session_value("table_name")
+        # 表的字段信息
+        talbe_field_str = get_session_value("table_field")
+        table_field = load_session_value(talbe_field_str)
+
+    if request.method == "GET":
+        return render_template("delete_field.html",
+                               fields=table_field)
+
+    elif request.method == "POST":
+        # 获取表单数据
+        form_get = request.form.to_dict()
+
+        if 1 == 1:
+            """得到要删除的字段的信息"""
+            field_en = form_get["field_to_delete"]
+
+        if 1 == 1:
+            """执行删除字段操作"""
+            # 1. 为目标表删除字段
+            sql = f"alter table {table_name} drop {field_en}"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+            # 2. 为目标表的字段表同步更新
+            sql = f"delete from {table_name}_field where field='{field_en}'"
+            db.session.execute(text(sql))
+            db.session.commit()
+
+        if 1 == 1:
+            """更新session中的字段信息"""
+            update_table_field()
+
+        return redirect(url_for("info_management.delete_field"))
 
 
 @info_management_bp.route('/detail_info/', methods=['GET', 'POST'])
@@ -191,9 +365,6 @@ def detail_info():
                 row = [table_field[index][0], table_field[index][1],
                        result_student[index]]
                 fields_values.append(row)
-
-        if 1 == 1:
-            """获取session中的值"""
 
         return render_template('detail_info.html',
                                fields_values=fields_values,
@@ -240,9 +411,9 @@ def auth_delete():
         """从session获取信息"""
         # 表名
         table_name = get_session_value("table_name")
-        # 表的字段信息
-        talbe_field_str = get_session_value("table_field")
-        table_field = load_session_value(talbe_field_str)
+        # # 表的字段信息
+        # talbe_field_str = get_session_value("table_field")
+        # table_field = load_session_value(talbe_field_str)
         # 学号集合
         student_ids_str = get_session_value("student_ids")
         student_ids = load_session_value(student_ids_str)
@@ -334,23 +505,6 @@ def mark_default(list_to_mark, mark_fields):
     return result
 
 
-# def select_to_show(my_db, student_id, result_field_tup):
-    # """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
-    # # 查询该学生的详细信息
-    # sql = "select * from student_info_aiic2502 where student_id = :student_id"
-    # result_proxy = my_db.session.execute(text(sql), {'student_id': student_id})
-    # result_student = [list(row) for row in result_proxy.fetchall()]
-    #
-    # # 用来渲染前端的数组，默认只读
-    # fields_values = []
-    # for index in range(len(result_student)):
-    #     row = [result_field_tup[index][0], result_field_tup[index][1],
-    #            result_student[index]]
-    #     fields_values.append(row)
-    #
-    # return fields_values
-
-
 def is_session_key_empty(key):
     """检查session中特定键是否为空"""
     if key not in session:
@@ -365,7 +519,7 @@ def is_session_key_empty(key):
         return True
     elif isinstance(value, (list, dict)) and len(value) == 0:
         return True
-    elif value == '' or value == 0 or value == False:
+    elif value == '' or value == 0 or value is False:
         return True
 
     return False
@@ -384,3 +538,17 @@ def load_session_value(value, default=None):
     else:
         result = pickle.loads(value)
         return result
+
+
+def update_table_field():
+    # 获取表名
+    table_name = get_session_value("table_name")
+    # 查询表的字段信息
+    sql = f"select * from {table_name}_field"
+    result_proxy = db.session.execute(text(sql))
+    table_field = [list(row) for row in result_proxy.fetchall()]
+    # 上传至session
+    result_field_str = pickle.dumps(table_field)
+    session["table_field"] = result_field_str
+
+    return table_field

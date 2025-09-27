@@ -51,7 +51,9 @@
                            name="filed_to_select_value" value="{{ filed_to_select_value }}"
                            placeholder="请输入想查询的值">
                 </div>
+
                 <hr>
+
                 <div class="form-group">
                     <h3>选择要展示的字段：</h3>
                     <!-- 输出该表中所有字段，并默认标记某些字段 -->
@@ -65,23 +67,19 @@
                             {% endif %}
                             <span class="checkmark"></span>
                         </label>
-
                     {% endfor %}
-<!--                    <div class="form-group">-->
-<!--                        <label class="checkbox-container">其他：-->
-<!--                            <input type="checkbox" name="field" value="other">-->
-<!--                            <span class="checkmark"></span>-->
-<!--                        </label>-->
-<!--                        <input type="text" name="other_field" placeholder="请输入新的字段名">-->
-<!--                    </div>-->
-<!--                    <div class="form-group">-->
-<!--                        <label for="field_value">值：</label>-->
-<!--                        <input type="text" id="field_value" name="field_value" placeholder="请输入需要更新的值">-->
-<!--                    </div>-->
                 </div>
                 <!-- 查询按钮 -->
                 <div class="form-group">
                     <button class="btn btn-primary" name="method" value="select">查询</button>
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                    <h3>导入/导出excel</h3>
+                    <button class="btn btn-primary" name="method" value="import">导入</button>
+                    <button class="btn btn-primary" name="method" value="export">导出</button>
                 </div>
             </form>
         </div>
@@ -90,23 +88,26 @@
         {% if table %}
             <div class="card">
                 <h2>查询结果</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            {% for f in field_select %}
-                                <th>{{f}}</th>
-                            {% endfor %}
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <form method="post" action="/info_management/">
-                            <div class="form-group">
-                                <button class="btn btn-primary" name="method" value="insert_info">添加一条信息</button>
-                                <button class="btn btn-primary" name="method" value="insert_field">添加新的字段</button>
-                                <button class="btn btn-danger" name="method" value="delete">删除选中项</button>
-                            </div>
+                <form method="post" action="/info_management/">
+
+                    <div class="form-group">
+                        <button class="btn btn-primary" name="method" value="insert_info">添加一条信息</button>
+                        <button class="btn btn-primary" name="method" value="insert_field">添加新的字段</button>
+                        <button class="btn btn-danger" name="method" value="delete_field">选择字段删除</button>
+                        <button class="btn btn-danger" name="method" value="delete">删除选中项</button>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                {% for f in field_select %}
+                                    <th>{{f}}</th>
+                                {% endfor %}
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {% for row_value in table %}
                                 <tr>
                                     <td>
@@ -124,9 +125,10 @@
                                     </td>
                                 </tr>
                             {% endfor %}
-                        </form>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+
+                </form>
             </div>
         {% endif %}
     </div>

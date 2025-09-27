@@ -1,54 +1,88 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <title>{{fields_values.0.2}}的详细信息</title>
+    {% if student_id %}
+        <title>{{fields_values.0.2}}的详细信息</title>
+    {% else %}
+        <title>新增信息</title>
+    {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
 </head>
 <body>
     <!-- 返回上一个页面 -->
     <div class="instructions">
-        <h3><b>{{fields_values.0.2}}</b>的详细信息</h3>
-        <p>在此页面，你可以：</p>
-        <p>1. 浏览该学生的详细信息</p>
-        <p>2. 更改该学生的信息</p>
-        <p>3. 删除该学生的信息</p>
+        {% if student_id %}
+            <h3><b>{{fields_values.0.2}}</b>的详细信息</h3>
+            <p>在此页面，你可以：</p>
+            <p>1. 浏览该学生的详细信息</p>
+            <p>2. 更改该学生的信息</p>
+            <p>3. 删除该学生的信息</p>
+        {% else %}
+            <h3>新增信息</h3>
+            <p>输入信息，点击“确定”提交新增的信息。</p>
+        {% endif %}
         <a href="/info_management/" target="_self" title="">
-            <button class="btn btn-primary" type="button">返回上一页</button>
+            <button class="btn btn-primary" type="button">返回查询页面</button>
         </a>
     </div>
 
     <!-- 呈现详细信息的表单 -->
     <div class="card">
-        <form method="post" action="/info_management/detail_info/">
-            <!-- 分条输出该学生的详细信息 -->
-            {% for field in fields_values %}
+        {% if student_id %}
+            <!-- 学生的详细信息页面 -->
+            <form method="post" action="/info_management/detail_info/">
+                {% for field in fields_values %}
+                    <!-- 分条输出该学生的详细信息 -->
+                    <div class="form-group">
+                        <label for="{{field.0}}">{{field.1}}：</label>
+                        {% if field.0 == 'student_id' %}
+                            <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" readonly>（不可更改）
+                        {% else %}
+                            <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" {{if_readonly}}>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <!-- 按钮 -->
                 <div class="form-group">
-                    <label for="{{field.0}}">{{field.1}}：</label>
-                    {% if field.0 == 'student_id' %}
-                        <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" readonly>（不可更改）
+                    {% if if_readonly == 'readonly' %}
+                        <label>现在输入框处于只读状态：</label>
+                        <button class="btn btn-primary" name="method" value="unlock">解锁</button>
                     {% else %}
-                        <input type="text" id="{{field.0}}" name="{{field.0}}" value="{{field.2}}" {{if_readonly}}>
+                        <label>现在输入框处于可编辑状态：</label>
+                        <button class="btn btn-primary" name="method" value="lock">锁定</button>
                     {% endif %}
+                    <button class="btn btn-primary" name="method" value="update">更新</button>
                 </div>
-            {% endfor %}
-            <!-- 按钮 -->
-            <div class="form-group">
-                {% if if_readonly == 'readonly' %}
-                    <label>现在输入框处于只读状态：</label>
-                    <button class="btn btn-primary" name="method" value="unlock">解锁</button>
-                {% else %}
-                    <label>现在输入框处于可编辑状态：</label>
-                    <button class="btn btn-primary" name="method" value="lock">锁定</button>
-                {% endif %}
-                <button class="btn btn-primary" name="method" value="update">更新</button>
-            </div>
-        </form>
-        <form method="get" action="/info_management/auth_delete">
-            <div class="form-group">
-                <button class="btn btn-danger" name="method" value="delete">删除该学生的所有信息</button>
-            </div>
-        </form>
+            </form>
+            {% else %}
+                <!-- 插入新信息页面 -->
+                <form method="post" action="/info_management/insert_info/"
+                    {% for field in fields_values %}
+                        <!-- 分条陈列字段 -->
+                        <div class="form-group">
+                            <label for="{{field.0}}">{{field.1}}：</label>
+                            {% if field.0 == 'student_id' %}
+                                <input type="text" id="{{field.0}}" name="{{field.0}}" required>（必填）
+                            {% else %}
+                                <input type="text" id="{{field.0}}" name="{{field.0}}">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <!-- 按钮 -->
+                    <div class="form-group">
+                        <button class="btn btn-primary" name="method" value="insert">确定</button>
+                    </div>
+                </form>
+            {% endif %}
+
+        {% if student_id %}
+            <form method="get" action="/info_management/auth_delete">
+                <div class="form-group">
+                    <button class="btn btn-danger" name="method" value="delete">删除该学生的所有信息</button>
+                </div>
+            </form>
+        {% endif %}
     </div>
 </body>
 </html>

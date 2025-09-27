@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>新增字段</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
+</head>
+<body>
+    <!-- 返回查询页面 -->
+    <div class="instructions">
+        <h3>新增字段</h3>
+        <p>在此页面，你可以：</p>
+        <p>1. 输入你想新增的字段名</p>
+        <p>2. 设置该字段的默认值</p>
+        <p>3. 点击“确认”，完成新增字段操作</p>
+        <a href="/info_management/" target="_self" title="">
+            <button class="btn btn-primary" type="button">返回查询页面</button>
+        </a>
+    </div>
+
+    <form method="post" action="/info_management/insert_field/">
+        <p>已有字段：{{ table_fields }}</p>
+        <div class="form-group">
+            <label for="field_to_insert">需要添加的字段名：</label>
+            <input type="text" id="field_to_insert" name="field_to_insert" placeholder="请输入新的字段名">
+        </div>
+        <div class="form-group">
+            <label for="field_default_value">默认值：</label>
+            <input type="text" id="field_default_value" name="field_default_value" placeholder="请输入默认值">
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" name="method" value="insert">确定</button>
+        </div>
+    </form>
+
+</body>
