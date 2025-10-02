@@ -13,6 +13,7 @@
       <list>
         <option value="$MODULE_DIR$/app/blueprints/info_management/templates" />
         <option value="$MODULE_DIR$/app/blueprints/auth/templates" />
+        <option value="$MODULE_DIR$/app/blueprints/main/templates" />
       </list>
     </option>
   </component>

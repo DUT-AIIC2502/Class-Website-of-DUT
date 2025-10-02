@@ -7,7 +7,7 @@
     {% else %}
         <title>新增信息</title>
     {% endif %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/basic_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
 </head>
 <body>
     <!-- 返回上一个页面 -->
@@ -55,26 +55,26 @@
                     <button class="btn btn-primary" name="method" value="update">更新</button>
                 </div>
             </form>
-            {% else %}
-                <!-- 插入新信息页面 -->
-                <form method="post" action="/info_management/insert_info/"
-                    {% for field in fields_values %}
-                        <!-- 分条陈列字段 -->
-                        <div class="form-group">
-                            <label for="{{field.0}}">{{field.1}}：</label>
-                            {% if field.0 == 'student_id' %}
-                                <input type="text" id="{{field.0}}" name="{{field.0}}" required>（必填）
-                            {% else %}
-                                <input type="text" id="{{field.0}}" name="{{field.0}}">
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    <!-- 按钮 -->
+        {% else %}
+            <!-- 插入新信息页面 -->
+            <form method="post" action="/info_management/insert_info/"
+                {% for field in fields_values %}
+                    <!-- 分条陈列字段 -->
                     <div class="form-group">
-                        <button class="btn btn-primary" name="method" value="insert">确定</button>
+                        <label for="{{field.0}}">{{field.1}}：</label>
+                        {% if field.0 == 'student_id' %}
+                            <input type="text" id="{{field.0}}" name="{{field.0}}" required>（必填）
+                        {% else %}
+                            <input type="text" id="{{field.0}}" name="{{field.0}}">
+                        {% endif %}
                     </div>
-                </form>
-            {% endif %}
+                {% endfor %}
+                <!-- 按钮 -->
+                <div class="form-group">
+                    <button class="btn btn-primary" name="method" value="insert">确定</button>
+                </div>
+            </form>
+        {% endif %}
 
         {% if student_id %}
             <form method="get" action="/info_management/auth_delete">

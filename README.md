@@ -14,17 +14,27 @@
 
 1. `session`：类似于字典，有以下键：
 
-   1. `table_name`：储存表名
-   2. `table_field`：储存该表的字段信息(字段、中文名)
-      对应`table_field`
-   3. `info_management_select_form_data`：储存“info_management”执行搜索操作时，提交的表单值
-      对应`form_get`
-   4. `info_management_select_fields_data`：复选框选中的字段
-      对应`fields`
-   5. `info_management_select_table_data`：搜索结果表
-      对应`table`
-   6. `whether_readonly`：int，标记是否只读。0：可编辑。1：只读。
-   7. `student_ids`：学号列表，其中学号以str类型储存
+   1. info_management系统
+      1. `table_name`：储存表名
+      2. `table_field`：储存该表的字段信息(字段、中文名)
+         对应`table_field`
+      3. `info_management_select_form_data`：储存“info_management”执行搜索操作时，提交的表单值
+         对应`form_get`
+      4. `info_management_select_fields_data`：复选框选中的字段
+         对应`fields`
+      5. `info_management_select_table_data`：搜索结果表
+         对应`table`
+      6. `whether_readonly`：int，标记是否只读。0：可编辑。1：只读。
+      7. `student_ids`：学号列表，其中学号以str类型储存
+
+   2. auth系统
+      1. `user_info`：dict，储存以下信息
+         1. `id`：数据库中的id
+         2. `user_id`：实际上为学号
+         3. `user_name`：用户的真实姓名
+         4. `user_top_role`：用户的最顶级身份，用于展示
+         5. `user_roles`：一维list，用户的所有身份
+      2. `user_id`：学号，用于标定详细页面
 
 2. `sql`：string类型，用于储存需要执行的 mysql 语句。
 

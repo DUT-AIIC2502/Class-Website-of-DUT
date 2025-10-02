@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user_name }}的详细信息</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+</head>
+<body>
+    <!-- 导航页面 -->
+    <div class="navbar">
+        <div class="nav-brand">详细信息</div>
+        <ul class="nav-links">
+            <li><a href="/home/">首页</a></li>
+        </ul>
+    </div>
+
+    <!-- 呈现详细信息的表单 -->
+    <div class="card">
+        <!-- 用户的详细信息 -->
+        <form method="post" action="/auth/detail_info/">
+            <!-- 分条输出该用户的详细信息 -->
+            <div class="form-group">
+                <label for="user_name">姓名：</label>
+                <input type="text" id="user_name" name="user_name" value="{{ user_name }}" {{if_readonly}}>
+            </div>
+            <div class="form-group">
+                <label for="user_id">学号：</label>
+                <input type="text" id="user_id" name="user_id" value="{{ user_id }}" {{if_readonly}}>
+            </div>
+            <div class="form-group">
+                <label for="telephone">手机号：</label>
+                <input type="text" id="telephone" name="telephone" value="{{ telephone }}" {{if_readonly}}>
+            </div>
+            <div class="form-group">
+                <label for="email">邮箱：</label>
+                <input type="text" id="email" name="email" value="{{ email }}" {{if_readonly}}>
+            </div>
+            <p>身份：{{ user_top_role }}</p>
+            <p>注册时间：{{ create_time.strftime('%Y年%m月%d日 %H:%M:%S') }}</p>
+            {% if status == 1 %}
+                <p>账户状态：已激活</p>
+            {% elif status == 0 %}
+                <p>账户状态：冻结</p>
+            {% endif %}
+
+            <!-- 按钮 -->
+            <div class="form-group">
+                {% if if_readonly == 'readonly' %}
+                    <label>现在输入框处于只读状态：</label>
+                    <button class="btn btn-primary" name="method" value="unlock">解锁</button>
+                {% else %}
+                    <label>现在输入框处于可编辑状态：</label>
+                    <button class="btn btn-primary" name="method" value="lock">锁定</button>
+                {% endif %}
+                <button class="btn btn-primary" name="method" value="update">更新</button>
+                <br>
+                <button class="btn btn-warning" name="method" value="logout">退出登录</button>
+                <br>
+                <button class="btn btn-danger" name="method" value="delete">注销账户</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

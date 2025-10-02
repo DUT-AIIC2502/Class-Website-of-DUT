@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智创2502班·班级主页</title>
+<!--    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_home.css') }}">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                <h1>智创<span>2502班</span></h1>
+            </div>
+            
+            <div class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+            
+            <nav>
+                <ul>
+                    <li><a href="#home">首页</a></li>
+                    <li><a href="#services">服务</a></li>
+                    <li><a href="#about">关于</a></li>
+                    <li><a href="#team">班委</a></li>
+                    <li><a href="#honors">班级荣誉</a></li>
+                    <li><a href="#contact">联系我们</a></li>
+                </ul>
+            </nav>
+
+            {% if user_id %}
+                <div>
+                    <a href="/auth/detail_info" class="user-info">
+                        <img src="{{ url_for('static', filename='images/icon_user.png') }}"
+                             alt="用户头像" width="50" height="50">
+                        <p class="user-name">{{ user_name }}</p>
+                        <p class="user-role">{{ user_top_role }}</p>
+                    </a>
+                </div>
+            {% else %}
+                <div class="nav-btns">
+                    <a href="/auth/login/" class="btn btn-outline">登录</a>
+                    <a href="/auth/register/" class="btn btn-primary">注册</a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- 首页英雄区域 -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h2>创新技术解决方案<br>助力企业数字化转型</h2>
+                <p>我们提供最前沿的IT解决方案和咨询服务，帮助企业提高效率、降低成本并实现可持续增长。凭借10年行业经验，我们已成为2000+企业的首选合作伙伴。</p>
+                <div class="hero-btns">
+                    <a href="#services" class="btn btn-primary">探索服务</a>
+                    <a href="#contact" class="btn btn-outline">联系我们</a>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+                <rect x="50" y="50" width="400" height="300" rx="20" fill="#1a73e8" opacity="0.1"/>
+                <circle cx="150" cy="180" r="80" fill="#1a73e8" opacity="0.1"/>
+                <circle cx="350" cy="180" r="60" fill="#0f9d58" opacity="0.1"/>
+                <path d="M100 300 L250 150 L400 300" stroke="#1a73e8" stroke-width="8" fill="none" opacity="0.3"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- 服务区域 -->
+    <section class="section" id="services">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">服务</h2>
+                <p class="section-subtitle">以生活情境为灵感，为同学们提供各项服务</p>
+            </div>
+            
+            <div class="services">
+                <div class="service-card">
+                    <div class="service-icon">
+<!--                        <i class="fas fa-cloud"></i>-->
+                        <img src="{{ url_for('static', filename='images/icon_info_management.png') }}" alt="图标"
+                             width="60" height="60">
+                    </div>
+                    <a href="/info_management/"><h3>班级成员信息管理</h3></a>
+                    <p>提供安全可靠的公有云、私有云及混合云解决方案，帮助企业实现灵活扩展和成本优化。</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3>网络安全</h3>
+                    <p>端到端网络安全解决方案，包括风险评估、渗透测试、安全监控和应急响应服务。</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>数据分析</h3>
+                    <p>利用大数据和AI技术，提供数据挖掘、商业智能和预测分析服务，助力数据驱动决策。</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>应用开发</h3>
+                    <p>定制化Web和移动应用开发，满足企业特定业务需求，提升用户体验和工作效率。</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>IT咨询</h3>
+                    <p>专业IT战略咨询，帮助企业规划技术路线图，优化IT架构，实现技术与业务目标对齐。</p>
+                </div>
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>技术支持</h3>
+                    <p>7x24小时专业技术支持服务，快速响应和解决各类IT问题，保障业务连续运行。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于我们 -->
+    <section class="section about" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-image">
+                    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="50" y="50" width="500" height="300" rx="20" fill="#1a73e8" opacity="0.1"/>
+                        <circle cx="200" cy="200" r="80" fill="#1a73e8" opacity="0.1"/>
+                        <circle cx="400" cy="200" r="60" fill="#0f9d58" opacity="0.1"/>
+                        <path d="M100 300 L300 100 L500 300" stroke="#1a73e8" stroke-width="8" fill="none" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="about-text">
+                    <h2>关于创维科技</h2>
+                    <p>创维科技成立于2010年，是一家专注于提供企业级IT解决方案的高科技公司。我们致力于通过技术创新帮助企业实现数字化转型，提升核心竞争力。</p>
+                    <p>公司拥有一支由资深IT专家、架构师和开发人员组成的专业团队，在云计算、大数据、人工智能等领域拥有深厚的技术积累和丰富的行业经验。</p>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">10+</div>
+                            <div>行业经验</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">2000+</div>
+                            <div>企业客户</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">150+</div>
+                            <div>专业团队</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 团队介绍 -->
+    <section class="section" id="team">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">核心团队</h2>
+                <p class="section-subtitle">汇聚行业顶尖人才，提供专业服务</p>
+            </div>
+            
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-img">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>张明远</h3>
+                        <p>首席执行官</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-img">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>李思琪</h3>
+                        <p>技术总监</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-img">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>王建辉</h3>
+                        <p>产品总监</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="team-card">
+                    <div class="team-img">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>陈晓薇</h3>
+                        <p>客户成功经理</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 客户评价 -->
+    <section class="section testimonials" id="honors">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">客户评价</h2>
+                <p class="section-subtitle">听听我们的客户怎么说</p>
+            </div>
+            
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>创维科技帮助我们实施了全面的云迁移方案，不仅节省了40%的IT成本，还大大提高了系统的稳定性和扩展性。团队专业高效，服务周到。</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>赵志强</h4>
+                            <p>华信集团CTO</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>与创维科技合作开发的定制化CRM系统完美契合了我们的业务需求。项目团队对行业有深刻理解，交付质量超出预期，售后服务也非常到位。</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>刘雨欣</h4>
+                            <p>明达科技销售总监</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>创维的安全团队帮助我们发现了多个关键系统漏洞，并提供了全面的安全加固方案。他们的专业能力让我们对信息安全充满信心。</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-img">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="author-info">
+                            <h4>陈志伟</h4>
+                            <p>安达金融信息安全主管</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系我们 -->
+    <section class="section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">联系我们</h2>
+                <p class="section-subtitle">我们随时准备为您提供帮助</p>
+            </div>
+            
+            <div class="contact-grid">
+                <div class="contact-info">
+                    <h3>获取更多信息</h3>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h4>公司地址</h4>
+                            <p>北京市海淀区中关村科技园88号创新大厦15层</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h4>联系电话</h4>
+                            <p>+86 10 8888 7777</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4>电子邮箱</h4>
+                            <p>contact@chuangwei.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <h4>工作时间</h4>
+                            <p>周一至周五: 9:00 - 18:00</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input type="text" id="name" class="form-control" placeholder="请输入您的姓名">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">电子邮箱</label>
+                            <input type="email" id="email" class="form-control" placeholder="请输入您的电子邮箱">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">联系电话</label>
+                            <input type="tel" id="phone" class="form-control" placeholder="请输入您的联系电话">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">留言内容</label>
+                            <textarea id="message" class="form-control" placeholder="请告诉我们您的需求"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">发送消息</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo">
+                        <i class="fas fa-rocket"></i>
+                        <h3>创维科技</h3>
+                    </div>
+                    <p style="margin-top: 20px; color: #bdc1c6;">致力于通过创新技术帮助企业实现数字化转型，提升核心竞争力。</p>
+                    <div class="social-links" style="margin-top: 20px; justify-content: flex-start;">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>服务项目</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">云计算服务</a></li>
+                        <li><a href="#">网络安全</a></li>
+                        <li><a href="#">数据分析</a></li>
+                        <li><a href="#">应用开发</a></li>
+                        <li><a href="#">IT咨询</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="#home">首页</a></li>
+                        <li><a href="#about">关于我们</a></li>
+                        <li><a href="#services">服务</a></li>
+                        <li><a href="#team">团队</a></li>
+                        <li><a href="#contact">联系我们</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>联系我们</h3>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园88号</p>
+                        <p><i class="fas fa-phone"></i> +86 10 8888 7777</p>
+                        <p><i class="fas fa-envelope"></i> contact@chuangwei.com</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 创维科技有限公司 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        const mobileToggle = document.querySelector('.mobile-toggle');
+        const nav = document.querySelector('nav');
+        
+        mobileToggle.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+        
+        // 滚动时导航栏样式变化
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                header.style.padding = '0';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            }
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                nav.classList.remove('active');
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

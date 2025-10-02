@@ -1,5 +1,5 @@
 from flask import Flask
-from dbconnection import db
+from ext import db, login_manager
 
 
 def create_app():
@@ -12,6 +12,8 @@ def create_app():
 
     # 初始化数据库实例
     db.init_app(app)
+    # 初始化LoginManager实例
+    login_manager.init_app(app)
 
     # 导入蓝图
     from app.blueprints.main.routes import main_bp
@@ -24,15 +26,3 @@ def create_app():
     app.register_blueprint(info_management_bp)
 
     return app
-
-
-# def create_db(app):
-#     db = SQLAlchemy(app)
-#
-#     # 将对象序列化为字符串
-#     db_str = pickle.dumps(db)
-#     # 储存在会话中
-#     session['db'] = db_str
-#
-#     return db
-

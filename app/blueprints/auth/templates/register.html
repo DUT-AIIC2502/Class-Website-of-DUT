@@ -2,24 +2,25 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>登录</title>
+    <title>注册</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_auth.css') }}">
 </head>
 <body>
     <div class="container">
-        <div class="heading">登录</div>
+        <div class="heading">注册新用户</div>
 
         <!-- 输入学号、密码 -->
-        <form method="post" action="/auth/login/" class="form">
-            <input class="input" type="text" name="student_id" id="student_id" placeholder="学号" required>
-            <input class="input" type="password" name="password" id="password" placeholder="密码" required>
-            <span class="forgot-password"><a href="#">忘记密码？</a></span>
-            <span class="forgot-password"><a href="/auth/register/">没有账户？点击以创建新账户。</a></span>
-            <input class="login-button" type="submit" value="登录">
+        <form method="post" action="/auth/register/" class="form">
+            <input required class="input" type="text" name="name" id="name" placeholder="真实姓名">
+            <input required class="input" type="number" name="student_id" id="student_id" placeholder="学号">
+<!--            <input required class="input" type="text" name="telephone" id="telephone" placeholder="手机">-->
+            <input required class="input" type="password" name="password" id="password" placeholder="密码">
+            <input class="login-button" type="submit" value="注册">
         </form>
     </div>
 </body>
 </html>
+
 
 <!--    <div class="social-account-container">-->
 <!--        <span class="title">Or Sign in with</span>-->

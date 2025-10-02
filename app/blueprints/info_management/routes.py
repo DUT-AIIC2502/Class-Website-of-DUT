@@ -1,13 +1,16 @@
 """学生信息管理页面的蓝图"""
-from flask import Blueprint, session, jsonify
-from flask import render_template, request, redirect, url_for
+from flask import Blueprint, session, jsonify, \
+    render_template, request, redirect, url_for, send_file
+from flask_login import login_required
 from sqlalchemy import text, types
 import pickle
-import pandas
+import pandas as pd
 import re
+import io
 from translate import Translator
 
-from dbconnection import db
+from ext import db
+from functions import get_session_value, load_session_value
 
 # 定义蓝图
 info_management_bp = Blueprint('info_management', __name__,
@@ -16,10 +19,12 @@ info_management_bp = Blueprint('info_management', __name__,
 
 
 @info_management_bp.route('/', methods=['GET', 'POST'])
+@login_required
 def info_management():
     """学生信息查询界面"""
     # 标记详细信息页面只读
     session["whether_readonly"] = 1
+    table_name = get_session_value("table_name")
 
     """获取目标表的表名和字段信息（字段、中文名）"""
     if 1 == 1:
@@ -36,6 +41,7 @@ def info_management():
             form_get = load_session_value(form_get_str, form_get_default)
             # 复选框选中的表单，默认为“姓名”、“学号”
             fields_str = get_session_value("info_management_select_fields_data")
+            # fields = ['name', 'student_id']
             fields = load_session_value(fields_str, ['name', 'student_id'])
             # 搜索结果，以表格形式呈现给用户
             table_str = get_session_value("info_management_select_table_data")
@@ -73,7 +79,6 @@ def info_management():
 
         """查询操作"""
         if form_get['method'] == 'select':
-            table_name = get_session_value("table_name")
             # 获取表单中选中的所有字段名
             fields = request.form.getlist('field_to_show')
 
@@ -158,8 +163,31 @@ def info_management():
         elif form_get['method'] == 'import':
             return redirect(url_for("info_management.import_file"))
 
+        elif form_get['method'] == 'export':
+            # 从数据库获取数据
+            query = f"SELECT * FROM {table_name}"
+            df = pd.read_sql(query, db.engine)
+
+            # 创建内存文件对象
+            output = io.BytesIO()
+
+            # 使用pandas将数据写入Excel
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, sheet_name=table_name, index=False)
+
+            output.seek(0)
+
+            # 返回文件下载
+            return send_file(
+                output,    # 文件路径或文件类对象
+                as_attachment=True,    # 是否作为附件下载（默认为False）
+                download_name=f'{table_name}.xlsx',    # 下载时建议的文件名
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+
 
 @info_management_bp.route('/insert_info/', methods=['GET', 'POST'])
+@login_required
 def insert_info():
     """添加单条信息页面"""
 
@@ -219,6 +247,7 @@ def insert_info():
 
 
 @info_management_bp.route('/insert_field/', methods=['GET', 'POST'])
+@login_required
 def insert_field():
     """从session获取信息"""
     if 1 == 1:
@@ -282,6 +311,7 @@ def insert_field():
 
 
 @info_management_bp.route('/delete_field/', methods=['GET', 'POST'])
+@login_required
 def delete_field():
     """从session获取信息"""
     if 1 == 1:
@@ -316,6 +346,7 @@ def delete_field():
 
 
 @info_management_bp.route('/detail_info/', methods=['GET', 'POST'])
+@login_required
 def detail_info():
     """单个学生的详细信息页面"""
 
@@ -337,7 +368,7 @@ def detail_info():
         """根据session['whether_readonly']的值来标记只读状态"""
         if 1 == 1:
             if_readonly = 'readonly'
-            print(session['whether_readonly'])
+            # print(session['whether_readonly'])
             if session['whether_readonly'] == 1:
                 # 默认只读
                 pass
@@ -398,6 +429,7 @@ def detail_info():
 
 
 @info_management_bp.route('/auth_delete/', methods=['get', 'post'])
+@login_required
 def auth_delete():
     """从session获取信息"""
     if 1 == 1:
@@ -448,6 +480,7 @@ def auth_delete():
 
 
 @info_management_bp.route('/import_file/', methods=['get', 'post'])
+@login_required
 def import_file():
     if request.method == "GET":
         return render_template("import_file.html")
@@ -474,25 +507,20 @@ def import_file():
         """读取excel文件，并与数据库的表的字段匹配"""
         if 1 == 1:
             # 使用pandas读取文件，df是二维表结构
-            df = pandas.read_excel(file, header=0)
+            df = pd.read_excel(file, header=0)
 
             """将表格的列名与数据库表的字段名匹配"""
             if 1 == 1:
                 # 读取表格第一行
-                first_row = pandas.read_excel(file, nrows=0)
-
-                # 用于提取中文的正则表达式
-                # pattern_ch = re.compile()
-                # # 用于提取英文的正则表达式
-                # pattern_en = re.compile()
+                first_row = pd.read_excel(file, nrows=0)
 
                 # 将中文名和英文名信息分离， 用fields储存表的字段信息（英文+中文）
                 fields = []
                 for column in first_row:
                     # 提取中文
                     field_ch = re.findall(r'[\u4e00-\u9fa5]+', column)[0]
-                    # 提取英文
-                    field_en = re.findall(r'[A-Za-z]+', column)[0]
+                    # 提取英文和下划线
+                    field_en = re.findall(r'[a-zA-Z_]+', column)[0]
                     fields.append([field_en, field_ch])
 
                     # 确保Excel中的字段名与数据库表字段名匹配
@@ -583,36 +611,13 @@ def mark_default(list_to_mark, mark_fields):
     return result
 
 
-def is_session_key_empty(key):
-    """检查session中特定键是否为空"""
-    if key not in session:
-        return True
+def export_table_to_excel(table_name, output_file=None):
+    """导出数据库表为 Excel 文件"""
+    if output_file is None:
+        output_file = f'{table_name}.xlsx'
 
-    value = session[key]
+    # 使用 Flask-SQLAlchemy 的引擎
+    df = pd.read_sql(f"SELECT * FROM {table_name}", con=db.engine)
+    df.to_excel(output_file, index=False)
 
-    # 检查各种空值情况
-    if value is None:
-        return True
-    elif isinstance(value, str) and value.strip() == '':
-        return True
-    elif isinstance(value, (list, dict)) and len(value) == 0:
-        return True
-    elif value == '' or value == 0 or value is False:
-        return True
-
-    return False
-
-
-def get_session_value(key, default=None):
-    """安全获取session值，如果为空返回默认值"""
-    if is_session_key_empty(key):
-        return default
-    return session[key]
-
-
-def load_session_value(value, default=None):
-    if value is None:
-        return default
-    else:
-        result = pickle.loads(value)
-        return result
+    return output_file
