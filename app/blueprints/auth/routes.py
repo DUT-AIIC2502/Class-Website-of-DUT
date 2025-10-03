@@ -1,11 +1,11 @@
 """注册界面蓝图"""
 from flask import Blueprint, request, redirect, render_template, url_for, session
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import pickle
 import re
 
-from models import User, Role, LoginLogs
+from models import User, Role, LoginLogs, CAPTCHA
 from ext import db
 from functions import get_session_value, load_session_value
 from decorators import permission_required, role_required
@@ -190,6 +190,9 @@ def detail_info():
                     return f"<script> alert('警告！你确定要注销账户吗？如果确定，请再次点击以注销。')" \
                            f";window.open('{ url_for('auth.detail_info') }');</script>"
                 elif session['auth_to_delete'] == 1:
+                    logout_user()
+                    session['user_info'] = None
+
                     db.session.delete(current_user)
                     db.session.commit()
                     return "<script> alert('注销成功！');window.open('/home/');</script>"
@@ -197,7 +200,82 @@ def detail_info():
             return redirect(url_for("auth.detail_info"))
 
 
+@auth_bp.route('/change_password/', methods=['GET', 'POST'])
+def change_password():
+    if request.method == 'GET':
+        form_get_str = get_session_value('form_get')
+        form_get = load_session_value(form_get_str, {})
+
+        return render_template('change_password.html', **form_get)
+    elif request.method == 'POST':
+        """获取表单提交的值，并保存至 session"""
+        if 1 == 1:
+            form_get = request.form.to_dict()
+
+            """检查两次输入的密码一致"""
+            if form_get['new_password'] != form_get['new_password_again']:
+                form_get['new_password_again'] = ''
+                return f"<script> alert('两次输入的密码不一致！')" \
+                       f";window.open('{ url_for('auth.change_password') }');</script>"
+
+            form_get_str = pickle.dumps(form_get)
+            session['form_get'] = form_get_str
+
+        if form_get['method'] == 'get_CAPTCHA':
+            """创建新的一条验证码"""
+            new_captcha = CAPTCHA(form_get['student_id'], 'change_password')
+            db.session.add(new_captcha)
+            db.session.commit()
+
+            """储存验证码对应的 id"""
+            session['captcha_id'] = new_captcha.id
+
+            return redirect(url_for('auth.change_password'))
+
+        elif form_get['method'] == 'confirm':
+            """检查验证码非空及正确"""
+            if 1 == 1:
+                if form_get['CAPTCHA'] in (None, ''):
+                    return f"<script> alert('请输入验证码！')" \
+                           f";window.open('{ url_for('auth.change_password') }');</script>"
+                else:
+                    captcha_id = get_session_value('captcha_id', 0)
+                    # 从数据库中检索验证码
+                    captcha = CAPTCHA.query.get_or_404(captcha_id)
+
+                    """验证验证码正确"""
+                    if form_get['CAPTCHA'] == captcha.value:
+                        """为密码加密"""
+                        if 1 == 1:
+                            new_password = form_get['new_password']
+                            new_password_hash = generate_password_hash(
+                                new_password,
+                                method="pbkdf2:sha256",
+                                salt_length=16
+                            )
+
+                        """将注册信息保存至数据库"""
+                        if 1 == 1:
+                            # 检索用户
+                            user = User.query.filter(User.student_id == form_get['student_id']).first()
+                            # 更新密码
+                            user.password_hash = new_password_hash
+                            db.session.commit()
+
+                        """清空 session 相关数据"""
+                        if 1 == 1:
+                            session['form_get'] = None
+                            session['captcha_id'] = None
+
+                        return redirect(url_for('auth.login'))
+
+                    else:
+                        return f"<script> alert('验证码错误，请重新输入！')" \
+                               f";window.open('{ url_for('auth.change_password') }');</script>"
+
+
 @auth_bp.route('/user_management/', methods=['GET', 'POST'])
+@role_required('Root')
 def user_management():
     if request.method == 'GET':
         all_users = User.query.all()

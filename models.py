@@ -7,6 +7,12 @@ from sqlalchemy.orm import relationship, backref, Mapped
 from typing import List
 # 日期类型
 from datetime import datetime
+# 生成随机数
+import random
+
+"""
+以下模型为auth系统设计
+"""
 
 
 # Flask-Login 需要一个回调函数来从用户 ID 加载用户对象
@@ -125,4 +131,26 @@ class LoginLogs(db.Model):
     def __init__(self, user_id, ip_address):
         self.user_id = user_id
         self.ip_address = ip_address
+
+
+class CAPTCHA(db.Model):
+    __tablename__ = 'CAPTCHA'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    user_id: int = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    user_name: str = Column(String(64))
+    operation: str = Column(String(32))
+    value: str = Column(String(32), nullable=False)
+    create_time: datetime = Column(DateTime, default=datetime.now)
+
+    def __init__(self, student_id, operation):
+        random_int = random.randint(100000, 999999)
+        # 查询user对象
+        user = User.query.filter(User.student_id == student_id).first()
+
+        # 生成数据
+        self.user_id = user.id
+        self.user_name = user.real_name
+        self.operation = operation
+        self.value = str(random_int)
+
 

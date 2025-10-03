@@ -2,18 +2,27 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_auth.css') }}">
 </head>
 <body>
     <div class="container">
+        <!-- 导航页面 -->
+        <div class="navbar">
+            <div class="nav-brand"></div>
+            <ul class="nav-links">
+                <li><a href="/home/">首页</a></li>
+            </ul>
+        </div>
+
         <div class="heading">注册新用户</div>
 
         <!-- 输入学号、密码 -->
         <form method="post" action="/auth/register/" class="form">
             <input required class="input" type="text" name="name" id="name" placeholder="真实姓名">
             <input required class="input" type="number" name="student_id" id="student_id" placeholder="学号">
-<!--            <input required class="input" type="text" name="telephone" id="telephone" placeholder="手机">-->
             <input required class="input" type="password" name="password" id="password" placeholder="密码">
             <input class="login-button" type="submit" value="注册">
         </form>

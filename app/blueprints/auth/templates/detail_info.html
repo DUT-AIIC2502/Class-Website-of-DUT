@@ -2,6 +2,7 @@
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user_name }}的详细信息</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
 </head>
@@ -53,6 +54,8 @@
                     <button class="btn btn-primary" name="method" value="lock">锁定</button>
                 {% endif %}
                 <button class="btn btn-primary" name="method" value="update">更新</button>
+                <br>
+                <button class="btn btn-warning" name="method" value="change_password">修改密码</button>
                 <br>
                 <button class="btn btn-warning" name="method" value="logout">退出登录</button>
                 <br>

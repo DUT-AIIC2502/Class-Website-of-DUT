@@ -35,6 +35,9 @@
          4. `user_top_role`：用户的最顶级身份，用于展示
          5. `user_roles`：一维list，用户的所有身份
       2. `user_id`：学号，用于标定详细页面
+      3. `form_get`：dict，保存表单数据，用于渲染页面
+      4. `captcha_id`：int，用于匹配验证码
+>>>>>>> 8c593f4 (1. 修复了新建表格时重复插入的bug。)
 
 2. `sql`：string类型，用于储存需要执行的 mysql 语句。
 

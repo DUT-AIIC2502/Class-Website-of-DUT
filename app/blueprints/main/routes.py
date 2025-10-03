@@ -1,4 +1,5 @@
 from flask import Blueprint, redirect, render_template, session, request
+from sqlalchemy import inspect
 
 import models
 from ext import db
@@ -36,8 +37,9 @@ def home():
 def create_tables():
     db.create_all()
 
+    inspector = inspect(db.engine)
     """插入初始角色"""
-    if 1 == 1:
+    if not inspector.has_table(Role.__tablename__):
         role_list = [
             {'name': 'Root', 'description': '超级管理员'},
             {'name': 'Admin', 'description': '管理员'},
@@ -49,7 +51,7 @@ def create_tables():
         db.session.commit()
 
     """插入权限"""
-    if 1 == 1:
+    if not inspector.has_table(Permission.__tablename__):
         permission_list = [
             {'name': '创建新用户', 'code': 'user_create', 'classification': 'management'},
             {'name': '编辑用户信息', 'code': 'user_edit', 'classification': 'management'},
@@ -76,4 +78,3 @@ def create_tables():
 def drop_tables():
     db.drop_all()
     return "数据库表删除成功！"
-
