@@ -82,7 +82,7 @@ class User(UserMixin, db.Model):
     telephone: str = Column(String(32))
     email: str = Column(String(64))
     create_time: datetime = Column(DateTime, default=datetime.now)
-    status: bool = Column(Boolean, default=1, comment="0:禁用, 1:启用")
+    status: bool = Column(Boolean, default=0, comment="0:禁用, 1:启用")
 
     roles: Mapped[List[Role]] = relationship('Role', secondary=users_roles,
                                              backref=backref('users', lazy='dynamic'))
@@ -142,10 +142,10 @@ class CAPTCHA(db.Model):
     value: str = Column(String(32), nullable=False)
     create_time: datetime = Column(DateTime, default=datetime.now)
 
-    def __init__(self, student_id, operation):
+    def __init__(self, user, operation):
         random_int = random.randint(100000, 999999)
         # 查询user对象
-        user = User.query.filter(User.student_id == student_id).first()
+        # user = User.query.filter(User.student_id == student_id).first()
 
         # 生成数据
         self.user_id = user.id

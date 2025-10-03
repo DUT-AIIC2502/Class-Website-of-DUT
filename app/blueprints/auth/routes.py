@@ -35,7 +35,12 @@ def login():
             if retrieved_user:
                 password_hash = retrieved_user.password_hash
             else:
-                return f"<script> alert('不存在该用户！');window.open('{ url_for('auth.login') }');</script>"
+                return f"<script> alert('不存在该用户！');" \
+                       f"window.open('{ url_for('auth.login') }');</script>"
+
+        """验证用户是否激活"""
+        if retrieved_user.status == 0:
+            return "<script> alert('该用户还未激活！');window.open('/home/‘);</script>"
 
         """验证密码是否正确，更新登录状态"""
         if 1 == 1:
@@ -80,46 +85,103 @@ def login():
             db.session.add(new_login_logs)
             db.session.commit()
 
+        """清空 session 相关数据"""
+        if 1 == 1:
+            session['form_get'] = None
+            session['captcha_id'] = None
+
         return redirect("/home/")
 
 
 @auth_bp.route('/register/', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        return render_template('register.html')
+        form_get_str = get_session_value('form_get')
+        form_get = load_session_value(form_get_str, {})
+
+        return render_template('register.html', **form_get)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
 
-        """为密码加密"""
+        """获取表单提交的值，并保存至 session"""
         if 1 == 1:
-            password = form_get['password']
-            password_hash = generate_password_hash(
-                password,
-                method="pbkdf2:sha256",
-                salt_length=16
-            )
+            form_get = request.form.to_dict()
+            form_get_str = pickle.dumps(form_get)
+            session['form_get'] = form_get_str
 
-        """将注册信息保存至数据库"""
-        if 1 == 1:
-            # 记录用户的基本信息
-            new_user = User(
-                student_id=int(form_get['student_id']),
-                real_name=form_get['name'],
-                password_hash=password_hash
-            )
+        if form_get['method'] == 'get_CAPTCHA':
+            """创建一个未激活的用户"""
+            if 1 == 1:
+                """为密码加密"""
+                if 1 == 1:
+                    password = form_get['password']
+                    password_hash = generate_password_hash(
+                        password,
+                        method="pbkdf2:sha256",
+                        salt_length=16
+                    )
 
-            # 将用户与User身份关联
-            role_user = Role.query.filter(Role.name == 'User').first()
-            new_user.add_role(role_user)
+                """将注册信息保存至数据库（此时用户未激活）"""
+                if 1 == 1:
+                    # 记录用户的基本信息
+                    new_user = User(
+                        student_id=int(form_get['student_id']),
+                        real_name=form_get['name'],
+                        password_hash=password_hash
+                    )
 
-            role_guest = Role.query.filter(Role.name == 'Guest').first()
-            new_user.add_role(role_guest)
+                    # 将用户与User身份关联
+                    role_user = Role.query.filter(Role.name == 'User').first()
+                    new_user.add_role(role_user)
 
-            db.session.add(new_user)
-            db.session.commit()
+                    role_guest = Role.query.filter(Role.name == 'Guest').first()
+                    new_user.add_role(role_guest)
 
-        return f"<script> alert('注册成功！请进行登录。');window.open('{ url_for('auth.login') }');</script>"
+                    db.session.add(new_user)
+                    db.session.commit()
+
+            """创建新的一条验证码"""
+            if 1 == 1:
+                new_captcha = CAPTCHA(new_user, 'register')
+                db.session.add(new_captcha)
+                db.session.commit()
+
+                """储存验证码对应的 id"""
+                session['captcha_id'] = new_captcha.id
+
+            return f"<script> alert('已创建验证码！请联系管理员获取')" \
+                   f";window.open('{url_for('auth.change_password')}');</script>"
+
+        elif form_get['method'] == 'register':
+            """检查验证码非空及正确"""
+            if 1 == 1:
+                if form_get['CAPTCHA'] in (None, ''):
+                    return f"<script> alert('请输入验证码！')" \
+                           f";window.open('{url_for('auth.change_password')}');</script>"
+                else:
+                    captcha_id = get_session_value('captcha_id', 0)
+                    # 从数据库中检索验证码
+                    captcha = CAPTCHA.query.get_or_404(captcha_id)
+
+                    """验证验证码正确"""
+                    if form_get['CAPTCHA'] == captcha.value:
+                        # 激活账户
+                        user = User.query.filter(User.student_id == get_session_value('student_id'))
+                        user.status = 1
+                        db.session.commit()
+
+                        """清空 session 相关数据"""
+                        if 1 == 1:
+                            session['form_get'] = None
+                            session['captcha_id'] = None
+
+                        return f"<script> alert('注册成功！请进行登录。');" \
+                               f"window.open('{ url_for('auth.login') }');</script>"
+
+                    else:
+                        return f"<script> alert('验证码错误，请重新输入！')" \
+                               f";window.open('{url_for('auth.change_password')}');</script>"
 
 
 # @permission_required('user_view_detail', 'role_delete')
@@ -143,7 +205,7 @@ def detail_info():
             elif session['whether_readonly'] == 0:
                 if_readonly = ''
 
-        return render_template("detail_info.html", **user_info, if_readonly=if_readonly)
+        return render_template("user_detail_info.html.html", **user_info, if_readonly=if_readonly)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
@@ -213,7 +275,7 @@ def change_password():
         form_get_str = get_session_value('form_get')
         form_get = load_session_value(form_get_str, {})
 
-        if session['whether_hidden'] == 1:
+        if get_session_value('') == 1:
             form_get['student_id'] = current_user.student_id
 
         return render_template('change_password.html', **form_get, whether_hidden=session['whether_hidden'])
@@ -234,7 +296,10 @@ def change_password():
 
         if form_get['method'] == 'get_CAPTCHA':
             """创建新的一条验证码"""
-            new_captcha = CAPTCHA(form_get['student_id'], 'change_password')
+            # 获取对应的用户
+            user = User.query.filter(User.student_id == form_get['student_id']).first()
+
+            new_captcha = CAPTCHA(user, 'change_password')
             db.session.add(new_captcha)
             db.session.commit()
 

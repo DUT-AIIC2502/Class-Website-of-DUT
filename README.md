@@ -37,7 +37,7 @@
       2. `user_id`：学号，用于标定详细页面
       3. `form_get`：dict，保存表单数据，用于渲染页面
       4. `captcha_id`：int，用于匹配验证码
->>>>>>> 8c593f4 (1. 修复了新建表格时重复插入的bug。)
+      5. `whether_hidden`：int，用于判断是否需要隐藏“学号”输入框
 
 2. `sql`：string类型，用于储存需要执行的 mysql 语句。
 
@@ -119,7 +119,3 @@
 ### 关于 auth_delete 的数据
 
 1. `result_student`：二维list，每一项包括：（姓名，学号）
-
-# 疑惑
-
-1. 使用form+button无法成功跳转页面
