@@ -205,7 +205,7 @@ def detail_info():
             elif session['whether_readonly'] == 0:
                 if_readonly = ''
 
-        return render_template("user_detail_info.html.html", **user_info, if_readonly=if_readonly)
+        return render_template("user_detail_info.html", **user_info, if_readonly=if_readonly)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
