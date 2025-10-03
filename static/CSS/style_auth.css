@@ -25,7 +25,7 @@
   box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 30px 30px -20px;
   margin: auto;
   position: absolute;
-  top: 0;
+  top: 100px;
   left: 0;
   right: 0;
 }

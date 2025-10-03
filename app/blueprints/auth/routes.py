@@ -17,6 +17,9 @@ auth_bp = Blueprint('auth', __name__,
 
 @auth_bp.route('/login/', methods=['GET', 'POST'])
 def login():
+    # 初始化 session 中的值
+    session['whether_hidden'] = 0
+
     if request.method == 'GET':
         return render_template('login.html')
 
@@ -152,6 +155,10 @@ def detail_info():
 
             return redirect("/home/")
 
+        elif form_get['method'] == 'change_password':
+            session['whether_hidden'] = 1
+            return redirect(url_for('auth.change_password'))
+
         else:
             """通过“锁定”/“解锁”按钮，切换只读状态"""
             if form_get['method'] == 'unlock':
@@ -206,7 +213,11 @@ def change_password():
         form_get_str = get_session_value('form_get')
         form_get = load_session_value(form_get_str, {})
 
-        return render_template('change_password.html', **form_get)
+        if session['whether_hidden'] == 1:
+            form_get['student_id'] = current_user.student_id
+
+        return render_template('change_password.html', **form_get, whether_hidden=session['whether_hidden'])
+
     elif request.method == 'POST':
         """获取表单提交的值，并保存至 session"""
         if 1 == 1:
@@ -230,7 +241,8 @@ def change_password():
             """储存验证码对应的 id"""
             session['captcha_id'] = new_captcha.id
 
-            return redirect(url_for('auth.change_password'))
+            return f"<script> alert('已创建验证码！请联系管理员获取')" \
+                   f";window.open('{ url_for('auth.change_password') }');</script>"
 
         elif form_get['method'] == 'confirm':
             """检查验证码非空及正确"""
@@ -267,7 +279,8 @@ def change_password():
                             session['form_get'] = None
                             session['captcha_id'] = None
 
-                        return redirect(url_for('auth.login'))
+                        return f"<script> alert('密码修改成功，请重新登录！')" \
+                               f";window.open('{ url_for('auth.login') }');</script>"
 
                     else:
                         return f"<script> alert('验证码错误，请重新输入！')" \
