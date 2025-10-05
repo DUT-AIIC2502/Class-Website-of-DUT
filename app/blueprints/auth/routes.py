@@ -7,7 +7,7 @@ import re
 
 from models import User, Role, LoginLogs, CAPTCHA
 from ext import db
-from functions import get_session_value, load_session_value
+from functions import get_session_value, load_session_value, get_user_info
 from decorators import permission_required, role_required
 
 auth_bp = Blueprint('auth', __name__,
@@ -53,29 +53,6 @@ def login():
             # 登录用户，'remember=True' 实现“记住我”功能, 这会将会话信息写入浏览器
             login_user(retrieved_user, remember=True)
 
-        """登录成功后，将用户信息集成为字典，并上传至session"""
-        if 1 == 1:
-            # user所对应的角色，是一个一维list
-            user_roles = [role.name for role in retrieved_user.roles]
-
-            """确定用户的最高级身份，用于展示"""
-            user_top_role = get_top_role(user_roles)
-
-            user_info = {
-                'id': retrieved_user.id,
-                'user_id': user_id,  # 这里的 user_id 实际上为学号
-                'user_name': retrieved_user.real_name,
-                'telephone': retrieved_user.telephone,
-                'email': retrieved_user.email,
-                'create_time': retrieved_user.create_time,
-                'status': retrieved_user.status,
-                'user_top_role': user_top_role,
-                'user_roles': user_roles
-            }
-
-            user_info_str = pickle.dumps(user_info)
-            session['user_info'] = user_info_str
-
         """更新登录日志"""
         if 1 == 1:
             new_login_logs = LoginLogs(
@@ -102,7 +79,6 @@ def register():
         return render_template('register.html', **form_get)
 
     elif request.method == 'POST':
-        form_get = request.form.to_dict()
 
         """获取表单提交的值，并保存至 session"""
         if 1 == 1:
@@ -190,10 +166,8 @@ def register():
 def detail_info():
     """展示用户的详细信息，并提供修改和退出登录功能"""
 
-    """获取session中的用户信息"""
-    if 1 == 1:
-        user_info_str = get_session_value('user_info')
-        user_info = load_session_value(user_info_str, {})
+    """获取用户信息"""
+    user_info = get_user_info()
 
     if request.method == 'GET':
         """根据session['whether_readonly']的值来标记只读状态"""

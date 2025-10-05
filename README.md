@@ -18,11 +18,11 @@
       1. `table_name`：储存表名
       2. `table_field`：储存该表的字段信息(字段、中文名)
          对应`table_field`
-      3. `info_management_select_form_data`：储存“info_management”执行搜索操作时，提交的表单值
+      3. `form_get`：储存“info_management”执行搜索操作时，提交的表单值
          对应`form_get`
-      4. `info_management_select_fields_data`：复选框选中的字段
+      4. `fields_to_select`：复选框选中的字段
          对应`fields`
-      5. `info_management_select_table_data`：搜索结果表
+      5. `table`：搜索结果表
          对应`table`
       6. `whether_readonly`：int，标记是否只读。0：可编辑。1：只读。
       7. `student_ids`：学号列表，其中学号以str类型储存
@@ -82,7 +82,7 @@
 | row.2（标记：复选框是否需要默认选择） |          |          |     |          |
 | rwo.3（标记：下拉框是否需要默认选择） |          |          |     |       
 
-2. `field_select`：对应`fields`，一维list，包含选中的字段
+2. `field_selected`：对应`fields`，一维list，包含选中的字段
 
 3. `table`：对应`result_table`
 

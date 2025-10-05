@@ -9,8 +9,8 @@ import re
 import io
 from translate import Translator
 
-from ext import db
-from functions import get_session_value, load_session_value
+from ext import db, base
+from functions import get_session_value, load_session_value, dynamic_query_builder
 from decorators import role_required
 
 # 定义蓝图
@@ -23,29 +23,27 @@ info_management_bp = Blueprint('info_management', __name__,
 @role_required('Admin', 'Root')
 def info_management():
     """学生信息查询界面"""
-    # 标记详细信息页面只读
-    session["whether_readonly"] = 1
-    table_name = get_session_value("table_name")
-
-    """获取目标表的表名和字段信息（字段、中文名）"""
+    """初始化一些数据"""
     if 1 == 1:
-        table_field = update_table_field()
+        # 获取表名
+        table_name = get_session_value('table_name')
+        # 获取目标表的表名和字段信息（字段、中文名），用于渲染复选框
+        table_field = update_table_field()[2:]
+        # 标记详细信息页面只读
+        session["whether_readonly"] = 1
 
     if request.method == 'GET':
-        """加载页面"""
-
         """获取session中的值"""
         if 1 == 1:
             # 表单提交的值，主要为input的值
-            form_get_default = {'filed_to_select': '', 'filed_to_select_value': ''}
-            form_get_str = get_session_value("info_management_select_form_data")
-            form_get = load_session_value(form_get_str, form_get_default)
+            # form_get_default = {'filter_field': '', 'filter_field_value': ''}
+            form_get_str = get_session_value("form_get")
+            form_get = load_session_value(form_get_str, {'filter_field': 'name'})
             # 复选框选中的表单，默认为“姓名”、“学号”
-            fields_str = get_session_value("info_management_select_fields_data")
-            # fields = ['name', 'student_id']
+            fields_str = get_session_value("fields_to_select")
             fields = load_session_value(fields_str, ['name', 'student_id'])
             # 搜索结果，以表格形式呈现给用户
-            table_str = get_session_value("info_management_select_table_data")
+            table_str = get_session_value("table")
             table = load_session_value(table_str)
 
         """标记复选框、下拉框默认值"""
@@ -56,7 +54,7 @@ def info_management():
             table_field = mark_default(table_field, mark_list)
 
             # 下拉默认或恢复选中的字段
-            mark_list = [[form_get['filed_to_select'], ], 'select']
+            mark_list = [[form_get['filter_field'], ], 'select']
             # 标记默认下拉框
             table_field = mark_default(table_field, mark_list)
 
@@ -69,70 +67,59 @@ def info_management():
                         break
 
         return render_template('info_management.html',
+                               **form_get,
                                fields=table_field,
                                table=table,
-                               field_select=fields,
-                               filed_to_select_value=form_get['filed_to_select_value'])
+                               field_selected=fields)
 
     elif request.method == 'POST':
         # 获取表单数据
         form_get = request.form.to_dict()
 
-        """查询操作"""
-        if form_get['method'] == 'select':
-            # 获取表单中选中的所有字段名
-            fields = request.form.getlist('field_to_show')
+        # 获取表对应的 ORM 类
+        if table_name in db.metadata.tables.keys():
+            table_student_info = getattr(base.classes, table_name)
+        else:
+            return '要查找的表不存在！'
 
+        if form_get['method'] == 'select':  # 查询操作
             """执行查询操作"""
             if 1 == 1:
-                # 处理得到本次选中的字段，得到mysql字符串
-                field_str = ''
-                for f in fields:
-                    # 将表单中选择的字段转化为符合mysql语法的字符串
-                    field_str += f + ","
-                field_str = field_str[:-1]
+                # 获取表单中选中的所有字段名
+                fields_to_select = request.form.getlist('field_to_show')
 
-                # 判断是否要进行条件查询，并输入参数化占位符
-                sql_where = ''
-                field_to_select = form_get['filed_to_select']
-                if form_get['name'] != '' or form_get['student_id'] != '' \
-                        or form_get['filed_to_select_value'] != '':
-                    sql_where = ' where '
-                    if form_get['name'] != '':
-                        sql_where += f"name = :name "
-                    elif form_get['student_id'] != '':
-                        sql_where += f"student_id = :student_id' "
-                    elif form_get['filed_to_select_value'] != '':
-                        sql_where += f"{field_to_select} = :{field_to_select} "
+                # 查询条件字典
+                filters = {}
+                if form_get['name'] != '':
+                    filters['name'] = {'op': 'like', 'value': form_get['name']}
+                if form_get['student_id'] != '':
+                    filters['student_id'] = {'op': 'like', 'value': form_get['student_id']}
+                if form_get['filter_field_value'] != '':
+                    filters[form_get['filter_field']] = \
+                        {'op': 'like', 'value': form_get['filter_field_value']}
 
-                # 拼接字符串，进行查询操作
-                sql = f"select {field_str} from {table_name}" + sql_where
-                result_proxy = db.session.execute(text(sql), {'name': form_get['name'],
-                                                              'student_id': form_get['student_id'],
-                                                              field_to_select: form_get['filed_to_select_value']})
-                result_table = [list(row) for row in result_proxy.fetchall()]
+                # 执行查询操作
+                result_table = dynamic_query_builder(table_student_info, fields_to_select, filters)
 
             """将本次表单提交的数据保存至session"""
             if 1 == 1:
                 # form_get
                 form_get_str = pickle.dumps(form_get)
-                session["info_management_select_form_data"] = form_get_str
-                # fields
-                fields_str = pickle.dumps(fields)
-                session["info_management_select_fields_data"] = fields_str
+                session["form_get"] = form_get_str
+                # fields_to_select
+                fields_to_select_str = pickle.dumps(fields_to_select)
+                session["fields_to_select"] = fields_to_select_str
                 # table
                 table_str = pickle.dumps(result_table)
-                session["info_management_select_table_data"] = table_str
+                session["table"] = table_str
 
             # 重定向至GET
-            return redirect("/info_management/", 302, Response=None)
+            return redirect("/info_management/")
 
-        elif 'detail' in form_get['method']:
-            """进入详情页面"""
-
+        elif 'detail' in form_get['method']:  # 进入详情页面
             """更新session中的学号信息"""
             if 1 == 1:
-                student_id_one = form_get['method'][7:]
+                student_id_one = re.findall(r'\d+', form_get['method'])
                 student_ids = [student_id_one]
                 # 上传至session
                 student_ids_str = pickle.dumps(student_ids)

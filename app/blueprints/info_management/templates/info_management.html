@@ -44,13 +44,13 @@
                 <div class="form-group">
                     <!-- 选择需要特异性查询的字段，并输入需要查询的值 -->
                     <h4>条件查询</h4>
-                    <select id="filed_to_select" name="filed_to_select">
+                    <select id="filter_field" name="filter_field">
                         {% for row in fields %}
                             <option value={{row.0}} {{row.3}}>{{row.1}}</option>
                         {% endfor %}
                     </select>
-                    <input type="text" id="filed_to_select_value"
-                           name="filed_to_select_value" value="{{ filed_to_select_value }}"
+                    <input type="text" id="filter_field_value"
+                           name="filter_field_value" value="{{ filter_field_value }}"
                            placeholder="请输入想查询的值">
                 </div>
 
@@ -103,7 +103,7 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                {% for f in field_select %}
+                                {% for f in field_selected %}
                                     <th>{{f}}</th>
                                 {% endfor %}
                                 <th></th>

@@ -2,13 +2,47 @@
 from flask_login import UserMixin
 from ext import db, login_manager
 # 直接从 sqlalchemy 导入，而不是通过 db 对象调用
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect
 from sqlalchemy.orm import relationship, backref, Mapped
 from typing import List
 # 日期类型
 from datetime import datetime
 # 生成随机数
 import random
+
+"""
+反射表
+"""
+# 一个标志，用于确保反射只执行一次
+_is_reflected = False
+
+
+def reflect_db():
+    """执行数据库反射，此函数应在应用启动时调用一次。"""
+    global _is_reflected
+    if not _is_reflected:
+        print("Reflecting database tables...")
+        db.reflect()
+        _is_reflected = True
+        print(f"Reflected tables: {list(db.metadata.tables.keys())}")
+
+
+def refresh_db():
+    """手动刷新数据库结构。"""
+    global _is_reflected
+    print("Refreshing database schema...")
+
+    # 清除 SQLAlchemy 的检查器缓存
+    inspector = inspect(db.engine)
+    inspector.clear_cache()
+
+    # 清除元数据并重新反射
+    db.metadata.clear()
+    db.reflect()
+
+    _is_reflected = True  # 保持为 True，因为它已经被刷新了
+    print(f"Refreshed tables: {list(db.metadata.tables.keys())}")
+
 
 """
 以下模型为auth系统设计

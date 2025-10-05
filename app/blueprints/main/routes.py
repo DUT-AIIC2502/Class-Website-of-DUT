@@ -3,7 +3,7 @@ from sqlalchemy import inspect
 
 import models
 from ext import db
-from functions import get_session_value, load_session_value
+from functions import get_user_info
 from models import Role, Permission
 
 main_bp = Blueprint('main', __name__,
@@ -12,23 +12,28 @@ main_bp = Blueprint('main', __name__,
 
 @main_bp.route('/')
 def main():
-    session["table_name"] = "student_info_AIIC2502"
-
     return redirect('/home/', code=302, Response=None)
 
 
 @main_bp.route('/home/')
 def home():
-    """获取用户信息"""
     if 1 == 1:
-        user_info_str = get_session_value('user_info')
-        user_info = load_session_value(user_info_str, {})
+        """获取用户信息"""
+        user_info = get_user_info()
 
-    """标记用户详细信息页面只读"""
-    session["whether_readonly"] = 1
+    """初始化某些数据"""
+    if 1 == 1:
+        # 表名
+        session["table_name"] = "student_info"
+        # 标记用户详细信息页面只读
+        session["whether_readonly"] = 1
+        # 标记注销归零
+        session['auth_to_delete'] = 0
 
-    """标记注销归零"""
-    session['auth_to_delete'] = 0
+    # 清除某些记录
+    if 1 == 1:
+        session['info_management_select_form_data'] = None
+        session['form_get'] = None
 
     return render_template('home.html', **user_info)
 
