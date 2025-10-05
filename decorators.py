@@ -37,32 +37,30 @@ def permission_required(*required_permissions, any_of=False):
     return decorator
 
 
-def role_required(role):
+def role_required(*required_roles):
     """
     一个自定义装饰器，用于检查用户是否具有特定角色。
     """
-
     def decorator(f):
+        @login_required
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            # 首先检查用户是否登录
             if not current_user.is_authenticated:
-                # 如果未登录，Flask-Login 会自动处理重定向到登录页
-                # 但在这里，我们可以直接 abort 或让 login_required 装饰器来处理
-                # 最佳实践是在权限装饰器外层再套一层 @login_required
-                from flask_login import login_required
-                return login_required(f)(*args, **kwargs)
+                abort(401)  # Unauthorized
 
-            user_roles = [r.name for r in current_user.roles]
+            user_roles = [role.name for role in current_user.roles]
 
+            has_permission = 0
             # 检查用户角色是否满足要求
-            if role not in user_roles:
+            for role in required_roles:
+                if role in user_roles:
+                    has_permission = 1
+
+            if has_permission == 0:
                 # 如果权限不足，返回 403 Forbidden 错误
                 abort(403)
 
-            # 如果通过检查，执行原始的视图函数
             return f(*args, **kwargs)
 
         return decorated_function
-
     return decorator

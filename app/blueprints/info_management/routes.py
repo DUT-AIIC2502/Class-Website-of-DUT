@@ -11,6 +11,7 @@ from translate import Translator
 
 from ext import db
 from functions import get_session_value, load_session_value
+from decorators import role_required
 
 # 定义蓝图
 info_management_bp = Blueprint('info_management', __name__,
@@ -19,7 +20,7 @@ info_management_bp = Blueprint('info_management', __name__,
 
 
 @info_management_bp.route('/', methods=['GET', 'POST'])
-@login_required
+@role_required('Admin', 'Root')
 def info_management():
     """学生信息查询界面"""
     # 标记详细信息页面只读
