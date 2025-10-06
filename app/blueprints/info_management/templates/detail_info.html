@@ -2,7 +2,7 @@
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    {% if student_id %}
+    {% if id %}
         <title>{{fields_values.0.2}}的详细信息</title>
     {% else %}
         <title>新增信息</title>
@@ -12,7 +12,7 @@
 <body>
     <!-- 返回上一个页面 -->
     <div class="instructions">
-        {% if student_id %}
+        {% if id %}
             <h3><b>{{fields_values.0.2}}</b>的详细信息</h3>
             <p>在此页面，你可以：</p>
             <p>1. 浏览该学生的详细信息</p>
@@ -29,7 +29,7 @@
 
     <!-- 呈现详细信息的表单 -->
     <div class="card">
-        {% if student_id %}
+        {% if id %}
             <!-- 学生的详细信息页面 -->
             <form method="post" action="/info_management/detail_info/">
                 {% for field in fields_values %}
@@ -76,7 +76,7 @@
             </form>
         {% endif %}
 
-        {% if student_id %}
+        {% if id %}
             <form method="get" action="/info_management/auth_delete">
                 <div class="form-group">
                     <button class="btn btn-danger" name="method" value="delete">删除该学生的所有信息</button>

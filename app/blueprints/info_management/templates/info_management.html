@@ -103,8 +103,9 @@
                         <thead>
                             <tr>
                                 <th></th>
+                                <th>id</th>
                                 {% for f in field_selected %}
-                                    <th>{{f}}</th>
+                                    <th>{{ f }}</th>
                                 {% endfor %}
                                 <th></th>
                             </tr>
@@ -119,11 +120,11 @@
                                         </label>
                                     </td>
                                     {% for value in row_value %}
-                                        <td>{{value}}</td>
+                                        <td>{{ value }}</td>
                                     {% endfor %}
                                     <td>
                                         <button class="btn btn-primary" name="method"
-                                                value="detail-{{row_value.1}}">详情</button>
+                                                value="detail_{{row_value.0}}">详情</button>
                                     </td>
                                 </tr>
                             {% endfor %}

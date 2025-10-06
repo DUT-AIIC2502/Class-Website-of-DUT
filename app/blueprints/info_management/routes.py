@@ -104,8 +104,10 @@ def info_management():
         if form_get['method'] == 'select':  # 查询操作
             """执行查询操作"""
             if 1 == 1:
-                # 获取表单中选中的所有字段名
-                fields_to_select = request.form.getlist('field_to_show')
+                # 获取id和表单中选中的所有字段名
+                fields_to_select = ['id', ]
+                for element in request.form.getlist('field_to_show'):
+                    fields_to_select.append(element)
 
                 # 查询条件字典
                 filters = {}
@@ -185,11 +187,11 @@ def info_management():
         elif 'detail' in form_get['method']:  # 进入详情页面
             """更新session中的学号信息"""
             if 1 == 1:
-                student_id_one = re.findall(r'\d+', form_get['method'])[0]
-                student_ids = [student_id_one]
+                id_one = int(re.findall(r'\d+', form_get['method'])[0])
+                ids = [id_one]
                 # 上传至session
-                student_ids_str = pickle.dumps(student_ids)
-                session["student_ids"] = student_ids_str
+                ids_str = pickle.dumps(ids)
+                session["ids"] = ids_str
 
             return redirect(url_for("info_management.detail_info"))
 
@@ -208,8 +210,8 @@ def info_management():
             """更新session中的学号信息"""
             if 1 == 1:
                 # 将表单中复选框的选中信息形成列表，并上传至session
-                student_ids = request.form.getlist('info_to_delete')
-                student_ids_str = pickle.dumps(student_ids)
+                ids = request.form.getlist('info_to_delete')
+                student_ids_str = pickle.dumps(ids)
                 session["student_ids"] = student_ids_str
 
             return redirect(url_for("info_management.auth_delete"))
@@ -254,13 +256,13 @@ def insert_info():
         table_field = load_session_value(talbe_field_str)[2:]
 
     if request.method == "GET":
-        # 设置学号为空
-        student_id = None
-        session['student_id'] = None
+        # 设置学生编号为空
+        id_one = None
+        session['ids'] = None
 
         return render_template('detail_info.html',
                                fields_values=table_field,
-                               student_id=student_id)
+                               id=id_one)
 
     elif request.method == "POST":
         # 获取表单数据
@@ -408,9 +410,14 @@ def detail_info():
         talbe_field_str = get_session_value("table_field")
         table_field = load_session_value(talbe_field_str)[2:]
         # 单个学号
-        student_ids_str = get_session_value("student_ids")
-        student_ids = load_session_value(student_ids_str)
-        student_id = student_ids[0]
+        ids_str = get_session_value("ids")
+        ids = load_session_value(ids_str)
+        id_one = ids[0]
+
+    # 获取表
+    StudentInfo: db.Model = base.classes[table_name]
+    # 查询该学生的详细信息
+    retrieved_student = db.session.query(StudentInfo).filter(StudentInfo.id == id_one).first()
 
     if request.method == 'GET':
         """进入页面"""
@@ -424,21 +431,15 @@ def detail_info():
 
         """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
         if 1 == 1:
-            # 查询该学生的详细信息
-            sql = f"select * from {table_name} where student_id = '{student_id}'"
-            result_proxy = db.session.execute(text(sql))
-            result_student = [list(row) for row in result_proxy.fetchall()][0]
-
             # 用来渲染前端的数组，默认只读
             fields_values = []
-            for index in range(len(table_field)):
-                row = [table_field[index][0], table_field[index][1],
-                       result_student[index+2]]
+            for field in table_field:
+                row = [field[0], field[1], getattr(retrieved_student, field[0])]
                 fields_values.append(row)
 
         return render_template('detail_info.html',
                                fields_values=fields_values,
-                               student_id=student_id,
+                               id=id_one,
                                if_readonly=if_readonly)
 
     elif request.method == 'POST':
@@ -453,22 +454,15 @@ def detail_info():
             elif form_get['method'] == 'lock':
                 session["whether_readonly"] = 1
 
-        if form_get['method'] == 'update':
-            """进行更新操作"""
-            # 产生待执行的mysql语句
-            sql = f'update {table_name} set '
+        if form_get['method'] == 'update':  # 更新
             for field in table_field:
-                field_str = field[0]
-                sql += f"{field_str}='{form_get[field_str]}', "
-            sql = sql[:-2]
-            # 添加更新条件
-            sql += f" where student_id='{student_id}'"
-            # 执行并提交更新操作
-            db.session.execute(text(sql))
+                setattr(retrieved_student, field[0], form_get[field[0]])
             db.session.commit()
 
-        # 进行删除操作
-        elif form_get['method'] == 'delete':
+            # 清除查询结果
+            session['table_paging'] = None
+
+        elif form_get['method'] == 'delete':  # 删除
             """点击时，跳转至确认页面"""
             return redirect(url_for("info_management.auth_delete"))
 
@@ -483,14 +477,14 @@ def auth_delete():
         # 表名
         table_name = get_session_value("table_name")
         # 学号集合
-        student_ids_str = get_session_value("student_ids")
-        student_ids = load_session_value(student_ids_str)
+        ids_str = get_session_value("ids")
+        ids = load_session_value(ids_str)
 
     """获取学号对应的学生信息"""
     if 1 == 1:
         # 将学号信息转化为mysql语句
         sql_student_id = ''
-        for student_id in student_ids:
+        for student_id in ids:
             sql_student_id += f"'{student_id}', "
         sql_student_id = sql_student_id[:-2]
         # 获取条件语句
