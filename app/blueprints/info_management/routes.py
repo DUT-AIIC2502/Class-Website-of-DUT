@@ -493,24 +493,7 @@ def auth_delete():
         for id_one in ids:
             retrieved_student.append(db.session.query(StudentInfo).filter(StudentInfo.id == id_one).first())
 
-        # # 将学号信息转化为mysql语句
-        # sql_student_id = ''
-        # for student_id in ids:
-        #     sql_student_id += f"'{student_id}', "
-        # sql_student_id = sql_student_id[:-2]
-        # # 获取条件语句
-        # sql_where = f"where student_id in ({sql_student_id})"
-
-    if request.method == 'GET':
-        """确认删除页面"""
-
-        # """获取学号对应的学生信息"""
-        # if 1 == 1:
-        #     # 拼接字符串，进行查询操作
-        #     sql = f"select name, student_id from {table_name} {sql_where}"
-        #     result_proxy = db.session.execute(text(sql))
-        #     result_student = [list(row) for row in result_proxy.fetchall()]
-
+    if request.method == 'GET':  # 确认删除页面
         """获取用于渲染html的数据"""
         if 1 == 1:
             # 选中的学生姓名
@@ -521,7 +504,7 @@ def auth_delete():
 
         return render_template('auth_delete.html', student_name=student_name)
 
-    elif request.method == 'POST':
+    elif request.method == 'POST':  # 确认删除
         """执行删除操作"""
         if 1 == 1:
             for student in retrieved_student:
