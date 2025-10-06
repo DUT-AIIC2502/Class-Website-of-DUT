@@ -25,6 +25,8 @@ def home():
     if 1 == 1:
         # 表名
         session["table_name"] = "student_info"
+        # 班级名
+        session['class_name'] = '智创2502'
         # 标记用户详细信息页面只读
         session["whether_readonly"] = 1
         # 标记注销归零
@@ -34,6 +36,8 @@ def home():
     if 1 == 1:
         session['info_management_select_form_data'] = None
         session['form_get'] = None
+        session['page_current'] = None
+        session['page_number'] = None
 
     return render_template('home.html', **user_info)
 

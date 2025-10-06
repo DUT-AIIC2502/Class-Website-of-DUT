@@ -12,11 +12,19 @@ from translate import Translator
 from ext import db, base
 from functions import get_session_value, load_session_value, dynamic_query_builder
 from decorators import role_required
+from models import refresh_db
 
 # 定义蓝图
 info_management_bp = Blueprint('info_management', __name__,
                                url_prefix='/info_management',
                                template_folder='templates')
+
+
+@info_management_bp.before_request
+def before_request():
+    """当 session 过期后，重新刷新"""
+    if get_session_value('table_name') is None:
+        return "<script> alert('session已过期，请从主页重新进入页面。');window.open('/home/');</script>"
 
 
 @info_management_bp.route('/', methods=['GET', 'POST'])
@@ -43,8 +51,8 @@ def info_management():
             fields_str = get_session_value("fields_to_select")
             fields = load_session_value(fields_str, ['name', 'student_id'])
             # 搜索结果，以表格形式呈现给用户
-            table_str = get_session_value("table")
-            table = load_session_value(table_str)
+            table_paging_str = get_session_value("table_paging")
+            table_paging = load_session_value(table_paging_str)
 
         """标记复选框、下拉框默认值"""
         if 1 == 1:
@@ -66,11 +74,22 @@ def info_management():
                         fields[index] = row[1]
                         break
 
+        """数据分页"""
+        if 1 == 1:
+            page_number = get_session_value('page_number', 1)
+            page_current = get_session_value('page_current', 1)
+            if table_paging is not None:
+                table = table_paging[page_current % page_number - 1]
+            else:
+                table = None
+
         return render_template('info_management.html',
                                **form_get,
                                fields=table_field,
                                table=table,
-                               field_selected=fields)
+                               field_selected=fields,
+                               page_current=page_current,
+                               page_number=page_number)
 
     elif request.method == 'POST':
         # 获取表单数据
@@ -78,7 +97,7 @@ def info_management():
 
         # 获取表对应的 ORM 类
         if table_name in db.metadata.tables.keys():
-            table_student_info = getattr(base.classes, table_name)
+            StudentInfo: db.Model = getattr(base.classes, table_name)
         else:
             return '要查找的表不存在！'
 
@@ -99,27 +118,74 @@ def info_management():
                         {'op': 'like', 'value': form_get['filter_field_value']}
 
                 # 执行查询操作
-                result_table = dynamic_query_builder(table_student_info, fields_to_select, filters)
+                result_table = dynamic_query_builder(StudentInfo, fields_to_select, filters)
+
+                # 将查询结果的每一项替换为list
+                for index in range(len(result_table)):
+                    result_table[index] = list(result_table[index])
+
+            """敏感数据脱敏"""
+            if 1 == 1:
+                # 需要被隐藏的字段
+                fields_to_hide = ['student_id']
+                # 这些字段对应的索引
+                index_list = []
+                for index in range(len(fields_to_select)):
+                    if fields_to_select[index] in fields_to_hide:
+                        index_list.append(index)
+
+                # 将敏感数据替换为 *
+                for row in result_table:
+                    for index in index_list:
+                        row[index] = '*' * len(row[index])
+
+            """数据分页"""
+            if 1 == 1:
+                # 每页呈现的数据数
+                length = 20
+                # 总页数
+                page_number = len(result_table) // length + 1
+
+                # 将结果分开
+                table_paging = []
+                row = 0
+                if page_number > 1:
+                    for index in range(page_number-1):
+                        table_paging.append(result_table[row:row+length])
+                        row += length
+                table_paging.append(result_table[row:])
 
             """将本次表单提交的数据保存至session"""
             if 1 == 1:
-                # form_get
+                # 表单提交的值
                 form_get_str = pickle.dumps(form_get)
                 session["form_get"] = form_get_str
-                # fields_to_select
+                # 需要查询并在表格中展示的字段
                 fields_to_select_str = pickle.dumps(fields_to_select)
                 session["fields_to_select"] = fields_to_select_str
-                # table
-                table_str = pickle.dumps(result_table)
-                session["table"] = table_str
+                # 待展示的数据（已完成分页）
+                table_paging_str = pickle.dumps(table_paging)
+                session["table_paging"] = table_paging_str
+                # 总页数
+                session['page_number'] = page_number
+                # 当前页数
+                session['page_current'] = 1
 
             # 重定向至GET
+            return redirect("/info_management/")
+
+        elif form_get['method'] == 'last_page':  # 上一页
+            session['page_current'] = session['page_current'] % session['page_number'] - 1
+            return redirect("/info_management/")
+
+        elif form_get['method'] == 'next_page':  # 下一页
+            session['page_current'] = session['page_current'] % session['page_number'] + 1
             return redirect("/info_management/")
 
         elif 'detail' in form_get['method']:  # 进入详情页面
             """更新session中的学号信息"""
             if 1 == 1:
-                student_id_one = re.findall(r'\d+', form_get['method'])
+                student_id_one = re.findall(r'\d+', form_get['method'])[0]
                 student_ids = [student_id_one]
                 # 上传至session
                 student_ids_str = pickle.dumps(student_ids)
@@ -185,11 +251,12 @@ def insert_info():
         table_name = get_session_value("table_name")
         # 表的字段信息
         talbe_field_str = get_session_value("table_field")
-        table_field = load_session_value(talbe_field_str)
+        table_field = load_session_value(talbe_field_str)[2:]
 
     if request.method == "GET":
         # 设置学号为空
         student_id = None
+        session['student_id'] = None
 
         return render_template('detail_info.html',
                                fields_values=table_field,
@@ -198,28 +265,24 @@ def insert_info():
     elif request.method == "POST":
         # 获取表单数据
         form_get = request.form.to_dict()
+        # 获取表
+        StudentInfo: db.Model = base.classes[table_name]
 
         """检查学号是否重复"""
         if 1 == 1:
             # 获取所有的学号信息
-            sql = f"select student_id from {table_name}"
-            result_proxy = db.session.execute(text(sql))
-            result_student_ids = [list(row) for row in result_proxy.fetchall()]
-
-            for row in result_student_ids:
+            query_result = dynamic_query_builder(StudentInfo, ['student_id'], {})
+            for row in query_result:
                 if form_get["student_id"] == row[0]:
                     return f"<script> alert('学号重复！！！请重新输入。');" \
                            f"window.open('{url_for('info_management.insert_info')}');</script>"
 
         """执行插入操作"""
         if 1 == 1:
-            sql_value = ""
-            for field in table_field:
-                sql_value += f"'{form_get[field[0]]}', "
-            sql_value = sql_value[:-2]
-
-            sql = f"insert into {table_name} values ({sql_value})"
-            db.session.execute(text(sql))
+            new_student_info = StudentInfo(class_name=get_session_value('class_name'))
+            for filed in table_field:
+                setattr(new_student_info, filed[0], form_get[filed[0]])
+            db.session.add(new_student_info)
             db.session.commit()
 
         """将新插入的学号上传至session"""
@@ -243,7 +306,7 @@ def insert_field():
         table_name = get_session_value("table_name")
         # 表的字段信息
         talbe_field_str = get_session_value("table_field")
-        table_field = load_session_value(talbe_field_str)
+        table_field = load_session_value(talbe_field_str)[2:]
 
     if request.method == "GET":
         """生成现有字段的展示字符串"""
@@ -271,14 +334,12 @@ def insert_field():
         if 1 == 1:
             field_name_ch = form_get['field_to_insert']
             field_name_en = translate(field_name_ch)
-            # # 新的字段信息
-            # new_field = [field_name_en, field_name_ch]
 
         """执行添加字段操作"""
         if 1 == 1:
             # 为目标表添加字段
-            sql = f"alter table {table_name} add {field_name_en} char(50) comment '{field_name_ch}';"
-            db.session.execute(text(sql))
+            sql = f"alter table {table_name} add :field_name_en char(50) comment ':field_name_ch';"
+            db.session.execute(text(sql), {'field_name_en': field_name_en, 'field_name_ch': field_name_ch})
             db.session.commit()
 
         """设置字段的默认值"""
@@ -287,13 +348,14 @@ def insert_field():
             if form_get['field_default_value']:
                 default_value = form_get['field_default_value']
 
-            sql = f"update {table_name} set {field_name_en}={default_value}"
-            db.session.execute(text(sql))
+            sql = f"update {table_name} set :field_name_en=:default_value"
+            db.session.execute(text(sql), {'field_name_en': field_name_en, 'default_value': default_value})
             db.session.commit()
 
-        """更新session中的字段信息"""
+        """更新session中的字段信息、反射"""
         if 1 == 1:
             update_table_field()
+            refresh_db()
 
         return redirect(url_for("info_management.insert_field"))
 
@@ -307,7 +369,7 @@ def delete_field():
         table_name = get_session_value("table_name")
         # 表的字段信息
         talbe_field_str = get_session_value("table_field")
-        table_field = load_session_value(talbe_field_str)
+        table_field = load_session_value(talbe_field_str)[2:]
 
     if request.method == "GET":
         return render_template("delete_field.html",
@@ -344,7 +406,7 @@ def detail_info():
         table_name = get_session_value("table_name")
         # 表的字段信息
         talbe_field_str = get_session_value("table_field")
-        table_field = load_session_value(talbe_field_str)
+        table_field = load_session_value(talbe_field_str)[2:]
         # 单个学号
         student_ids_str = get_session_value("student_ids")
         student_ids = load_session_value(student_ids_str)
@@ -355,12 +417,9 @@ def detail_info():
 
         """根据session['whether_readonly']的值来标记只读状态"""
         if 1 == 1:
+            # 默认只读
             if_readonly = 'readonly'
-            # print(session['whether_readonly'])
-            if session['whether_readonly'] == 1:
-                # 默认只读
-                pass
-            elif session['whether_readonly'] == 0:
+            if session['whether_readonly'] == 0:
                 if_readonly = ''
 
         """从数据库获取某个学生的详细信息，并制成符合传输规范的列表"""
@@ -372,9 +431,9 @@ def detail_info():
 
             # 用来渲染前端的数组，默认只读
             fields_values = []
-            for index in range(len(result_student)):
+            for index in range(len(table_field)):
                 row = [table_field[index][0], table_field[index][1],
-                       result_student[index]]
+                       result_student[index+2]]
                 fields_values.append(row)
 
         return render_template('detail_info.html',

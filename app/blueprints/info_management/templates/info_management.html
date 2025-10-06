@@ -129,8 +129,11 @@
                             {% endfor %}
                         </tbody>
                     </table>
-
+                    <p>第{{ page_current }}/{{ page_number }}页</p>
+                    <button class="btn btn-primary" name="method" value="last_page">上一页</button>
+                    <button class="btn btn-primary" name="method" value="next_page">下一页</button>
                 </form>
+
             </div>
         {% endif %}
     </div>
