@@ -103,7 +103,6 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>id</th>
                                 {% for f in field_selected %}
                                     <th>{{ f }}</th>
                                 {% endfor %}
@@ -115,7 +114,7 @@
                                 <tr>
                                     <td>
                                         <label class="checkbox-container">
-                                            <input type="checkbox" name="info_to_delete" value={{row_value.1}}>
+                                            <input type="checkbox" name="info_to_delete" value={{row_value.0}}>
                                             <span class="checkmark"></span>
                                         </label>
                                     </td>
@@ -130,7 +129,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <p>第{{ page_current }}/{{ page_number }}页</p>
+                    <p id="pages">第{{ page_current }}/{{ page_number }}页</p>
                     <button class="btn btn-primary" name="method" value="last_page">上一页</button>
                     <button class="btn btn-primary" name="method" value="next_page">下一页</button>
                 </form>

@@ -178,11 +178,11 @@ def info_management():
 
         elif form_get['method'] == 'last_page':  # 上一页
             session['page_current'] = session['page_current'] % session['page_number'] - 1
-            return redirect("/info_management/")
+            return redirect("/info_management/#pages")
 
         elif form_get['method'] == 'next_page':  # 下一页
             session['page_current'] = session['page_current'] % session['page_number'] + 1
-            return redirect("/info_management/")
+            return redirect("/info_management/#pages")
 
         elif 'detail' in form_get['method']:  # 进入详情页面
             """更新session中的学号信息"""
@@ -195,24 +195,22 @@ def info_management():
 
             return redirect(url_for("info_management.detail_info"))
 
-        elif form_get["method"] == "insert_info":
+        elif form_get["method"] == "insert_info":  # 插入一条信息
             return redirect(url_for("info_management.insert_info"))
 
-        elif form_get["method"] == "insert_field":
+        elif form_get["method"] == "insert_field":  # 插入一个字段
             return redirect(url_for("info_management.insert_field"))
 
-        elif form_get["method"] == "delete_field":
+        elif form_get["method"] == "delete_field":  # 删除一个字段
             return redirect(url_for("info_management.delete_field"))
 
-        elif form_get['method'] == 'delete':
-            """进行删除操作"""
-
+        elif form_get['method'] == 'delete':  # 删除选中项
             """更新session中的学号信息"""
             if 1 == 1:
                 # 将表单中复选框的选中信息形成列表，并上传至session
                 ids = request.form.getlist('info_to_delete')
-                student_ids_str = pickle.dumps(ids)
-                session["student_ids"] = student_ids_str
+                ids_str = pickle.dumps(ids)
+                session["ids"] = ids_str
 
             return redirect(url_for("info_management.auth_delete"))
 
@@ -289,12 +287,17 @@ def insert_info():
 
         """将新插入的学号上传至session"""
         if 1 == 1:
-            """更新session中的学号信息"""
-            student_id = form_get['student_id']
-            student_ids = [student_id]
+            # 获取新插入的数据的 id
+            retrieved_student = db.session.query(StudentInfo) \
+                .filter(StudentInfo.student_id == form_get['student_id']).first()
+            id_one = retrieved_student.id
+            ids = [id_one]
             # 上传至session
-            student_ids_str = pickle.dumps(student_ids)
-            session["student_ids"] = student_ids_str
+            ids_str = pickle.dumps(ids)
+            session["ids"] = ids_str
+
+            # 清除查询结果
+            session['table_paging'] = None
 
         return redirect(url_for("info_management.detail_info"))
 
@@ -365,6 +368,8 @@ def insert_field():
 @info_management_bp.route('/delete_field/', methods=['GET', 'POST'])
 @login_required
 def delete_field():
+    """删除单条字段"""
+
     """从session获取信息"""
     if 1 == 1:
         # 表名
@@ -472,40 +477,46 @@ def detail_info():
 @info_management_bp.route('/auth_delete/', methods=['get', 'post'])
 @login_required
 def auth_delete():
+    """确认是否删除"""
     """从session获取信息"""
     if 1 == 1:
         # 表名
         table_name = get_session_value("table_name")
-        # 学号集合
+        # id 集合
         ids_str = get_session_value("ids")
         ids = load_session_value(ids_str)
 
-    """获取学号对应的学生信息"""
+    """获取 id 对应的学生信息"""
     if 1 == 1:
-        # 将学号信息转化为mysql语句
-        sql_student_id = ''
-        for student_id in ids:
-            sql_student_id += f"'{student_id}', "
-        sql_student_id = sql_student_id[:-2]
-        # 获取条件语句
-        sql_where = f"where student_id in ({sql_student_id})"
+        StudentInfo: db.Model = base.classes[table_name]
+        retrieved_student = []
+        for id_one in ids:
+            retrieved_student.append(db.session.query(StudentInfo).filter(StudentInfo.id == id_one).first())
+
+        # # 将学号信息转化为mysql语句
+        # sql_student_id = ''
+        # for student_id in ids:
+        #     sql_student_id += f"'{student_id}', "
+        # sql_student_id = sql_student_id[:-2]
+        # # 获取条件语句
+        # sql_where = f"where student_id in ({sql_student_id})"
 
     if request.method == 'GET':
         """确认删除页面"""
 
-        """获取学号对应的学生信息"""
-        if 1 == 1:
-            # 拼接字符串，进行查询操作
-            sql = f"select name, student_id from {table_name} {sql_where}"
-            result_proxy = db.session.execute(text(sql))
-            result_student = [list(row) for row in result_proxy.fetchall()]
+        # """获取学号对应的学生信息"""
+        # if 1 == 1:
+        #     # 拼接字符串，进行查询操作
+        #     sql = f"select name, student_id from {table_name} {sql_where}"
+        #     result_proxy = db.session.execute(text(sql))
+        #     result_student = [list(row) for row in result_proxy.fetchall()]
 
         """获取用于渲染html的数据"""
         if 1 == 1:
             # 选中的学生姓名
             student_name = ''
-            for row in result_student:
-                student_name += row[0] + '，'
+            for student in retrieved_student:
+                student_name += student.name + '，'
             student_name = student_name[:-1]
 
         return render_template('auth_delete.html', student_name=student_name)
@@ -513,9 +524,14 @@ def auth_delete():
     elif request.method == 'POST':
         """执行删除操作"""
         if 1 == 1:
-            sql = f"delete from {table_name} {sql_where}"
-            db.session.execute(text(sql))
+            for student in retrieved_student:
+                db.session.delete(student)
             db.session.commit()
+
+        """清除 session 中的数据"""
+        if 1 == 1:
+            session['ids'] = None
+            session['table_paging'] = None
 
         return redirect(url_for('info_management.info_management'), code=302, Response=None)
 
