@@ -1,11 +1,12 @@
 """注册界面蓝图"""
-from flask import Blueprint, request, redirect, render_template, url_for, session
+from flask import Blueprint, request, redirect, render_template, url_for, session, g, current_app, jsonify
 from flask_login import login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import pickle
 import re
+import sys, traceback, base64
 
-from models import User, Role, LoginLogs, CAPTCHA
+from models import User, Role, LoginLogs, CAPTCHA, Logs
 from ext import db
 from functions import get_session_value, load_session_value, get_user_info
 from decorators import permission_required, role_required
@@ -13,6 +14,104 @@ from decorators import permission_required, role_required
 auth_bp = Blueprint('auth', __name__,
                     url_prefix='/auth',
                     template_folder='templates')
+
+
+def setup_app_hooks(state):
+    """
+        这个函数将在蓝图被注册到应用时调用。
+        在这里，我们可以为 app 添加钩子。
+    """
+    app = state.app
+
+    def get_current_view_function_name():
+        # 1. 获取请求的 URL 规则
+        # request.url_rule 会返回一个 Rule 对象，其中包含了端点信息
+        rule = request.url_rule
+        if not rule:
+            return None  # 可能是在处理 404 等情况
+
+        # 2. 从规则中获取端点 (endpoint)
+        endpoint = rule.endpoint
+
+        # 3. 通过端点从视图函数映射中获取函数对象
+        # current_app.view_functions 是一个 {endpoint: function} 的字典
+        view_function = current_app.view_functions.get(endpoint)
+
+        if view_function:
+            # 4. 返回函数的名称
+            return view_function.__name__
+        else:
+            return endpoint  # 如果找不到函数，至少返回端点名称作为 fallback
+
+    @app.before_request
+    def before():
+        g.new_log = Logs()
+        g.param = {}
+        if request:
+            # 请求信息
+            g.new_log.req_method = request.method
+            g.new_log.req_url = request.url
+            g.new_log.req_ip_adress = request.remote_addr
+            # 获取视图函数名
+            g.new_log.oper_function = get_current_view_function_name()
+            # 获取表单提交数据
+            form_get = request.form.to_dict()
+            g.param['form_get'] = form_get
+            g.new_log.oper_param = str(g.param)
+
+    @app.after_request
+    def after(response):
+        """正常请求处理完成后执行"""
+        """记录日志"""
+        g.new_log.level = 'Info'
+
+        # 记录 session 中的信息
+        session_dict = dict(session)
+        my_session_dict = {k: v for k, v in session_dict.items() if not k.startswith('_')}
+
+        g.param['session'] = my_session_dict
+        g.new_log.oper_param = str(g.param)
+
+        """保存日志"""
+        db.session.add(g.new_log)
+        db.session.commit()
+
+        return response
+
+    @app.teardown_request
+    def teardown(exc):
+        if exc is not None:
+            g.new_log.level = 'Error'
+
+            """捕获异常信息"""
+            if 1 == 1:
+                # 使用 sys.exc_info() 获取更详细的异常信息
+                # exc_type: 异常类型 (e.g., ValueError)
+                # exc_value: 异常实例 (与 exc 参数相同)
+                # exc_traceback: 回溯对象
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+
+                # 使用 traceback.format_exception() 将异常信息格式化为字符串列表
+                # 每个元素是一行，包含了完整的堆栈信息
+                error_details_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+
+                # 将列表拼接成一个完整的字符串
+                full_error_string = "".join(error_details_list)
+
+                # 保存至日志
+                g.new_log.error_mag = full_error_string
+
+            """保存日志"""
+            db.session.add(g.new_log)
+            db.session.commit()
+
+        else:
+            print("请求正常执行。")
+
+
+# --- 在蓝图上记录这个设置函数 ---
+# record_once 确保 setup_app_hooks 只被执行一次，即使蓝图被多次注册（在测试等场景中可能发生）
+auth_bp.record_once(setup_app_hooks)
 
 
 @auth_bp.route('/login/', methods=['GET', 'POST'])

@@ -1,8 +1,8 @@
 """定义数据模型"""
-from flask_login import UserMixin
+from flask_login import UserMixin, current_user
 from ext import db, login_manager
 # 直接从 sqlalchemy 导入，而不是通过 db 对象调用
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect, Text
 from sqlalchemy.orm import relationship, backref, Mapped
 from typing import List
 # 日期类型
@@ -177,14 +177,53 @@ class CAPTCHA(db.Model):
     create_time: datetime = Column(DateTime, default=datetime.now)
 
     def __init__(self, user, operation):
+        # 生成随机的6位验证码
         random_int = random.randint(100000, 999999)
-        # 查询user对象
-        # user = User.query.filter(User.student_id == student_id).first()
 
         # 生成数据
         self.user_id = user.id
         self.user_name = user.real_name
         self.operation = operation
         self.value = str(random_int)
+
+
+"""
+日志表
+"""
+
+
+class Logs(db.Model):
+    __table_name__ = 'logs'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    # 日志等级：“Info”、“Warn”、“Error”，需单独输入
+    level: str = Column(String(16), nullable=False)
+    # 用户信息（直接由 current_user 对象生成）
+    user_id: int = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    user_name: str = Column(String(64))
+    user_role: str = Column(String(32))
+    # 请求信息
+    req_method: str = Column(String(16))
+    req_url: str = Column(String(255))
+    req_ip_adress: str = Column(String(64))
+    # 操作相关信息
+    oper_function: str = Column(String(64))  # 操作名称，一般为函数名
+    oper_time: datetime = Column(DateTime, default=datetime.now)  # 操作时间（自动生成）
+    oper_param: str = Column(Text)  # 操作参数，包括 session、form_get，使用 jsonify 格式化
+    # 错误信息
+    error_msg: str = Column(Text)
+
+    def __init__(self):
+        if current_user.is_authenticated:
+            self.user_id = current_user.id
+            self.user_name = current_user.real_name
+            user_roles = [role.name for role in current_user.roles]
+            user_level = {
+                "Root": 4,
+                "Admin": 3,
+                "User": 2,
+                "Guest": 1
+            }
+            self.user_role = max(user_roles, key=lambda task: user_level[task])
+
 
 

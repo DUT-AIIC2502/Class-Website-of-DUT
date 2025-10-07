@@ -42,6 +42,7 @@ def role_required(*required_roles):
     一个自定义装饰器，用于检查用户是否具有特定角色。
     """
     def decorator(f):
+        # 验证是否登录
         @login_required
         @wraps(f)
         def decorated_function(*args, **kwargs):

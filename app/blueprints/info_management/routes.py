@@ -79,6 +79,9 @@ def info_management():
             page_number = get_session_value('page_number', 1)
             page_current = get_session_value('page_current', 1)
             if table_paging is not None:
+                if page_current <= 0 :
+                    page_current += page_number
+
                 table = table_paging[page_current % page_number - 1]
             else:
                 table = None
@@ -177,7 +180,10 @@ def info_management():
             return redirect("/info_management/")
 
         elif form_get['method'] == 'last_page':  # 上一页
-            session['page_current'] = session['page_current'] % session['page_number'] - 1
+            page_current = session['page_current']
+            page_number = session['page_number']
+            page_current += page_number
+            session['page_current'] = page_current % page_number - 1
             return redirect("/info_management/#pages")
 
         elif form_get['method'] == 'next_page':  # 下一页
