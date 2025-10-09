@@ -1,6 +1,6 @@
 from flask import session
 from flask_login import current_user
-from sqlalchemy import and_
+from sqlalchemy import and_, text
 import pickle
 
 from ext import db
@@ -149,3 +149,11 @@ def dynamic_query_builder(model, fields_to_select, filters):
     except Exception as e:
         # 处理其他可能的错误
         raise ValueError(f"构建查询时发生错误: {e}")
+
+
+def get_navbar_urls():
+    sql = "SELECT url, name FROM navbar_urls"
+    navbar_urls = db.session.execute(text(sql))
+
+    return navbar_urls
+

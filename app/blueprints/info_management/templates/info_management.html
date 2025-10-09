@@ -155,14 +155,48 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <!-- 导航页面 -->
-        <div class="navbar">
-            <div class="nav-brand">信息管理系统</div>
-            <ul class="nav-links">
-                <li><a href="/home/">首页</a></li>
-            </ul>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                <h1>智创<span>2502班</span></h1>
+            </div>
+
+            <nav>
+                <ul>
+                    {% for url in navbar_urls %}
+                        <li><a href="{{ url.0 }}">{{ url.1 }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+
+            {% if user_id %}
+                <div>
+                    <a href="/auth/detail_info" class="user-info">
+                        <img src="{{ url_for('static', filename='images/icon_user.png') }}"
+                             alt="用户头像" width="50" height="50">
+                        <p class="user-name">{{ user_name }}</p>
+                        <p class="user-role">{{ user_top_role }}</p>
+                    </a>
+                </div>
+            {% else %}
+                <div class="nav-btns">
+                    <a href="/auth/login/" class="btn btn-outline">登录</a>
+                    <a href="/auth/register/" class="btn btn-primary">注册</a>
+                </div>
+            {% endif %}
         </div>
+    </header>
+
+    <div class="container">
+<!--        &lt;!&ndash; 导航页面 &ndash;&gt;-->
+<!--        <div class="navbar">-->
+<!--            <div class="nav-brand">信息管理系统</div>-->
+<!--            <ul class="nav-links">-->
+<!--                <li><a href="/home/">首页</a></li>-->
+<!--            </ul>-->
+<!--        </div>-->
 
         <h1>智创2502班·学生信息</h1>
 

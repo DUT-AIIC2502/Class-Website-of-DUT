@@ -243,3 +243,16 @@ class ScheduleFunctions(db.Model):
     def __init__(self):
         pass
 
+
+"""
+导航栏展示表
+"""
+
+
+class NavbarUrls(db.Model):
+    __tablename__ = 'navbar_urls'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    url: str = Column(String(64), nullable=False, comment="url路径")
+    name: str = Column(String(64), nullable=False, comment="该url对应的功能")
+    description: str = Column(String(255), comment="描述")
+

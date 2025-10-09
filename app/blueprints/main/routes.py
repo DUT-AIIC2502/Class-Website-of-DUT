@@ -8,7 +8,7 @@ from sqlalchemy import inspect
 import models
 from ext import db, aps
 from functions import get_user_info
-from models import Role, Permission, Logs, ScheduleFunctions
+from models import Role, Permission, Logs, ScheduleFunctions, NavbarUrls
 
 main_bp = Blueprint('main', __name__,
                     template_folder='templates')
@@ -191,6 +191,14 @@ def create_tables():
         ]
 
         db.session.bulk_insert_mappings(ScheduleFunctions, function_list)
+        db.session.commit()
+
+    if NavbarUrls.query.first() is None:
+        navbar_urls_list = [
+            {'url': '/info_management/', 'name': '信息管理'},
+        ]
+
+        db.session.bulk_insert_mappings(NavbarUrls, navbar_urls_list)
         db.session.commit()
 
     return "数据库表创建成功！插入初始 Role 成功！"
