@@ -193,7 +193,7 @@ class CAPTCHA(db.Model):
 
 
 class Logs(db.Model):
-    __table_name__ = 'logs'
+    __tablename__ = 'logs'
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     # 日志等级：“Info”、“Warn”、“Error”，需单独输入
     level: str = Column(String(16), nullable=False)
@@ -226,4 +226,20 @@ class Logs(db.Model):
             self.user_role = max(user_roles, key=lambda task: user_level[task])
 
 
+"""
+定时任务函数表
+"""
+
+
+class ScheduleFunctions(db.Model):
+    __tablename__ = 'schedule_functions'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    func_id: str = Column(String(64), nullable=False, comment="任务的唯一ID")
+    func: str = Column(String(64), nullable=False, comment="函数路径")  # 格式为“模块名:函数名”
+    args: str = Column(String(255), comment="参数")  # 格式为“参数1,, 参数2,, ...”，之后转化为元组形式，按照顺序对应待执行函数的参数
+    f_trigger: str = Column(String(64), comment="触发器类型", default='interval')  # interval, cron, date
+    f_time: str = Column(String(64), nullable=False, comment="时间设置")  # 格式为“x, x, x”，分别对应“hour(s), minute(s), second(s)”
+
+    def __init__(self):
+        pass
 

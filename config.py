@@ -14,8 +14,14 @@ class Config(object):
 
     SQLALCHEMY_DATABASE_URI = f"{DIALCT}+{DRITVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 
+    # 调度器的配置
+    SCHEDULER_API_ENABLED = True  # 启用 API
+    SCHEDULER_TIMEZONE = 'Asia/Shanghai'  # 设置时区
+    SCHEDULER_EXECUTORS = {'default': {'type': 'threadpool', 'max_workers': 10}}  # 配置执行器
+
     # 其他配置
     DEBUG = True
     # TESTING = False
     SESSION_KEY = '12345qazxc'
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)
+    SCHEDULER_API_ENABLED = True

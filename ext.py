@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_apscheduler import APScheduler
 from sqlalchemy.ext.automap import automap_base
 
 
@@ -18,7 +19,8 @@ login_manager.login_view = '/auth/login/'
 # 可选：自定义闪现消息
 login_manager.login_message = '请先登录以访问该页面。'
 
-"""
-初始化 AutomapBase
-"""
+"""初始化 AutomapBase"""
 base = automap_base()
+
+"""初始化 APScheduler"""
+aps = APScheduler()

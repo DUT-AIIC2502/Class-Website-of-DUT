@@ -79,7 +79,7 @@ def info_management():
             page_number = get_session_value('page_number', 1)
             page_current = get_session_value('page_current', 1)
             if table_paging is not None:
-                if page_current <= 0 :
+                if page_current <= 0:
                     page_current += page_number
 
                 table = table_paging[page_current % page_number - 1]
