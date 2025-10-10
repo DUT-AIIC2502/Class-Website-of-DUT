@@ -1,11 +1,12 @@
 import time
-import pywinauto
 from pywinauto import Application, Desktop
-from pywinauto.findwindows import ElementNotFoundError
 import pyperclip
 
 
 def diagnosis():
+    """
+    获取诊断信息
+    """
     # 诊断脚本
     # 使用 backend="uia" 和 title_re="QQ" 进行模糊匹配
     qq_windows = Desktop(backend="uia").windows(title_re="QQ")
@@ -150,19 +151,3 @@ def send_qq_message(contact_name: str, message: str, qq_window_title="QQ"):
         if 1 == 1:
             input_box.type_keys("{ENTER}")
             print("消息发送成功！\n")
-
-
-# --- 使用示例 ---
-if __name__ == "__main__":
-    # 发送信息
-    send_qq_message(
-        contact_name="爸爸",
-        message="你好，这是一条由 pywinauto 自动发送的消息！\n这是第二行。"
-    )
-
-    # 诊断函数
-    # diagnosis()
-
-
-
-

@@ -10,7 +10,7 @@ import io
 from translate import Translator
 
 from ext import db, base
-from functions import get_session_value, load_session_value, dynamic_query_builder, get_navbar_urls, get_user_info
+from common.flask_func import get_session_value, load_session_value, dynamic_query_builder, get_navbar_urls, get_user_info
 from decorators import role_required
 from models import refresh_db
 

@@ -3,11 +3,9 @@ import traceback
 import datetime
 
 from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app
-from sqlalchemy import inspect
 
-import models
 from ext import db, aps
-from functions import get_user_info
+from common.flask_func import get_user_info
 from models import Role, Permission, Logs, ScheduleFunctions, NavbarUrls
 
 main_bp = Blueprint('main', __name__,

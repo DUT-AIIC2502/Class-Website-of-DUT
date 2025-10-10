@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from decorators import role_required
 from ext import db
-from functions import get_session_value, load_session_value, get_user_info
+from common.flask_func import get_session_value, load_session_value, get_user_info
 from models import User, Role, LoginLogs, CAPTCHA
 
 auth_bp = Blueprint('auth', __name__,
