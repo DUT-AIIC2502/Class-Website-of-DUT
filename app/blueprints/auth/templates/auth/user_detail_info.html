@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}{{ user_name }}的详细信息{% endblock %}
+{% block title %}用户信息{% endblock %}
 
 {% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
 {% endblock %}
 
 {% block content %}
+<div class="container">
+    <h1><b>{{ user_info.user_name }}</b>的用户信息</h1>
+
+    <!-- 介绍 -->
+    <div class="instructions">
+        <h3>使用说明</h3>
+        <p>1. 你可以查看、编辑你的信息。</p>
+    </div>
+
     <!-- 呈现详细信息的表单 -->
     <div class="card">
         <!-- 用户的详细信息 -->
@@ -55,4 +64,5 @@
             </div>
         </form>
     </div>
+</div>
 {% endblock %}

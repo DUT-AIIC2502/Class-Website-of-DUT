@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>导入excel文件</title>
+{% extends "base.html" %}
+
+{% block title %}导入excel文件{% endblock %}
+
+{% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <div class="container">
         <h1>导入excel文件</h1>
 
@@ -188,5 +188,4 @@
             fileInput.dispatchEvent(event);
         });
     </script>
-</body>
-</html>
+{% endblock %}

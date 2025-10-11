@@ -1,47 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>智创2502班·学生信息</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_home.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_select_choose.css') }}">
+{% extends "base.html" %}
+
+{% block title %}智创2502班·学生信息{% endblock %}
+
+{% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
-    <!-- 导航栏 -->
-    <header>
-        <div class="container header-container">
-            <div class="logo">
-                <i class="fas fa-rocket"></i>
-                <h1>智创<span>2502班</span></h1>
-            </div>
+{% endblock %}
 
-            <nav>
-                <ul>
-                    {% for url in navbar_urls %}
-                        <li><a href="{{ url.0 }}">{{ url.1 }}</a></li>
-                    {% endfor %}
-                </ul>
-            </nav>
-
-            {% if user_id %}
-                <div>
-                    <a href="/auth/detail_info" class="user-info">
-                        <img src="{{ url_for('static', filename='images/icon_user.png') }}"
-                             alt="用户头像" width="50" height="50">
-                        <p class="user-name">{{ user_name }}</p>
-                        <p class="user-role">{{ user_top_role }}</p>
-                    </a>
-                </div>
-            {% else %}
-                <div class="nav-btns">
-                    <a href="/auth/login/" class="btn btn-outline">登录</a>
-                    <a href="/auth/register/" class="btn btn-primary">注册</a>
-                </div>
-            {% endif %}
-        </div>
-    </header>
-
+{% block content %}
     <div class="container">
 
         <h1>智创2502班·学生信息</h1>
@@ -167,5 +132,4 @@
             </div>
         {% endif %}
     </div>
-</body>
-</html>
+{% endblock %}

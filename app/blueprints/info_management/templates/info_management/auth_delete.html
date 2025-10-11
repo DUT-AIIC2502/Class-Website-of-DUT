@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>确认删除</title>
+{% extends "base.html" %}
+
+{% block title %}确认删除{% endblock %}
+
+{% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
+<div class="container">
     <div class="card">
         <h3>警告！！！</h3>
         <p>你确定要删除<b>{{ student_name }}</b>的信息吗？</p>
@@ -14,20 +16,8 @@
             <a href="/info_management/" target="_self" title="">
                 <button class="btn btn-primary" type="button">取消</button>
             </a>
-<!--            <a href="/info_management/auth_delete/" target="_self" title="">-->
-<!--                <button class="btn btn-danger" type="button">确定</button>-->
-<!--            </a>-->
             <button class="btn btn-danger" type="submit">确定</button>
         </form>
-
-
-<!--        <form method="post" action="/info_management/student_info/{{student_id}}/authenticate">-->
-<!--            <div style="visibility: hidden;">-->
-<!--                <input name="a" value="a">-->
-<!--            </div>-->
-<!--            <input name="a" value="">-->
-<!--            <button class="btn btn-danger" type="submit">确定</button>-->
-<!--        </form>-->
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

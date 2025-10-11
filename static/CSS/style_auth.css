@@ -23,11 +23,9 @@
   padding: 25px 35px;
   border: 5px solid rgb(255, 255, 255);
   box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 30px 30px -20px;
-  margin: auto;
-  position: absolute;
-  top: 100px;
-  left: 0;
-  right: 0;
+  margin-top: 100px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .heading {

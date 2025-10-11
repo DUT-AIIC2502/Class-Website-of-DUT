@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <title>新增字段</title>
+{% extends "base.html" %}
+
+{% block title %}新增字段{% endblock %}
+
+{% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
+<div class="container">
     <!-- 返回查询页面 -->
     <div class="instructions">
         <h3>新增字段</h3>
@@ -32,5 +34,5 @@
             <button class="btn btn-primary" name="method" value="insert">确定</button>
         </div>
     </form>
-
-</body>
+</div>
+{% endblock %}

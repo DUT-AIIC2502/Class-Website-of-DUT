@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <title>选择字段删除</title>
+{% extends "base.html" %}
+
+{% block title %}选择字段删除{% endblock %}
+
+{% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
+<div class="container">
     <!-- 返回查询页面 -->
     <div class="instructions">
         <h3>选择字段删除</h3>
@@ -27,4 +29,5 @@
             <button class="btn btn-danger" name="method" value="delete">确定删除此字段</button>
         </div>
     </form>
-</body>
+</div>
+{% endblock %}
