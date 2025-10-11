@@ -102,6 +102,56 @@ nav ul li a:hover::after {
     width: 100%;
 }
 
+/* 下拉容器 */
+.dropdown {
+    /*float: left;*/
+    /*overflow: hidden;*/
+    position: relative;
+    display: inline-block;
+}
+
+/* 下拉菜单内容（默认为隐藏） */
+.dropdown-content {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px); /* 同时处理水平居中和平移动画 */
+    transition: visibility 0.3s, opacity 0.3s, transform 0.3s;
+
+    /* 定位 */
+    position: absolute;
+    left: 50%; /* 关键步骤1 */
+
+    /* 样式 */
+    background-color: white;
+    width: 100%;
+    min-width: 200px;
+    /*box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);*/
+    z-index: 10;
+}
+
+/* 下拉菜单中的链接 */
+.dropdown-content a {
+    float: none;
+    /*font-weight: 500;*/
+    padding: 8px 0;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    position: relative;
+}
+
+/* 鼠标悬停时给下拉菜单的链接添加灰色背景色 */
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+/* 鼠标悬停时显示下拉菜单 */
+.dropdown:hover .dropdown-content {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0); /* 恢复位置 */
+}
+
 .user-info {
     /* 1. 将 a 标签设置为弹性容器 */
     display: inline-flex; /* 使用 inline-flex 使其宽度自适应内容，而不是占据整行 */

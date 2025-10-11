@@ -5,7 +5,7 @@ import datetime
 from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app
 
 from ext import db, aps
-from common.flask_func import get_user_info
+from common.flask_func import get_user_info, get_navbar_urls
 from models import Role, Permission, Logs, ScheduleFunctions, NavbarUrls
 
 main_bp = Blueprint('main', __name__,
@@ -115,7 +115,7 @@ def setup_app_hooks(state):
     @app.context_processor
     def inject_global_params():
         return {
-            "services": {},
+            "services": get_navbar_urls(),
             "user_info": get_user_info()
         }
 

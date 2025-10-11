@@ -23,11 +23,21 @@
             <nav>
                 <ul>
                     <li><a href="/home/#home">首页</a></li>
-                    <li><a href="/home/#services">服务</a></li>
+                    <!-- 下拉列表 -->
+                    <div class="dropdown">
+                        <li><a href="/home/#services">服务</a></li>
+                        <div class="dropdown-content">
+                            {% for service in services %}
+                                <a href="{{ service.0 }}">{{ service.1 }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
                     <li><a href="/home/#about">关于</a></li>
                     <li><a href="/home/#team">班委</a></li>
                     <li><a href="/home/#honors">班级荣誉</a></li>
                     <li><a href="/home/#contact">联系我们</a></li>
+
+
                 </ul>
             </nav>
 

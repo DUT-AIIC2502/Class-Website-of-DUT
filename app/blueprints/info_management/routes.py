@@ -88,7 +88,6 @@ def info_management():
 
         return render_template('info_management/info_management.html',
                                **form_get,
-                               **get_user_info(),
                                navbar_urls=get_navbar_urls(),
                                fields=table_field,
                                table=table,
