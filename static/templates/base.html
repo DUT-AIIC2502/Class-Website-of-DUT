@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}智创2502班{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_base.css') }}">
+    {% block special_css %} {% endblock %}
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container header-container">
+            <a class="logo" href="/home/">
+                <i class="fas fa-rocket"></i>
+                <h1>智创<span>2502班</span></h1>
+            </a>
+
+            <div class="mobile-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <nav>
+                <ul>
+                    <li><a href="/home/#home">首页</a></li>
+                    <li><a href="/home/#services">服务</a></li>
+                    <li><a href="/home/#about">关于</a></li>
+                    <li><a href="/home/#team">班委</a></li>
+                    <li><a href="/home/#honors">班级荣誉</a></li>
+                    <li><a href="/home/#contact">联系我们</a></li>
+                </ul>
+            </nav>
+
+            {% if user_id %}
+                <div>
+                    <a href="/auth/detail_info" class="user-info">
+                        <img src="{{ url_for('static', filename='images/icon_user.png') }}"
+                             alt="用户头像" width="50" height="50">
+                        <p class="user-name">{{ user_name }}</p>
+                        <p class="user-role">{{ user_top_role }}</p>
+                    </a>
+                </div>
+            {% else %}
+                <div class="nav-btns">
+                    <a href="/auth/login/" class="btn btn-outline">登录</a>
+                    <a href="/auth/register/" class="btn btn-primary">注册</a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- 页面内容 -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="logo">
+                        <i class="fas fa-rocket"></i>
+                        <h3>智创2502班</h3>
+                    </div>
+                    <p style="margin-top: 20px; color: #bdc1c6;">致力于通过数字化提升班级管理效率，切实帮助同学。</p>
+                    <div class="social-links" style="margin-top: 20px; justify-content: flex-start;">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h3>服务项目</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">云计算服务</a></li>
+                        <li><a href="#">网络安全</a></li>
+                        <li><a href="#">数据分析</a></li>
+                        <li><a href="#">应用开发</a></li>
+                        <li><a href="#">IT咨询</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="/home/#home">首页</a></li>
+                        <li><a href="/home/#about">关于我们</a></li>
+                        <li><a href="/home/#services">服务</a></li>
+                        <li><a href="/home/#team">团队</a></li>
+                        <li><a href="/home/#contact">联系我们</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h3>联系我们</h3>
+                    <div class="footer-contact">
+                        <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园88号</p>
+                        <p><i class="fas fa-phone"></i> +86 10 8888 7777</p>
+                        <p><i class="fas fa-envelope"></i> contact@chuangwei.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="copyright">
+                <p>&copy; 2025 智创2502班团支部 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        const mobileToggle = document.querySelector('.mobile-toggle');
+        const nav = document.querySelector('nav');
+
+        mobileToggle.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+
+        // 滚动时导航栏样式变化
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
+                header.style.padding = '0';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                nav.classList.remove('active');
+
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
