@@ -86,7 +86,7 @@ def info_management():
             else:
                 table = None
 
-        return render_template('info_management.html',
+        return render_template('info_management/info_management.html',
                                **form_get,
                                **get_user_info(),
                                navbar_urls=get_navbar_urls(),
@@ -266,7 +266,7 @@ def insert_info():
         id_one = None
         session['ids'] = None
 
-        return render_template('detail_info.html',
+        return render_template('info_management/detail_info.html',
                                fields_values=table_field,
                                id=id_one)
 
@@ -329,7 +329,7 @@ def insert_field():
                 table_field_str += f"{field[1]}，"
             table_field_str = table_field_str[:-1]
 
-        return render_template("insert_field.html",
+        return render_template("info_management/insert_field.html",
                                table_fields=table_field_str)
 
     elif request.method == "POST":
@@ -387,7 +387,7 @@ def delete_field():
         table_field = load_session_value(talbe_field_str)[2:]
 
     if request.method == "GET":
-        return render_template("delete_field.html",
+        return render_template("info_management/delete_field.html",
                                fields=table_field)
 
     elif request.method == "POST":
@@ -450,7 +450,7 @@ def detail_info():
                 row = [field[0], field[1], getattr(retrieved_student, field[0])]
                 fields_values.append(row)
 
-        return render_template('detail_info.html',
+        return render_template('info_management/detail_info.html',
                                fields_values=fields_values,
                                id=id_one,
                                if_readonly=if_readonly)
@@ -510,7 +510,7 @@ def auth_delete():
                 student_name += student.name + '，'
             student_name = student_name[:-1]
 
-        return render_template('auth_delete.html', student_name=student_name)
+        return render_template('info_management/auth_delete.html', student_name=student_name)
 
     elif request.method == 'POST':  # 确认删除
         """执行删除操作"""
@@ -531,7 +531,7 @@ def auth_delete():
 @login_required
 def import_file():
     if request.method == "GET":
-        return render_template("import_file.html")
+        return render_template("info_management/import_file.html")
 
     elif request.method == "POST":
         """安全验证"""

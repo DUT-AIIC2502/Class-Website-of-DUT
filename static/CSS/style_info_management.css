@@ -80,13 +80,13 @@ p {
     line-height: 1.8;
 }
 
-a {
+.form-group a {
     color: var(--primary);
     text-decoration: none;
     transition: var(--transition);
 }
 
-a:hover {
+.form-group a:hover {
     color: var(--secondary);
     text-decoration: underline;
 }

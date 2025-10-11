@@ -19,6 +19,10 @@ def setup_app_hooks(state):
     """
     app = state.app
 
+    """
+    以下函数用于记录日志
+    """
+
     def get_current_view_function_name():
         # 1. 获取请求的 URL 规则
         # request.url_rule 会返回一个 Rule 对象，其中包含了端点信息
@@ -104,9 +108,20 @@ def setup_app_hooks(state):
         else:
             print("请求正常执行。")
 
+    """
+    以下函数用来渲染模板
+    """
+
+    @app.context_processor
+    def inject_global_params():
+        return {
+            "services": {},
+            "user_info": get_user_info()
+        }
+
 
 # --- 在蓝图上记录这个设置函数 ---
-# record_once 确保 setup_app_hooks 只被执行一次，即使蓝图被多次注册（在测试等场景中可能发生）
+# record_once 确保 setup_app_hooks 只被执行一次，即使蓝图在测试等场景中可能被多次注册
 main_bp.record_once(setup_app_hooks)
 
 
@@ -139,7 +154,7 @@ def home():
         session['page_current'] = None
         session['page_number'] = None
 
-    return render_template('home.html', **user_info)
+    return render_template('main/home.html', **user_info)
 
 
 @main_bp.route('/create_tables/')

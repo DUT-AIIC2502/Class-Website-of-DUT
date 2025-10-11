@@ -1,20 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user_name }}的详细信息</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
-</head>
-<body>
-    <!-- 导航页面 -->
-    <div class="navbar">
-        <div class="nav-brand">详细信息</div>
-        <ul class="nav-links">
-            <li><a href="/home/">首页</a></li>
-        </ul>
-    </div>
+{% extends "base.html" %}
 
+{% block title %}{{ user_name }}的详细信息{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
     <!-- 呈现详细信息的表单 -->
     <div class="card">
         <!-- 用户的详细信息 -->
@@ -22,19 +14,19 @@
             <!-- 分条输出该用户的详细信息 -->
             <div class="form-group">
                 <label for="user_name">姓名：</label>
-                <input type="text" id="user_name" name="user_name" value="{{ user_name }}" {{if_readonly}}>
+                <input type="text" id="user_name" name="user_name" value="{{ user_info.user_name }}" {{if_readonly}}>
             </div>
             <div class="form-group">
                 <label for="user_id">学号：</label>
-                <input type="text" id="user_id" name="user_id" value="{{ user_id }}" {{if_readonly}}>
+                <input type="text" id="user_id" name="user_id" value="{{ user_info.user_id }}" {{if_readonly}}>
             </div>
             <div class="form-group">
                 <label for="telephone">手机号：</label>
-                <input type="text" id="telephone" name="telephone" value="{{ telephone }}" {{if_readonly}}>
+                <input type="text" id="telephone" name="telephone" value="{{ user_info.telephone }}" {{if_readonly}}>
             </div>
             <div class="form-group">
                 <label for="email">邮箱：</label>
-                <input type="text" id="email" name="email" value="{{ email }}" {{if_readonly}}>
+                <input type="text" id="email" name="email" value="{{ user_info.email }}" {{if_readonly}}>
             </div>
             <p>身份：{{ user_top_role }}</p>
             <p>注册时间：{{ create_time.strftime('%Y年%m月%d日 %H:%M:%S') }}</p>
@@ -63,5 +55,4 @@
             </div>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

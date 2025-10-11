@@ -31,13 +31,13 @@
                 </ul>
             </nav>
 
-            {% if user_id %}
+            {% if user_info.user_id %}
                 <div>
                     <a href="/auth/detail_info" class="user-info">
                         <img src="{{ url_for('static', filename='images/icon_user.png') }}"
                              alt="用户头像" width="50" height="50">
-                        <p class="user-name">{{ user_name }}</p>
-                        <p class="user-role">{{ user_top_role }}</p>
+                        <p class="user-name">{{ user_info.user_name }}</p>
+                        <p class="user-role">{{ user_info.user_top_role }}</p>
                     </a>
                 </div>
             {% else %}

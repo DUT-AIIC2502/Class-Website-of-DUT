@@ -23,7 +23,7 @@ def login():
     session['whether_hidden'] = 0
 
     if request.method == 'GET':
-        return render_template('login.html')
+        return render_template('auth/login.html')
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
@@ -78,7 +78,7 @@ def register():
         form_get_str = get_session_value('form_get')
         form_get = load_session_value(form_get_str, {})
 
-        return render_template('register.html', **form_get)
+        return render_template('auth/register.html', **form_get)
 
     elif request.method == 'POST':
 
@@ -181,7 +181,7 @@ def detail_info():
             elif session['whether_readonly'] == 0:
                 if_readonly = ''
 
-        return render_template("user_detail_info.html", **user_info, if_readonly=if_readonly)
+        return render_template("auth/user_detail_info.html", **user_info, if_readonly=if_readonly)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
@@ -254,7 +254,7 @@ def change_password():
         if get_session_value('') == 1:
             form_get['student_id'] = current_user.student_id
 
-        return render_template('change_password.html', **form_get, whether_hidden=session['whether_hidden'])
+        return render_template('auth/change_password.html', **form_get, whether_hidden=session['whether_hidden'])
 
     elif request.method == 'POST':
         """获取表单提交的值，并保存至 session"""
@@ -353,7 +353,7 @@ def user_management():
 
         all_list = [roots_list, admins_list, users_list, guests_list]
 
-        return render_template('user_management.html', all_list=all_list)
+        return render_template('auth/user_management.html', all_list=all_list)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
