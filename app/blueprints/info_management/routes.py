@@ -10,7 +10,7 @@ import io
 from translate import Translator
 
 from ext import db, base
-from common.flask_func import get_session_value, load_session_value, dynamic_query_builder, get_navbar_urls, get_user_info
+from common.flask_func import get_session_value, load_session_value, dynamic_query_builder, get_services, get_user_info
 from decorators import role_required
 from models import refresh_db
 
@@ -88,7 +88,7 @@ def info_management():
 
         return render_template('info_management/info_management.html',
                                **form_get,
-                               navbar_urls=get_navbar_urls(),
+                               navbar_urls=get_services(),
                                fields=table_field,
                                table=table,
                                field_selected=fields,

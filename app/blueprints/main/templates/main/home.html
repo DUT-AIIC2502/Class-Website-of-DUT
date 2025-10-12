@@ -34,57 +34,20 @@
             </div>
 
             <div class="services">
-                <div class="service-card">
-                    <a href="/info_management/">
+                <!-- 自动列出所有服务 -->
+                {% for service in services %}
+                    <div class="service-card">
+                    <a href="{{ service.url }}">
                         <div class="service-icon">
     <!--                        <i class="fas fa-cloud"></i>-->
-                            <img src="{{ url_for('static', filename='images/icon_info_management.png') }}" alt="图标"
+                            <img src="{{ url_for('main.get_icon', image_id=service.id) }}" alt="图标"
                                  width="60" height="60">
                         </div>
-                        <h3>班级成员信息管理</h3>
-                        <p>提供安全可靠的公有云、私有云及混合云解决方案，帮助企业实现灵活扩展和成本优化。</p>
+                        <h3>{{ service.full_name }}</h3>
+                        <p>{{ service.description }}</p>
                     </a>
                 </div>
-
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3>网络安全</h3>
-                    <p>端到端网络安全解决方案，包括风险评估、渗透测试、安全监控和应急响应服务。</p>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>数据分析</h3>
-                    <p>利用大数据和AI技术，提供数据挖掘、商业智能和预测分析服务，助力数据驱动决策。</p>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h3>应用开发</h3>
-                    <p>定制化Web和移动应用开发，满足企业特定业务需求，提升用户体验和工作效率。</p>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <h3>IT咨询</h3>
-                    <p>专业IT战略咨询，帮助企业规划技术路线图，优化IT架构，实现技术与业务目标对齐。</p>
-                </div>
-
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <h3>技术支持</h3>
-                    <p>7x24小时专业技术支持服务，快速响应和解决各类IT问题，保障业务连续运行。</p>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>

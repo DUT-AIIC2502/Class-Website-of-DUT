@@ -2,11 +2,12 @@ import sys
 import traceback
 import datetime
 
-from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app
+from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app, send_file
+from io import BytesIO # 用于将二进制数据转换为文件流
 
 from ext import db, aps
-from common.flask_func import get_user_info, get_navbar_urls
-from models import Role, Permission, Logs, ScheduleFunctions, NavbarUrls
+from common.flask_func import get_user_info, get_services
+from models import Role, Permission, Logs, ScheduleFunctions, Services
 
 main_bp = Blueprint('main', __name__,
                     template_folder='templates')
@@ -115,7 +116,7 @@ def setup_app_hooks(state):
     @app.context_processor
     def inject_global_params():
         return {
-            "services": get_navbar_urls(),
+            "services": get_services(),
             "user_info": get_user_info()
         }
 
@@ -132,10 +133,6 @@ def main():
 
 @main_bp.route('/home/')
 def home():
-    if 1 == 1:
-        """获取用户信息"""
-        user_info = get_user_info()
-
     """初始化某些数据"""
     if 1 == 1:
         # 表名
@@ -154,14 +151,13 @@ def home():
         session['page_current'] = None
         session['page_number'] = None
 
-    return render_template('main/home.html', **user_info)
+    return render_template('main/home.html')
 
 
 @main_bp.route('/create_tables/')
 def create_tables():
     db.create_all()
 
-    # inspector = inspect(db.engine)
     """插入初始角色"""
     if Role.query.first() is None:
         role_list = [
@@ -206,21 +202,42 @@ def create_tables():
         db.session.bulk_insert_mappings(ScheduleFunctions, function_list)
         db.session.commit()
 
-    if NavbarUrls.query.first() is None:
-        navbar_urls_list = [
-            {'url': '/info_management/', 'name': '信息管理'},
-        ]
+    # if Services.query.first() is None:
+    #     services_list = [
+    #         {'url': '/info_management/', 'name': '信息管理', 'full_name': '班级成员信息管理', 'description': '暂无'},
+    #     ]
+    #
+    #     db.session.bulk_insert_mappings(Services, services_list)
+    #     db.session.commit()
 
-        db.session.bulk_insert_mappings(NavbarUrls, navbar_urls_list)
-        db.session.commit()
-
-    return "数据库表创建成功！插入初始 Role 成功！"
+    return redirect('/home/')
 
 
-@main_bp.route('/drop_tables/')
-def drop_tables():
-    db.drop_all()
-    return "数据库表删除成功！"
+@main_bp.route('/icon/<int:image_id>')
+def get_icon(image_id):
+    """
+    这是关键的路由！
+    它根据提供的 image_id 从数据库中获取图片数据，
+    并将其作为图片文件发送给浏览器。
+    """
+    # 从数据库中查询指定 ID 的图片
+    service = Services.query.get_or_404(image_id)
+
+    # 使用 send_file 函数发送图片数据
+    # BytesIO(image.data) 将二进制数据包装成一个类似文件的对象
+    # mimetype=image.mimetype 告诉浏览器这是什么类型的文件，以便正确渲染
+    # download_name=image.filename 提供一个默认的下载文件名 (如果用户右键保存)
+    return send_file(
+        BytesIO(service.icon),
+        mimetype=service.mimetype,
+        download_name=service.full_name
+    )
+
+
+# @main_bp.route('/drop_tables/')
+# def drop_tables():
+#     db.drop_all()
+#     return "数据库表删除成功！"
 
 
 @main_bp.route('/jobs')

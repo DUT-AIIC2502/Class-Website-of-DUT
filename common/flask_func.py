@@ -1,3 +1,4 @@
+import pymysql.err
 from flask import session
 from flask_login import current_user
 from sqlalchemy import and_, text
@@ -80,6 +81,18 @@ def get_user_info():
     return user_info
 
 
+def get_services():
+    """获取数据库中储存的所有服务"""
+    try:
+        sql = "SELECT * FROM services"
+        services_result = db.session.execute(text(sql))
+        services = [dict(row) for row in services_result.mappings()]
+    except:
+        services = {}
+
+    return services
+
+
 def dynamic_query_builder(model, fields_to_select, filters):
     """
     一个通用的动态查询构建器。
@@ -124,10 +137,10 @@ def dynamic_query_builder(model, fields_to_select, filters):
             # 检查是简单查询还是复杂查询
             if isinstance(value_info, dict) and 'op' in value_info and 'value' in value_info:
                 op = value_info['op']
-                val = value_info['value']
+                value = value_info['value']
                 if op in op_mapping:
                     # 调用 lambda 函数生成表达式并添加到 conditions 列表
-                    conditions.append(op_mapping[op](column, val))
+                    conditions.append(op_mapping[op](column, value))
                 else:
                     raise ValueError(f"不支持的操作符: {op}")
             else:
@@ -149,11 +162,3 @@ def dynamic_query_builder(model, fields_to_select, filters):
     except Exception as e:
         # 处理其他可能的错误
         raise ValueError(f"构建查询时发生错误: {e}")
-
-
-def get_navbar_urls():
-    sql = "SELECT url, name FROM navbar_urls"
-    navbar_urls = db.session.execute(text(sql))
-
-    return navbar_urls
-

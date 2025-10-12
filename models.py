@@ -2,7 +2,7 @@
 from flask_login import UserMixin, current_user
 from ext import db, login_manager
 # 直接从 sqlalchemy 导入，而不是通过 db 对象调用
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect, Text, LargeBinary
 from sqlalchemy.orm import relationship, backref, Mapped
 from typing import List
 # 日期类型
@@ -249,10 +249,13 @@ class ScheduleFunctions(db.Model):
 """
 
 
-class NavbarUrls(db.Model):
-    __tablename__ = 'navbar_urls'
+class Services(db.Model):
+    __tablename__ = 'services'
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     url: str = Column(String(64), nullable=False, comment="url路径")
     name: str = Column(String(64), nullable=False, comment="该url对应的功能")
+    full_name: str = Column(String(64), nullable=False, comment="该url对应的功能全称")
     description: str = Column(String(255), comment="描述")
+    mimetype = db.Column(String(16))  # 存储图片的 MIME 类型，如 'image/png'
+    icon = Column(LargeBinary(16777216), comment="图标")
 
