@@ -94,11 +94,13 @@ def create_app():
     from app.blueprints.main.routes import main_bp
     from app.blueprints.auth.routes import auth_bp
     from app.blueprints.info_management.routes import info_management_bp
+    from app.blueprints.count_inform.routes import count_inform_bp
 
     # 注册蓝图
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(info_management_bp)
+    app.register_blueprint(count_inform_bp)
 
     with app.app_context():
         """反射数据库中需要的表"""

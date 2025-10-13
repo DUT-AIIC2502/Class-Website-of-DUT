@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}统计&通知系统{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>统计@通知系统</h1>
+
+        <!-- 使用说明板块 -->
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>在这里，你可以通过多种途径轻松地统计出需要的信息，并自动私发消息通知到学生个人。</p>
+            <p>1. 选择信息来源，进入。</p>
+            <p>2. 选择你需要统计的信息。</p>
+            <p>3. 选择私发消息的方式</p>
+        </div>
+
+        <!-- 信息途径选取 -->
+        <div class="card">
+            <h2>选择信息来源</h2>
+
+            <!-- QQ接龙 -->
+            <div class="service service-card">
+                <a href="/count_inform/relay/">
+                    <div class="service-icon">
+                        <img src="{{ url_for('static', filename='images/icon_QQ_relay.png') }}" alt="图标"
+                             width="60" height="60">
+                    </div>
+                    <h3>QQ接龙</h3>
+                </a>
+            </div>
+
+            {% if description %}
+                <div class="card">
+                    <h2>对选中项进行操作</h2>
+                    <form method="post" action="/count_inform/" id="result">
+
+                        <div class="table-container">
+                            <table style="width: 40%">
+                                <caption>选中的同学</caption>
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>姓名</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in common_students %}
+                                        <tr>
+                                            <td>
+                                                <label class="checkbox-container">
+                                                    <input type="checkbox" name="students_to_remove" value={{row.0}}>
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                            </td>
+                                            <td>{{ row.1 }}</td>
+                                            <td>
+                                                <button class="btn btn-primary" name="method"
+                                                        value="remove_one_{{row.0}}">→</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-primary" name="method"
+                                                    value="remove_chose">移除选中的同学</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table style="width: 40%">
+                                <caption>未选中的同学</caption>
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>姓名</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in missing_students %}
+                                        <tr>
+                                            <td>
+                                                <label class="checkbox-container">
+                                                    <input type="checkbox" name="students_to_add" value={{row.0}}>
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                            </td>
+                                            <td>{{ row.1 }}</td>
+                                            <td>
+                                                <button class="btn btn-primary" name="method"
+                                                        value="add_one_{{row.0}}">←</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <button class="btn btn-primary" name="method"
+                                                    value="add_chose">加入选中的同学</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">待发送的消息：</label>
+                            <input type="text" id="message" name="message" value="{{ message }}" placeholder="请输入消息">
+                            <p style="font-size: small">（备注：你发送的消息将自动带上两个消息头——【自动消息】【来自：xxx】）</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="radio-container" for="by_admin">
+                                <input type="radio" name="send_way" id="by_admin" value="by_admin" checked>
+                                <span class="radio-checkmark"></span>由管理员发送
+                            </label>
+                            <label class="radio-container" for="by_myself">
+                                <input type="radio" name="send_way" id="by_myself" value="by_myself">
+                                <span class="radio-checkmark"></span>自己发送
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary" name="method" value="send_message">发送QQ信息</button>
+                        </div>
+
+                    </form>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+    </div>
+{% endblock %}

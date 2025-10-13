@@ -37,16 +37,16 @@
                 <!-- 自动列出所有服务 -->
                 {% for service in services %}
                     <div class="service-card">
-                    <a href="{{ service.url }}">
-                        <div class="service-icon">
-    <!--                        <i class="fas fa-cloud"></i>-->
-                            <img src="{{ url_for('main.get_icon', image_id=service.id) }}" alt="图标"
-                                 width="60" height="60">
-                        </div>
-                        <h3>{{ service.full_name }}</h3>
-                        <p>{{ service.description }}</p>
-                    </a>
-                </div>
+                        <a href="{{ service.url }}">
+                            <div class="service-icon">
+        <!--                        <i class="fas fa-cloud"></i>-->
+                                <img src="{{ url_for('main.get_icon', image_id=service.id) }}" alt="图标"
+                                     width="60" height="60">
+                            </div>
+                            <h3>{{ service.full_name }}</h3>
+                            <p>{{ service.description }}</p>
+                        </a>
+                    </div>
                 {% endfor %}
             </div>
         </div>

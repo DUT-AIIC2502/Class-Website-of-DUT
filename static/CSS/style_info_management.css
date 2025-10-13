@@ -301,6 +301,15 @@ select:focus {
     text-decoration: none;
 }
 
+/* 容器样式 */
+.table-container {
+        display: flex; /* 将容器设置为 Flex 布局 */
+        justify-content: center; /* 水平居中对齐 */
+        align-items: flex-start; /* 垂直顶部对齐 */
+        gap: 20px; /* 两个表格之间的间距 */
+        margin: 20px; /* 容器周围的外边距 */
+    }
+
 /* 表格样式 */
 table {
     width: 100%;

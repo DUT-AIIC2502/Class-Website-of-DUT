@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}QQ接龙{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>QQ接龙</h1>
+
+        <div class="card">
+
+            <form method="post" action="/count_inform/relay/">
+                <div class="form-group">
+                    <!-- 输入接龙信息框 -->
+                    <label for="message">接龙信息：
+                        <textarea id="message" name="message" required rows="5" cols="50" placeholder="请输入多行文本..."></textarea>
+                    </label>
+                </div>
+
+                <!-- 选择需要的信息 -->
+                <div class="form-group">
+                    <p>你需要获得：</p>
+                    <label class="radio-container" for="yes">
+                        <input type="radio" name="method" id="yes" value="yes" checked>
+                        <span class="radio-checkmark"></span>已接龙的同学
+                    </label>
+                    <label class="radio-container" for="no">
+                        <input type="radio" name="method" id="no" value="no">
+                        <span class="radio-checkmark"></span>未接龙的同学
+                    </label>
+<!--                    <input type="radio" name="method" id="yes" value="yes" checked>-->
+<!--                    <label for="yes">已接龙的同学</label>-->
+
+<!--                    <input type="radio" name="method" id="no" value="no">-->
+<!--                    <label for="no">未接龙的同学</label>-->
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit">获取统计信息</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.querySelector('.auto-resize');
+        textarea.addEventListener('input', () => {
+          textarea.style.height = 'auto';
+          textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    </script>
+{% endblock %}

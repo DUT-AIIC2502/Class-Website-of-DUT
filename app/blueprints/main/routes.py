@@ -68,7 +68,7 @@ def setup_app_hooks(state):
 
         # 记录 session 中的信息
         session_dict = dict(session)
-        my_session_dict = {k: v for k, v in session_dict.items() if not k.startswith('_')}
+        my_session_dict = {k: v for k, v in session_dict.items() if isinstance(k, str) and not k.startswith('_')}
 
         g.param['session'] = my_session_dict
         g.new_log.oper_param = str(g.param)
