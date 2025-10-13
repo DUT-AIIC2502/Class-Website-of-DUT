@@ -16,6 +16,14 @@ auth_bp = Blueprint('auth', __name__,
                     url_prefix='/auth',
                     template_folder='templates')
 
+"""
+使用到的 session 的键：
+table_name: str，信息库中储存本班学生的信息的表名
+form_get: dict，表单提交的值，用于恢复表单
+whether_hidden: int，用于标记是否要隐藏“学号”输入框。0：不隐藏；1：隐藏。
+captcha_id: int，用于匹配验证码
+"""
+
 
 @auth_bp.route('/login/', methods=['GET', 'POST'])
 def login():

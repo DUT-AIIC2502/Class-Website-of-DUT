@@ -14,30 +14,37 @@ count_inform_bp = Blueprint('count_inform', __name__,
                             template_folder='templates')
 
 """
+使用到的 session 的键：
+table_name: str，信息库中储存本班学生的信息的表名
+form_get: dict，表单提交的值，用于恢复表单
+description: str，对选中学生的描述信息
+chose_students: 二维list，选中学生，包含 id、name
+not_chose_students: 二维list，未选中学生，包含 id、name
 """
 
 
-
-
 @count_inform_bp.before_request
-@role_required('User')
 def before():
+    # 当 session 过期后，重新刷新
+    if get_session_value('table_name') is None:
+        return "<script> alert('session已过期，请从主页重新进入页面。');window.open('/home/');</script>"
+
     # 获取表对应的 ORM 类
     table_name = get_session_value('table_name')
     if table_name in db.metadata.tables.keys():
         StudentInfo: db.Model = getattr(base.classes, table_name)
         g.info_table = StudentInfo
+
+        """获取包含所有学生的列表"""
+        if 1 == 1:
+            retrieved_students = db.session.query(StudentInfo).with_entities(StudentInfo.id, StudentInfo.name).all()
+            all_students = []  # 包括学生的id、姓名
+            for student in retrieved_students:
+                all_students.append([student.id, student.name])
+
+            g.all_students = all_students
     else:
-        return "表不存在"
-
-    """获取包含所有学生的列表"""
-    if 1 == 1:
-        retrieved_students = db.session.query(StudentInfo).with_entities(StudentInfo.id, StudentInfo.name).all()
-        all_students = []  # 包括学生的id、姓名
-        for student in retrieved_students:
-            all_students.append([student.id, student.name])
-
-        g.all_students = all_students
+        return "你查找的表不存在。"
 
 
 @count_inform_bp.route('/', methods=['GET', 'POST'])
@@ -77,7 +84,7 @@ def home():
             new_changed_list = changed_list
             for index in range(len(original_list)):
                 for s_id in s_ids:
-                    new_original_list = [student for student in new_original_list if student[0] != s_id]
+                    new_original_list = [s for s in new_original_list if s[0] != s_id]
                     if s_id == original_list[index][0]:
                         print("匹配成功")
                         new_changed_list.append(original_list[index])

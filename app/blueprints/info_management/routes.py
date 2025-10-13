@@ -19,6 +19,17 @@ info_management_bp = Blueprint('info_management', __name__,
                                url_prefix='/info_management',
                                template_folder='templates')
 
+"""
+使用到的 session 的键：
+table_name: str，信息库中储存本班学生的信息的表名
+form_get: dict，表单提交的值，用于恢复表单
+fields_to_select: 一维list，复选框选中的字段
+whether_readonly: int，标记是否只读。0：可编辑。1：只读
+table_paging: 二维list，每一项为分页后查询结果
+page_number: 总页数
+page_current: 当前所在的页数
+"""
+
 
 @info_management_bp.before_request
 def before_request():
