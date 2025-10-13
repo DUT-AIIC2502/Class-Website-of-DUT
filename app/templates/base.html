@@ -85,11 +85,9 @@
                 <div class="footer-col">
                     <h3>服务项目</h3>
                     <ul class="footer-links">
-                        <li><a href="#">云计算服务</a></li>
-                        <li><a href="#">网络安全</a></li>
-                        <li><a href="#">数据分析</a></li>
-                        <li><a href="#">应用开发</a></li>
-                        <li><a href="#">IT咨询</a></li>
+                        {% for service in services %}
+                            <li><a href="{{ service.url }}">{{ service.name }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
 
@@ -107,7 +105,7 @@
                 <div class="footer-col">
                     <h3>联系我们</h3>
                     <div class="footer-contact">
-                        <p><i class="fas fa-map-marker-alt"></i> 北京市海淀区中关村科技园88号</p>
+                        <p><i class="fas fa-map-marker-alt"></i> （地址）</p>
                         <p><i class="fas fa-phone"></i> +86 10 8888 7777</p>
                         <p><i class="fas fa-envelope"></i> contact@chuangwei.com</p>
                     </div>

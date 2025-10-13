@@ -128,7 +128,7 @@ main_bp.record_once(setup_app_hooks)
 
 @main_bp.route('/')
 def main():
-    return redirect('/home/', code=302, Response=None)
+    return redirect('/create_tables/')
 
 
 @main_bp.route('/home/')
