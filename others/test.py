@@ -1,4 +1,4 @@
-from common.control_func import send_qq_message
+from common.send_message import send_qq_message
 
 if __name__ == '__main__':
     send_qq_message(

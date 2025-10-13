@@ -51,7 +51,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for row in common_students %}
+                                    {% for row in chose_students %}
                                         <tr>
                                             <td>
                                                 <label class="checkbox-container">
@@ -87,7 +87,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for row in missing_students %}
+                                    {% for row in not_chose_students %}
                                         <tr>
                                             <td>
                                                 <label class="checkbox-container">
@@ -129,11 +129,15 @@
                             <label class="radio-container" for="by_myself">
                                 <input type="radio" name="send_way" id="by_myself" value="by_myself">
                                 <span class="radio-checkmark"></span>自己发送
+                                <p style="font-size: small">（请确选中的学生中不含你本人）</p>
                             </label>
                         </div>
 
                         <div class="form-group">
-                            <button class="btn btn-primary" name="method" value="send_message">发送QQ信息</button>
+                            <button class="btn btn-primary" name="method" value="send_message"
+                                    onclick="return confirm('确定要发送QQ消息吗?');">
+                                发送QQ信息
+                            </button>
                         </div>
 
                     </form>

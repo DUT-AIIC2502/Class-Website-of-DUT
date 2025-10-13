@@ -2,14 +2,21 @@ import re
 import pickle
 
 from flask import Blueprint, request, render_template, redirect, url_for, session, g
+from flask_login import current_user
 
 from ext import db, base
 from common.flask_func import get_session_value, load_session_value
 from decorators import role_required
+from common.send_message import send_qq_message
 
 count_inform_bp = Blueprint('count_inform', __name__,
                             url_prefix='/count_inform',
                             template_folder='templates')
+
+"""
+"""
+
+
 
 
 @count_inform_bp.before_request
@@ -40,17 +47,18 @@ def home():
         """声明使用到的 session 键"""
         description = get_session_value('description')
 
-        common_students = load_session_value(get_session_value('common_students'))
-        missing_students = load_session_value(get_session_value('missing_students'))
+        chose_students = load_session_value(get_session_value('chose_students'))
+        not_chose_students = load_session_value(get_session_value('not_chose_students'))
 
     if request.method == 'GET':
         """预览选择的学生"""
 
         return render_template(
             "count_inform/home.html",
+            **load_session_value(get_session_value('form_get'), {}),
             description=description,
-            common_students=common_students,
-            missing_students=missing_students
+            chose_students=chose_students,
+            not_chose_students=not_chose_students
         )
 
     elif request.method == 'POST':
@@ -75,32 +83,50 @@ def home():
                         new_changed_list.append(original_list[index])
 
             if original_status == 0:
-                session['common_students'] = pickle.dumps(new_original_list)
-                session['missing_students'] = pickle.dumps(new_changed_list)
+                session['chose_students'] = pickle.dumps(new_original_list)
+                session['not_chose_students'] = pickle.dumps(new_changed_list)
             else:
-                session['missing_students'] = pickle.dumps(new_original_list)
-                session['common_students'] = pickle.dumps(new_changed_list)
+                session['not_chose_students'] = pickle.dumps(new_original_list)
+                session['chose_students'] = pickle.dumps(new_changed_list)
 
             return None
 
-        form_get = request.form.to_dict()
+        """获取并上传表单提交的数据"""
+        if 1 == 1:
+            form_get = request.form.to_dict()
+            session['form_get'] = pickle.dumps(form_get)
+
         if 'one' in form_get['method']:
             student_ids_str = re.findall(r"\d+", form_get['method'])
             student_ids = [int(student_id) for student_id in student_ids_str]
             if "remove_one" in form_get['method']:
-                exchange_students(student_ids, common_students, missing_students, 0)
+                exchange_students(student_ids, chose_students, not_chose_students, 0)
             elif "add_one" in form_get['method']:
-                exchange_students(student_ids, missing_students, common_students, 1)
+                exchange_students(student_ids, not_chose_students, chose_students, 1)
 
         elif 'chose' in form_get['method']:
             if "remove" in form_get['method']:
                 student_ids_str = request.form.getlist('students_to_remove')
                 student_ids = [int(student_id) for student_id in student_ids_str]
-                exchange_students(student_ids, common_students, missing_students, 0)
+                exchange_students(student_ids, chose_students, not_chose_students, 0)
             elif "add" in form_get['method']:
                 student_ids_str = request.form.getlist('students_to_add')
                 student_ids = [int(student_id) for student_id in student_ids_str]
-                exchange_students(student_ids, missing_students, common_students, 1)
+                exchange_students(student_ids, not_chose_students, chose_students, 1)
+
+        elif form_get['method'] == 'send_message':
+            if len(chose_students) == 0:
+                return f"<script> alert('请选择要发送信息的同学！');window.open('{url_for('count_inform.home')}');</script>"
+
+            message = f"【自动消息】【来自：{current_user.real_name}】{form_get['message']}"
+
+            if form_get['send_way'] == 'by_admin':
+                pass
+
+            if form_get['send_way'] == 'by_myself':
+                for student in chose_students:
+                    if current_user.real_name != student[1]:
+                        send_qq_message(student[1], message)
 
         return redirect(f"{url_for('count_inform.home')}#result")
 
@@ -149,10 +175,11 @@ def relay():
         if 1 == 1:
             if form_get['method'] == 'yes':
                 session['description'] = "你已选中参与接龙的同学："
+                session['chose_students'] = pickle.dumps(common_students)
+                session['not_chose_students'] = pickle.dumps(missing_students)
             elif form_get['method'] == 'no':
                 session['description'] = "你已选中未参与接龙的同学。"
-
-            session['common_students'] = pickle.dumps(common_students)
-            session['missing_students'] = pickle.dumps(missing_students)
+                session['chose_students'] = pickle.dumps(missing_students)
+                session['not_chose_students'] = pickle.dumps(common_students)
 
         return redirect(url_for('count_inform.home'))
