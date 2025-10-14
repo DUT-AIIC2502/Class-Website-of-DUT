@@ -12,6 +12,7 @@
 
 1. 确保本地已安装了 git。
 2. 打开 cmd，切换到项目目录：`cd <你的项目的路径>`。
+   - 注意：路径中最好不要有中文。
 3. 从 Github 克隆项目到本地：`git clone https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
 4. 环境配置：
    1. git：参考https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git ，安装最新版本的 git
