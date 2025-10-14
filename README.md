@@ -14,7 +14,7 @@
 2. 打开 cmd，切换到项目目录：`cd <你的项目的路径>`。
 3. 从 Github 克隆项目到本地：`git clone https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
 4. 环境配置：
-   1. git：参考https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git，安装最新版本的 git
+   1. git：参考https://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git ，安装最新版本的 git
    2. python 库：详见 requirements.tet 文件。
    3. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       - 第一次运行应用时，程序会自动创建大部分表，但还有一个表需要手动创建，相应的 sql 文件位于 static/data/create_tables.sql。
