@@ -10,9 +10,10 @@
 
 ## 安装步骤
 
-1. 从 Github 克隆项目到本地：`git clone https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
-2. 环境配置：
-   1. python 库：详见 requirements.tet 文件
+1. 确保本地已安装了 git。
+2. 从 Github 克隆项目到本地：`git clone https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
+3. 环境配置：
+   1. python 库：详见 requirements.tet 文件。
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       - 第一次运行应用时，程序会自动创建大部分表，但还有一个表需要手动创建，相应的 sql 文件位于 static/data/create_tables.sql。
       - 目前，`services`表需要自行配置，数据位于 static/data/services.sql。
@@ -20,9 +21,49 @@
 
 ## 使用方法
 
-1. 在 run.py 文件中，设置运行环境。
+1. 切换分支到 master：`git checkout master`。
+   - master 为主分支，包含成熟的应用。
+   - 请不要随意提交更新至 master。
+2. 在 run.py 文件中，设置运行环境。
    - 修改变量`branch`，如果是生产环境，则设置为`"main"`；如果是开发环境，则设置为`"dev"`。
-2. 启动 run.py，即可在本地/局域网部署网站。
+3. 启动 run.py，即可在本地/局域网部署网站。
+
+# 项目结构和文件组织
+
+# 贡献指南
+
+## 如何为项目做出贡献？
+
+（以下步骤中的 git 操作可用任意 IDE 的图形化界面执行）
+
+1. 了解项目
+   1. 阅读项目的文档和代码，了解项目的目标、架构和设计原则。
+   2. 参与项目的讨论和会议，与项目成员交流。
+2. 找到贡献的机会
+   1. 查看项目的问题跟踪器，找到你可以解决的问题。
+   2. 注意项目的未来计划和里程碑，看看哪些功能你可以贡献。
+3. 贡献代码
+   1. 切换分支为 dev：`git checkout dev`
+   2. 确保你的代码为最新：`git fetch https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
+   3. 在本地开发和测试你的代码。
+   4. 提交 Pull Request。
+
+### 提交代码的标准
+
+## 提交问题和拉取请求的流程
+
+1. 提交问题（Submitting Issues）
+   1. 使用明确、具体的标题描述问题。
+   2. 提供问题的详细描述，包括重现步骤、预期行为和实际行为。
+   3. 如果可能，附加屏幕截图或动画来说明问题。
+2. 提交拉取请求（Submitting Pull Requests）
+   1. 使用清晰的标题描述拉取请求的目的。
+   2. 在描述中详细说明你的更改和这些更改的必要性。
+   3. 确保你的代码符合项目的编码标准和风格指南。
+
+# 许可证
+
+详见 LICENSE.txt 文件
 
 # 数据类型说明
 
