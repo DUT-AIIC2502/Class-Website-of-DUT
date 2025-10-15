@@ -85,7 +85,7 @@ def send_qq_message(contact_name: str, message: str, qq_window_title="QQ"):
 
         # 在 ComboBox 的输入框中直接输入文本
         search_combo.type_keys(contact_name)
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     """步骤 3: 智能定位并打开聊天窗口"""
     if 1 == 1:
