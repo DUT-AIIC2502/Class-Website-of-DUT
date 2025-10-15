@@ -12,7 +12,11 @@
    - 注意：路径中最好不要有中文。
 3. 从 Github 克隆项目到本地：`git clone https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
 4. 环境配置：
-   1. python 库：详见 requirements.tet 文件。
+   1. python 库：
+      1. 在 IDE 中运行终端，以下命令均在终端中运行（PowerShell环境）
+      2. 用 python 自带的 venv 模块创建虚拟环境：`python -m venv venv`。
+      3. 激活虚拟环境：`& .\venv\Scripts\activate`（成功后终端显示`(venv)`）
+      4. 下载项目所需的包：`pip install -r requirements.txt`
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       - 第一次运行应用时，程序会自动创建大部分表，但还有一个表(`student_info`)需要手动创建，相应的 sql 文件位于 static/data/create_tables.sql。
    3. 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
