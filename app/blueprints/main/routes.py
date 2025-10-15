@@ -121,7 +121,7 @@ def setup_app_hooks(state):
     @app.context_processor
     def inject_global_params():
         if db:
-            result = db.session.execute(text(
+            result_services = db.session.execute(text(
                 f"""
                 SELECT 1 
                 FROM information_schema.TABLES 
@@ -130,17 +130,32 @@ def setup_app_hooks(state):
                 """
             )).first()
 
-            if result is not None:
+            result_user_info = db.session.execute(text(
+                f"""
+                SELECT 1 
+                FROM information_schema.TABLES 
+                WHERE TABLE_SCHEMA = '{Config.DATABASE}'
+                  AND TABLE_NAME = 'users'
+                """
+            )).first()
+
+            if result_services is not None:
                 services = get_services()
             else:
                 services = {}
 
+            if result_user_info is not None:
+                user_info = get_user_info()
+            else:
+                user_info = {}
+
         else:
             services = {}
+            user_info = {}
 
         return {
             "services": services,
-            "user_info": get_user_info()
+            "user_info": user_info
         }
 
 
@@ -202,56 +217,19 @@ def create_tables():
         db.session.commit()
         print(f"SQL文件 {sql_file_path} 执行成功")
 
-    db.create_all()
-    db.session.commit()
-
     """插入初始角色"""
     if Role.query.first() is None:
-        role_list = [
-            {'name': 'Root', 'description': '超级管理员'},
-            {'name': 'Admin', 'description': '管理员'},
-            {'name': 'User', 'description': '用户'},
-            {'name': 'Guest', 'description': '访客'}
-        ]
-
-        db.session.bulk_insert_mappings(Role, role_list)
-        db.session.commit()
+        execute_sql_file_mysql('static/data/roles.sql')
 
     """插入权限"""
     if Permission.query.first() is None:
-        permission_list = [
-            {'name': '创建新用户', 'code': 'user_create', 'classification': 'management'},
-            {'name': '编辑用户信息', 'code': 'user_edit', 'classification': 'management'},
-            {'name': '删除用户', 'code': 'user_delete', 'classification': 'management'},
-            {'name': '查看用户列表', 'code': 'user_view', 'classification': 'management'},
-            {'name': '查看用户详细信息', 'code': 'user_view_detail', 'classification': 'management'},
-            {'name': '创建新角色', 'code': 'role_create', 'classification': 'management'},
-            {'name': '编辑角色信息和权限', 'code': 'role_edit', 'classification': 'management'},
-            {'name': '删除角色', 'code': 'role_delete', 'classification': 'management'},
-            {'name': '分配角色', 'code': 'role_assign', 'classification': 'management',
-             'description': '将角色分配给用户或从用户移除角色'},
-            {'name': '管理权限本身', 'code': 'permission_manage', 'classification': 'management',
-             'description': '通常只有超级管理员拥有'},
-            {'name': '修改系统全局配置', 'code': 'system_config_edit', 'classification': 'management'},
-            {'name': '查看系统日志', 'code': 'log_view', 'classification': 'management'},
-        ]
-
-        db.session.bulk_insert_mappings(Permission, permission_list)
-        db.session.commit()
+        execute_sql_file_mysql('static/data/permissions.sql')
 
     if ScheduleFunctions.query.first() is None:
-        function_list = [
-            {'func_id': 'check_time', 'func': 'app.blueprints.main.routes:check_time', 'args': '',
-             'f_trigger': 'interval', 'f_time': '0, 0, 10'},
-        ]
-
-        db.session.bulk_insert_mappings(ScheduleFunctions, function_list)
-        db.session.commit()
+        execute_sql_file_mysql('static/data/schedule_functions.sql')
 
     if Services.query.first() is None:
-        print("开始插入 services")
         execute_sql_file_mysql('static/data/services.sql')
-        print("插入 services 成功！")
 
     return redirect('/home/')
 
@@ -277,10 +255,10 @@ def get_icon(image_id):
     )
 
 
-# @main_bp.route('/drop_tables/')
-# def drop_tables():
-#     db.drop_all()
-#     return "数据库表删除成功！"
+@main_bp.route('/drop_tables/')
+def drop_tables():
+    db.drop_all()
+    return "数据库表删除成功！"
 
 
 @main_bp.route('/jobs')

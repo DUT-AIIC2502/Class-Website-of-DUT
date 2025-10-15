@@ -10,7 +10,7 @@ class Config(object):
     PORT = "3306"
     USERNAME = "root"
     PASSWORD = "123456"
-    DATABASE = 'AIIC_student_info'
+    DATABASE = 'CLASS_WEBSITE'
 
     SQLALCHEMY_DATABASE_URI = f"{DIALCT}+{DRITVER}://{USERNAME}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}?charset=utf8"
 

@@ -18,8 +18,12 @@
       3. 激活虚拟环境：`& .\venv\Scripts\activate`（成功后终端显示`(venv)`）
       4. 下载项目所需的包：`pip install -r requirements.txt`
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
-      - 第一次运行应用时，程序会自动创建大部分表，但还有一个表(`student_info`)需要手动创建，相应的 sql 文件位于 static/data/create_tables.sql。
-   3. 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
+      1. 安装 MySQL：参考https://zhuanlan.zhihu.com/p/654087404。
+      2. 新建数据库：`CREATE DATABASE CLASS_WEBSITE DEFAULT CHARACTER SET = 'utf8mb4';`
+         - ！！！注意：数据的名称较之前版本有变更。
+      3. 创建表`student_info`：相应语句位于`static/data/create_tables.sql`
+         - 说明：第一次运行应用时，程序会自动创建大部分表，只有这个表需要手动创建。
+         - 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
 
 ## 使用方法
 
@@ -29,12 +33,16 @@
 2. 在 run.py 文件中，设置运行环境。
    - 修改变量`branch`，如果是生产环境，则设置为`"main"`；如果是开发环境，则设置为`"dev"`。
 3. 启动 run.py，即可在本地/局域网部署网站。
+   - 通过终端启动应用：`python run.py`。
+   - 关闭应用：按快捷键`Ctrl+C`。
 
 # 项目结构和文件组织
 
 # 贡献指南
 
 ## 如何为项目做出贡献？
+
+登录github：参考https://blog.csdn.net/emem_0724/article/details/148242376。
 
 （以下步骤中的 git 操作可用任意 IDE 的图形化界面执行）
 

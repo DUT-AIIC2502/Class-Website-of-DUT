@@ -103,6 +103,10 @@ def create_app():
     app.register_blueprint(count_inform_bp)
 
     with app.app_context():
+        # 创建表
+        db.create_all()
+        db.session.commit()
+        
         """反射数据库中需要的表"""
         from models import reflect_db
         reflect_db()  # 调用函数执行反射

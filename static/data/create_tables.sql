@@ -1,4 +1,4 @@
-create table aiic_student_info.student_info
+create table CLASS_WEBSITE.student_info
 (
     id                 int auto_increment
         primary key,
