@@ -3,11 +3,14 @@ import traceback
 import datetime
 
 from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app, send_file
-from io import BytesIO # 用于将二进制数据转换为文件流
+from io import BytesIO  # 用于将二进制数据转换为文件流
+from pathlib import Path
+from sqlalchemy import text
 
 from ext import db, aps
 from common.flask_func import get_user_info, get_services
 from models import Role, Permission, Logs, ScheduleFunctions, Services
+from config import Config
 
 main_bp = Blueprint('main', __name__,
                     template_folder='templates')
@@ -15,8 +18,10 @@ main_bp = Blueprint('main', __name__,
 
 def setup_app_hooks(state):
     """
-        这个函数将在蓝图被注册到应用时调用。
-        在这里，我们可以为 app 添加钩子。
+    这个函数将在蓝图被注册到应用时调用。
+    在这里，我们可以为 app 添加钩子。
+    :param state:
+    :return:
     """
     app = state.app
 
@@ -115,8 +120,26 @@ def setup_app_hooks(state):
 
     @app.context_processor
     def inject_global_params():
+        if db:
+            result = db.session.execute(text(
+                f"""
+                SELECT 1 
+                FROM information_schema.TABLES 
+                WHERE TABLE_SCHEMA = '{Config.DATABASE}'
+                  AND TABLE_NAME = 'services'
+                """
+            )).first()
+
+            if result is not None:
+                services = get_services()
+            else:
+                services = {}
+
+        else:
+            services = {}
+
         return {
-            "services": get_services(),
+            "services": services,
             "user_info": get_user_info()
         }
 
@@ -156,7 +179,31 @@ def home():
 
 @main_bp.route('/create_tables/')
 def create_tables():
+    """创建数据库中的表"""
+    def execute_sql_file_mysql(sql_file_path):
+        """
+        执行 mysql 命令
+        :param sql_file_path: sql 文件路径
+        :return:
+        """
+
+        # 1. 读取.sql文件并处理（拆分语句，过滤空行和注释）
+        sql_content = Path(sql_file_path).read_text(encoding='utf-8')
+        # 按分号拆分语句（简单处理，复杂场景需优化）
+        sql_statements = [
+            stmt.strip() for stmt in sql_content.split(';')
+            if stmt.strip() and not stmt.strip().startswith('--')
+        ]
+
+        # 3. 逐条执行SQL语句
+        for stmt in sql_statements:
+            db.session.execute(text(stmt))
+        # 4. 提交事务
+        db.session.commit()
+        print(f"SQL文件 {sql_file_path} 执行成功")
+
     db.create_all()
+    db.session.commit()
 
     """插入初始角色"""
     if Role.query.first() is None:
@@ -193,7 +240,6 @@ def create_tables():
         db.session.commit()
 
     if ScheduleFunctions.query.first() is None:
-        print('插入定时任务列表')
         function_list = [
             {'func_id': 'check_time', 'func': 'app.blueprints.main.routes:check_time', 'args': '',
              'f_trigger': 'interval', 'f_time': '0, 0, 10'},
@@ -202,13 +248,10 @@ def create_tables():
         db.session.bulk_insert_mappings(ScheduleFunctions, function_list)
         db.session.commit()
 
-    # if Services.query.first() is None:
-    #     services_list = [
-    #         {'url': '/info_management/', 'name': '信息管理', 'full_name': '班级成员信息管理', 'description': '暂无'},
-    #     ]
-    #
-    #     db.session.bulk_insert_mappings(Services, services_list)
-    #     db.session.commit()
+    if Services.query.first() is None:
+        print("开始插入 services")
+        execute_sql_file_mysql('static/data/services.sql')
+        print("插入 services 成功！")
 
     return redirect('/home/')
 
