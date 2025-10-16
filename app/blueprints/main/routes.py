@@ -30,6 +30,9 @@ def setup_app_hooks(state):
     """
 
     def get_current_view_function_name():
+        """
+        获取当前视图函数的名称
+        """
         # 1. 获取请求的 URL 规则
         # request.url_rule 会返回一个 Rule 对象，其中包含了端点信息
         rule = request.url_rule
@@ -67,49 +70,68 @@ def setup_app_hooks(state):
 
     @app.after_request
     def after(response):
-        """正常请求处理完成后执行"""
-        """记录日志"""
-        g.new_log.level = 'Info'
+        """
+        正常请求处理完成后执行
+        记录日志
+        """
+        # 如果 g.new_log 不存在直接返回
+        if not getattr(g, 'new_log', None):
+            return response
 
-        # 记录 session 中的信息
+        # 只有在 teardown 没把级别设为 Error 时才设为 Info
+        if getattr(g.new_log, 'level', None) != 'Error':
+            g.new_log.level = 'Info'
+
+        # 记录 session 中的信息与操作参数
         session_dict = dict(session)
         my_session_dict = {k: v for k, v in session_dict.items() if isinstance(k, str) and not k.startswith('_')}
 
         g.param['session'] = my_session_dict
         g.new_log.oper_param = str(g.param)
 
-        """保存日志"""
-        db.session.add(g.new_log)
-        db.session.commit()
+        # 尝试保存日志，发生异常则回滚但不抛出
+        try:
+            db.session.add(g.new_log)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
         return response
 
     @app.teardown_request
     def teardown(exc):
+        """
+        请求结束时捕获异常并记录完整堆栈。
+        teardown 在 after_request 之后运行；如果发生异常，在这里设置 level 和 error_msg 并尝试保存。
+        """
         if exc is not None:
+            # 确保 g.new_log 存在
+            if not getattr(g, 'new_log', None):
+                g.new_log = Logs()
+
             g.new_log.level = 'Error'
 
             """捕获异常信息"""
             if 1 == 1:
-                # 使用 sys.exc_info() 获取更详细的异常信息
-                # exc_type: 异常类型 (e.g., ValueError)
-                # exc_value: 异常实例 (与 exc 参数相同)
-                # exc_traceback: 回溯对象
-                exc_type, exc_value, exc_traceback = sys.exc_info()
+                # 获取完整堆栈信息和简短描述
+                full_trace = traceback.format_exc()
+                short_desc = f"{type(exc).__name__}: {str(exc)}"
 
-                # 使用 traceback.format_exception() 将异常信息格式化为字符串列表
-                # 每个元素是一行，包含了完整的堆栈信息
-                error_details_list = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                # # 将异常信息放入 oper_param 里便于查询（可选）
+                # g.param.setdefault('exception', {})['short'] = short_desc
+                # g.param.setdefault('exception', {})['traceback'] = full_trace
+                # g.new_log.oper_param = str(g.param)
 
-                # 将列表拼接成一个完整的字符串
-                full_error_string = "".join(error_details_list)
+                # models.Logs 字段名为 error_msg，务必使用正确字段
+                g.new_log.error_full_trace = full_trace
+                g.new_log.error_short_desc = short_desc
 
-                # 保存至日志
-                g.new_log.error_mag = full_error_string
-
-            """保存日志"""
-            db.session.add(g.new_log)
-            db.session.commit()
+            # 尝试保存日志（安全提交/回滚）
+            try:
+                db.session.add(g.new_log)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
         else:
             print("请求正常执行。")

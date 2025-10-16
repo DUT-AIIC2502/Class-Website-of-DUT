@@ -202,15 +202,16 @@ class Logs(db.Model):
     user_name: str = Column(String(64))
     user_role: str = Column(String(32))
     # 请求信息
-    req_method: str = Column(String(16))
-    req_url: str = Column(String(255))
-    req_ip_adress: str = Column(String(64))
+    req_method: str = Column(String(16))            # 请求方法
+    req_url: str = Column(String(255))              # 请求URL
+    req_ip_address: str = Column(String(64))        # 请求IP地址
     # 操作相关信息
-    oper_function: str = Column(String(64))  # 操作名称，一般为函数名
+    oper_function: str = Column(String(64))         # 操作名称，一般为函数名
     oper_time: datetime = Column(DateTime, default=datetime.now)  # 操作时间（自动生成）
-    oper_param: str = Column(Text)  # 操作参数，包括 session、form_get，使用 jsonify 格式化
+    oper_param: str = Column(Text)                  # 操作参数，包括 session、form_get，使用 jsonify 格式化
     # 错误信息
-    error_msg: str = Column(Text)
+    error_short_desc: str = Column(String(255))     # 错误简短描述
+    error_full_trace: str = Column(Text)            # 错误完整堆栈
 
     def __init__(self):
         if current_user.is_authenticated:
