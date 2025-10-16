@@ -34,11 +34,13 @@ def login():
         return render_template('auth/login.html')
 
     elif request.method == 'POST':
+        print("收到登录请求。")
         form_get = request.form.to_dict()
 
         """验证用户是否存在"""
         if 1 == 1:
             user_id = form_get['student_id']
+            print(f"尝试登录的用户学号为 {user_id} 。")
             # 从数据库中检索用户对象
             retrieved_user = User.query.filter_by(student_id=user_id).first()
             """验证数据库中存在该用户，并读取需要的信息"""
@@ -49,7 +51,7 @@ def login():
                        f"window.open('{ url_for('auth.login') }');</script>"
 
         """验证用户是否激活"""
-        if retrieved_user.status == 0:
+        if int(retrieved_user.status) == 0:
             return "<script> alert('该用户还未激活！');window.open('/home/‘);</script>"
 
         """验证密码是否正确，更新登录状态"""
@@ -60,6 +62,7 @@ def login():
             if not is_value:
                 return f"<script> alert('密码错误！请重新输入。');window.open('{ url_for('auth.login') }');</script>"
 
+            print("密码验证通过。")
             # 登录用户，'remember=True' 实现“记住我”功能, 这会将会话信息写入浏览器
             login_user(retrieved_user, remember=True)
 
@@ -108,24 +111,26 @@ def register():
                         salt_length=16
                     )
 
-                """将注册信息保存至数据库（此时用户未激活）"""
+                """如果学号不重复，将注册信息保存至数据库（此时用户未激活）"""
                 if 1 == 1:
-                    # 记录用户的基本信息
-                    new_user = User(
-                        student_id=int(form_get['student_id']),
-                        real_name=form_get['name'],
-                        password_hash=password_hash
-                    )
+                    user = User.query.filter(User.student_id == form_get['student_id']).first()
+                    if not user:
+                        # 记录用户的基本信息
+                        new_user = User(
+                            student_id=int(form_get['student_id']),
+                            real_name=form_get['name'],
+                            password_hash=password_hash
+                        )
 
-                    # 将用户与User身份关联
-                    role_user = Role.query.filter(Role.name == 'User').first()
-                    new_user.add_role(role_user)
+                        # 将用户与User身份关联
+                        role_user = Role.query.filter(Role.name == 'User').first()
+                        new_user.add_role(role_user)
 
-                    role_guest = Role.query.filter(Role.name == 'Guest').first()
-                    new_user.add_role(role_guest)
+                        role_guest = Role.query.filter(Role.name == 'Guest').first()
+                        new_user.add_role(role_guest)
 
-                    db.session.add(new_user)
-                    db.session.commit()
+                        db.session.add(new_user)
+                        db.session.commit()
 
             """创建新的一条验证码"""
             if 1 == 1:
@@ -137,14 +142,14 @@ def register():
                 session['captcha_id'] = new_captcha.id
 
             return f"<script> alert('已创建验证码！请联系管理员获取')" \
-                   f";window.open('{url_for('auth.change_password')}');</script>"
+                   f";window.open('{url_for('auth.register')}');</script>"
 
         elif form_get['method'] == 'register':
             """检查验证码非空及正确"""
             if 1 == 1:
                 if form_get['CAPTCHA'] in (None, ''):
                     return f"<script> alert('请输入验证码！')" \
-                           f";window.open('{url_for('auth.change_password')}');</script>"
+                           f";window.open('{url_for('auth.register')}');</script>"
                 else:
                     captcha_id = get_session_value('captcha_id', 0)
                     # 从数据库中检索验证码
@@ -153,7 +158,7 @@ def register():
                     """验证验证码正确"""
                     if form_get['CAPTCHA'] == captcha.value:
                         # 激活账户
-                        user = User.query.filter(User.student_id == get_session_value('student_id'))
+                        user = User.query.filter(User.student_id == form_get['student_id']).first()
                         user.status = 1
                         db.session.commit()
 
@@ -259,7 +264,7 @@ def change_password():
         form_get_str = get_session_value('form_get')
         form_get = load_session_value(form_get_str, {})
 
-        if get_session_value('') == 1:
+        if get_session_value('whether_hidden') == 1:
             form_get['student_id'] = current_user.student_id
 
         return render_template('auth/change_password.html', **form_get, whether_hidden=session['whether_hidden'])

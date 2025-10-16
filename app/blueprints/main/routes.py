@@ -225,8 +225,10 @@ def create_tables():
     if Permission.query.first() is None:
         execute_sql_file_mysql('static/sql/permissions.sql')
 
+    """插入定时任务"""
     if ScheduleFunctions.query.first() is None:
-        execute_sql_file_mysql('static/sql/schedule_functions.sql')
+        pass
+        # execute_sql_file_mysql('static/sql/schedule_functions.sql')
 
     if Services.query.first() is None:
         execute_sql_file_mysql('static/sql/services.sql')
@@ -261,7 +263,7 @@ def drop_tables():
     return "数据库表删除成功！"
 
 
-@main_bp.route('/jobs')
+@main_bp.route('/jobs/')
 def list_jobs():
     """查看所有已添加的定时任务"""
     jobs = aps.get_jobs()  # 获取调度器中的所有任务
