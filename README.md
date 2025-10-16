@@ -20,7 +20,7 @@
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       1. 安装 MySQL：参考https://zhuanlan.zhihu.com/p/654087404。
       2. 新建数据库：`CREATE DATABASE CLASS_WEBSITE DEFAULT CHARACTER SET = 'utf8mb4';`
-         - ！！！注意：数据的名称较之前版本有变更。
+         - ！！！注意：数据库的名称较之前版本有变更。
       3. 创建表`student_info`：相应语句位于`static/data/create_tables.sql`
          - 说明：第一次运行应用时，程序会自动创建大部分表，只有这个表需要手动创建。
          - 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
