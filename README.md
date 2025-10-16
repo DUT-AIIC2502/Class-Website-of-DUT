@@ -38,6 +38,81 @@
 
 # 项目结构和文件组织
 
+## 项目结构
+
+```
+Class-Website-of-DUT/
+├─ .gitignore                     # 忽略不提交的文件/目录（如 venv、.env）
+├─ config.py                      # 应用配置（建议使用类 + 环境变量注入敏感值）
+├─ decorators.py                  # 自定义装饰器（权限、缓存、日志等复用函数）
+├─ ext.py                         # 第三方扩展初始化（db, apscheduler 等实例）
+├─ models.py                      # ORM 模型 / 数据表定义
+├─ README.md                      # 项目说明、安装与使用文档
+├─ requirements.txt               # 依赖列表（pip install -r requirements.txt）
+├─ run.py                         # 启动脚本（读取配置并运行 app，避免放业务逻辑）
+│
+├─ app/                           # 应用包：业务代码、蓝图、模板
+│  ├─ __init__.py                 # 应用工厂和蓝图注册点
+│  │
+│  ├─ blueprints/                 # 按功能拆分的蓝图目录（每个蓝图自包含路由与模板）
+│  │  ├─ __init__.py              # 蓝图统一注册（可为空或导入各蓝图）
+│  │  │
+│  │  ├─ auth/                    # 用户认证与管理
+│  │  │  ├─ __init__.py
+│  │  │  ├─ routes.py             # 登录/注册/权限等视图（业务逻辑应调用 service/common）
+│  │  │  └─ templates/auth/       # auth 相关模板（login、register、用户详情等）
+│  │  │
+│  │  ├─ count_inform/            # 统计/通知相关蓝图
+│  │  │  ├─ __init__.py
+│  │  │  ├─ routes.py
+│  │  │  └─ templates/count_inform/
+│  │  │
+│  │  ├─ info_management/         # 学生信息管理核心功能
+│  │  │  ├─ __init__.py
+│  │  │  ├─ routes.py             # 查询、导入、字段管理等视图
+│  │  │  └─ templates/info_management/
+│  │  │     ├─ info_management.html
+│  │  │     └─ ...                # 详情/导入/字段操作模板
+│  │  │
+│  │  ├─ main/                    # 主页与系统初始化相关路由
+│  │  │  ├─ __init__.py
+│  │  │  ├─ routes.py             # create_tables、home、静态资源接口等
+│  │  │  └─ templates/main/
+│  │  │     └─ home.html
+│  │  │
+│  │  └─ new_blueprint/           # 示例/新模块占位（便于复制模板创建新功能）
+│  │     ├─ __init__.py
+│  │     ├─ routes.py
+│  │     └─ templates/new_blueprint/
+│  │
+│  └─ templates/                  # 全局模板（如 base.html：布局、导航等）
+│     └─ base.html
+│
+├─ common/                        # 公共工具与服务（供各蓝图复用）
+│  ├─ __init__.py
+│  ├─ flask_func.py               # 常用 Flask 辅助函数（获取用户信息、会话处理等）
+│  └─ send_message.py             # 消息/通知发送封装
+│
+├─ others/                        # 非核心文件（任务清单、临时脚本）
+│  ├─ bug列表.xlsx                # 问题/需求清单（建议移到 issue tracker）
+│  └─ test.py                     # 辅助脚本（临时性）
+│
+├─ static/                        # 静态资源（前端样式、图片、以及静态 SQL）
+│  ├─ CSS/
+│  │  ├─ style.css
+│  │  └─ ...                      # 各页面样式
+│  ├─ images/
+│  │  └─ ...                      # 图标资源（用于界面）
+│  └─ sql/                        # 初始化 SQL 文件（create_tables、roles、permissions 等）
+│     ├─ create_tables.sql
+│     ├─ permissions.sql
+│     ├─ roles.sql
+│     ├─ schedule_functions.sql
+│     └─ services.sql
+│
+└─ venv/                          # 本地虚拟环境（应加入 .gitignore，不提交到仓库）      
+```
+
 # 贡献指南
 
 ## 如何为项目做出贡献？
@@ -53,12 +128,28 @@
    1. 查看项目的问题跟踪器，找到你可以解决的问题。
    2. 注意项目的未来计划和里程碑，看看哪些功能你可以贡献。
 3. 贡献代码
-   1. 切换分支为 dev：`git checkout dev`
-   2. 确保你的代码为最新：`git fetch https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`
+   1. 切换分支为 dev：`git checkout dev`。
+   2. 确保你的代码为最新：`git fetch https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`。
    3. 在本地开发和测试你的代码。
-   4. 提交 Pull Request。
+   4. 提交 Pull Request：`git push origin dev`。
 
-### 提交代码的标准
+### 约定与最佳实践
+
+- 配置与密钥：
+  - 在 config.py 中使用类与默认值，敏感变量通过 .env（开发）或环境变量（生产）注入。
+  - .env 放在 .gitignore 中，不要提交到版本库。
+- 数据库：
+  <!-- - 使用迁移工具（Flask-Migrate / Alembic）管理 schema，更改需生成 migration 并提交。 -->
+  - 将创建表的 SQL 放到 static/data，说明何时需要手动执行（README 已有说明）。
+- 代码风格：
+  - 遵循 PEP8，函数/模块命名使用 snake_case，类使用 PascalCase。
+  - 在重大改动前在 dev 分支开发并通过测试后发 PR 到主干分支（dev -> main/master）。
+- 提交与分支策略：
+  - 保持 master/main 用于生产，dev 用于日常开发。Feature 分支以 feature/xxx 命名。
+- 文档与注释：
+  - 每个蓝图、视图函数和复杂模块要有简短说明，接口和参数在 docs 中记录。
+- 测试覆盖：
+  - 关键业务模块（auth、info_management）需有单元测试与集成测试；数据库相关操作使用测试数据库或 mock。
 
 ## 提交问题和拉取请求的流程
 

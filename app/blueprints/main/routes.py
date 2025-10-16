@@ -219,17 +219,17 @@ def create_tables():
 
     """插入初始角色"""
     if Role.query.first() is None:
-        execute_sql_file_mysql('static/data/roles.sql')
+        execute_sql_file_mysql('static/sql/roles.sql')
 
     """插入权限"""
     if Permission.query.first() is None:
-        execute_sql_file_mysql('static/data/permissions.sql')
+        execute_sql_file_mysql('static/sql/permissions.sql')
 
     if ScheduleFunctions.query.first() is None:
-        execute_sql_file_mysql('static/data/schedule_functions.sql')
+        execute_sql_file_mysql('static/sql/schedule_functions.sql')
 
     if Services.query.first() is None:
-        execute_sql_file_mysql('static/data/services.sql')
+        execute_sql_file_mysql('static/sql/services.sql')
 
     return redirect('/home/')
 
