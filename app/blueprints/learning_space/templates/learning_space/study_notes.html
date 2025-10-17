@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}学习笔记{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>学习笔记</h1>
+
+        <!-- 使用说明板块 -->
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>以下陈列了不同分类的学习笔记，你可以点击进入查看</p>
+            <!-- <p>如果你有好的笔记资源，欢迎提交分享！</p> -->
+        </div>
+
+        <!-- 数学笔记 -->
+        <div class="card" id="result">
+            <h2>数学笔记</h2>
+
+            <!-- 数学分析 -->
+            <div class="service service-card">
+                <a href="/learning_space/study_notes/?book=math_analysis">
+                    <div class="service-icon">
+                        <img src="{{ url_for('static', filename='images/study_notes/math_analysis.png') }}" alt="图标"
+                             width="60" height="60">
+                    </div>
+                    <h3>数学分析</h3>
+                </a>
+            </div>
+
+        </div>
+
+
+    </div>
+{% endblock %}

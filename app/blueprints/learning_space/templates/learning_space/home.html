@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}学习空间{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>学习空间</h1>
+
+        <!-- 使用说明板块 -->
+        <!-- <div class="instructions">
+            <h3>使用说明</h3>
+            <p>在这里，你可以通过多种途径轻松地统计出需要的信息，并自动私发消息通知到学生个人。</p>
+            <p>1. 选择信息来源，进入。</p>
+            <p>2. 选择你需要统计的信息。</p>
+            <p>3. 选择私发消息的方式</p>
+        </div> -->
+
+        <!-- 不同板块 -->
+        <div class="card" id="result">
+            <h2>选择板块</h2>
+
+            <!-- 学习笔记 -->
+            <div class="service service-card">
+                <a href="/learning_space/study_notes/">
+                    <div class="service-icon">
+                        <img src="{{ url_for('static', filename='images/learning_space/study_notes.png') }}" alt="图标"
+                             width="60" height="60">
+                    </div>
+                    <h3>学习笔记</h3>
+                </a>
+            </div>
+
+        </div>
+
+
+    </div>
+{% endblock %}

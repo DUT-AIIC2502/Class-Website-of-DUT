@@ -144,7 +144,7 @@ def register():
                 db.session.add(new_captcha)
                 db.session.commit()
 
-                # 储存验证码对应的 id
+                """储存验证码对应的 id"""
                 session['captcha_id'] = new_captcha.id
                 # 记录发送时间，防止 1 分钟内重复发送
                 session['captcha_time_key'] = int(time.time())
@@ -301,10 +301,9 @@ def change_password():
             db.session.add(new_captcha)
             db.session.commit()
 
-            # 储存验证码对应的 id
+            """储存验证码对应的 id"""
             session['captcha_id'] = new_captcha.id
-            # 记录发送时间，防止 1 分钟内重复发送
-            session['captcha_time_key'] = int(time.time())
+            session['']
 
             return f"<script> alert('已创建验证码！请联系管理员获取')" \
                    f";window.open('{ url_for('auth.change_password') }');</script>"
@@ -336,7 +335,7 @@ def change_password():
                                 salt_length=16
                             )
 
-                        """将更改密码信息保存至数据库"""
+                        """将注册信息保存至数据库"""
                         if 1 == 1:
                             # 检索用户
                             user = User.query.filter(User.student_id == form_get['student_id']).first()
