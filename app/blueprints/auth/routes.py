@@ -1,6 +1,7 @@
 """注册界面蓝图"""
 import pickle
 import re
+import time
 
 
 from flask import Blueprint, request, redirect, render_template, url_for, session
@@ -100,6 +101,11 @@ def register():
             session['form_get'] = form_get_str
 
         if form_get['method'] == 'get_CAPTCHA':
+            wait = captcha_time_to_wait()
+            if wait > 0:
+                return f"<script> alert('请等待 {wait} 秒后再请求验证码！');" \
+                       f"window.open('{url_for('auth.register')}');</script>"
+
             """创建一个未激活的用户"""
             if 1 == 1:
                 """为密码加密"""
@@ -138,8 +144,11 @@ def register():
                 db.session.add(new_captcha)
                 db.session.commit()
 
-                """储存验证码对应的 id"""
+                # 储存验证码对应的 id
                 session['captcha_id'] = new_captcha.id
+                # 记录发送时间，防止 1 分钟内重复发送
+                session['captcha_time_key'] = int(time.time())
+                print(f"创建的验证码时间戳为 {int(time.time())} 。")
 
             return f"<script> alert('已创建验证码！请联系管理员获取')" \
                    f";window.open('{url_for('auth.register')}');</script>"
@@ -292,13 +301,20 @@ def change_password():
             db.session.add(new_captcha)
             db.session.commit()
 
-            """储存验证码对应的 id"""
+            # 储存验证码对应的 id
             session['captcha_id'] = new_captcha.id
+            # 记录发送时间，防止 1 分钟内重复发送
+            session['captcha_time_key'] = int(time.time())
 
             return f"<script> alert('已创建验证码！请联系管理员获取')" \
                    f";window.open('{ url_for('auth.change_password') }');</script>"
 
         elif form_get['method'] == 'confirm':
+            wait = captcha_time_to_wait()
+            if wait > 0:
+                return f"<script> alert('请等待 {wait} 秒后再请求验证码！');" \
+                       f"window.open('{url_for('auth.register')}');</script>"
+            
             """检查验证码非空及正确"""
             if 1 == 1:
                 if form_get['CAPTCHA'] in (None, ''):
@@ -320,7 +336,7 @@ def change_password():
                                 salt_length=16
                             )
 
-                        """将注册信息保存至数据库"""
+                        """将更改密码信息保存至数据库"""
                         if 1 == 1:
                             # 检索用户
                             user = User.query.filter(User.student_id == form_get['student_id']).first()
@@ -439,3 +455,14 @@ def get_top_role(user_roles):
     # 使用 user_level[task] 得到它的重要性数值，
     # 然后 max() 函数就根据这些数值进行比较。
     return max(user_roles, key=lambda task: user_level[task])
+
+
+def captcha_time_to_wait():
+    """验证是否 1min 内重复发送验证码"""
+    last_sent = get_session_value('captcha_time_key', None)
+    now = int(time.time())
+    if last_sent and now - int(last_sent) < 60:
+        wait = 60 - (now - int(last_sent))
+        return wait
+    else:
+        return 0

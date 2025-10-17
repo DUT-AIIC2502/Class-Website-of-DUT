@@ -30,9 +30,11 @@
 
 ## 使用方法
 
-1. 切换分支到 master：`git checkout master`。
-   - master 为主分支，包含成熟的应用。
-   - 请不要随意提交更新至 master。
+1. 分支操作：
+   1. 如果你是用户，请切换分支到 master：`git checkout master`。
+      - master 为主分支，包含成熟的应用。
+      - 请不要随意提交更新至 master。
+   2. 如果你是开发者，请切换分支到 dev：`git checkout dev`。
 2. 在 run.py 文件中，设置运行环境。
    - 修改变量`branch`，如果是生产环境，则设置为`"main"`；如果是开发环境，则设置为`"dev"`。
 3. 启动 run.py，即可在本地/局域网部署网站。
