@@ -16,6 +16,12 @@
       1. 在 IDE 中运行终端，以下命令均在终端中运行（PowerShell环境）
       2. 用 python 自带的 venv 模块创建虚拟环境：`python -m venv venv`。
       3. 激活虚拟环境：`& .\venv\Scripts\activate`（成功后终端显示`(venv)`）
+         - 如果激活失败，则大概率是因为 Windows PowerShell 执行策略限制，解决方法如下：
+           1. 以管理员身份运行 PowerShell。
+           2. 修改执行策略（临时或永久）：`Set-ExecutionPolicy RemoteSigned`。
+           3. 按提示，输入`Y`确认。
+           4. 再次尝试在项目目录激活虚拟环境。
+        - 如果以上步骤不能解决问题，请自行查找资料解决。
       4. 下载项目所需的包：`pip install -r requirements.txt`
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       1. 安装 MySQL：参考https://zhuanlan.zhihu.com/p/654087404。
