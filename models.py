@@ -260,3 +260,5 @@ class Services(db.Model):
     mimetype = db.Column(String(16))  # 存储图片的 MIME 类型，如 'image/png'
     icon = Column(LargeBinary(16777216), comment="图标")
 
+
+
