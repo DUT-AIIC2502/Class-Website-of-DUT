@@ -29,7 +29,7 @@
       2. 使用 IDE 的数据库扩展，与本地的数据库建立连接。
          - 如果你的 root 用户的密码不是`123456`，请修改为`123456`，以免不得不修改配置文件。
       3. 新建数据库：`CREATE DATABASE CLASS_WEBSITE DEFAULT CHARACTER SET = 'utf8mb4';`
-         - ！！！注意：数据库的名称较之前版本有变更。
+         - ！！！注意：数据库的名称为`CLASS_WEBSITE`，较之前版本有变更。
       4. 创建表`student_info`：相应语句位于`static/data/create_tables.sql`
          - 说明：第一次运行应用时，程序会自动创建大部分表，只有这个表需要手动创建。
          - 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
