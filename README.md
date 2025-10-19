@@ -127,7 +127,7 @@ Class-Website-of-DUT/
 
 # 贡献指南
 
-## 如何为项目做出贡献？
+## 对于组织成员，如何为项目做出贡献？
 
 登录github：参考https://blog.csdn.net/emem_0724/article/details/148242376。
 
@@ -140,10 +140,17 @@ Class-Website-of-DUT/
    1. 查看项目的问题跟踪器，找到你可以解决的问题。
    2. 注意项目的未来计划和里程碑，看看哪些功能你可以贡献。
 3. 贡献代码
-   1. 切换分支为 dev：`git checkout dev`。
-   2. 确保你的代码为最新：`git fetch https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`。
-   3. 在本地开发和测试你的代码。
-   4. 提交 Pull Request：`git push origin dev`。
+   1. 在任何操作之前，确保你的代码与仓库同步：
+      1. 访问远程仓库，从中拉取所有你还没有的数据：`git fetch origin`。
+         - 执行完成后，你将会拥有那个远程仓库中所有分支的引用，可以随时合并或查看。 
+      2. 切换到你要进行工作的分支：`git checkout <分支名>`。
+         - 详细参考“约定与最佳实现-提交与分支策略” 
+      3. 进行分支合并：`git merge origin/<相应的远程分支名>`。
+         - 此时，解决可能出现的冲突（如有）
+           1. 按提示修改冲突文件并执行：`git add <冲突文件>`，将所有冲突文件`add`到暂存区后，`git commit`提交更新（`commit`的语法自行查找）。
+           2. 再次推送：`git push origin <分支名>`。
+   2. 在本地开发和测试你的代码。
+   3. 提交代码：`git push origin <你要提交到的分支名>`。
 
 ### 约定与最佳实践
 
@@ -157,7 +164,21 @@ Class-Website-of-DUT/
   - 遵循 PEP8，函数/模块命名使用 snake_case，类使用 PascalCase。
   - 在重大改动前在 dev 分支开发并通过测试后发 PR 到主干分支（dev -> main/master）。
 - 提交与分支策略：
-  - 保持 master/main 用于生产，dev 用于日常开发。Feature 分支以 feature/xxx 命名。
+  1. `master`分支，即主分支。
+     - 用于生产，需要非常稳定的代码。
+     - 除管理员外，禁止向`master`分支提交代码。
+  2. `dev`分支，即开发分支，从`master`分支上检出。
+     - 用于日常开发，需要相对稳定的代码。
+     - 开发人员禁止直接向`dev`提交代码，需分别从该分支检出自己的`feature`分支，开发完成后将`feature`分支上的改动`merge`回`dev`分支。
+  3. `feature`分支，即功能分支，从`dev`分支上检出。
+     - 命名规范：以`feature/xxx`命名，其中`xxx`为功能名/其他标志。
+     - 开发人员如要开发新功能，需从该分支检出自己的`feature/xxx`分支，进行开发。
+  5. `release`分支，即发布分支，从`dev`分支上检出。
+     - 用作发版前的测试，可进行简单的 bug 修复。如果 bug 修复比较复杂，可`merge`回`dev`分支后，由其他分支进行 bug 修复。
+     - 此分支测试完成后，需要同时`merge`到`master`和`dev`分支。
+  6. `fix`分支，即补丁分支，由`dev`分支检出，属于临时性分支。
+     - 用作 bug 修复。
+     - bug 修复完后需`merge`回`dev`分支，并将其删除。
 - 文档与注释：
   - 每个蓝图、视图函数和复杂模块要有简短说明，接口和参数在 docs 中记录。
 - 测试覆盖：
