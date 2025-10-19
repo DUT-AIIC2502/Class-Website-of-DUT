@@ -16,23 +16,35 @@
       1. 在 IDE 中运行终端，以下命令均在终端中运行（PowerShell环境）
       2. 用 python 自带的 venv 模块创建虚拟环境：`python -m venv venv`。
       3. 激活虚拟环境：`& .\venv\Scripts\activate`（成功后终端显示`(venv)`）
+         - 如果激活失败，则大概率是因为 Windows PowerShell 执行策略限制，解决方法如下：
+           1. 以管理员身份运行 PowerShell。
+           2. 修改执行策略（临时或永久）：`Set-ExecutionPolicy RemoteSigned`。
+           3. 按提示，输入`Y`确认。
+           4. 再次尝试在项目目录激活虚拟环境。
+        - 如果以上步骤不能解决问题，请自行查找资料解决。
       4. 下载项目所需的包：`pip install -r requirements.txt`
    2. 数据库：本项目使用 MySQL 作为数据库，使用前需要下载，并在 config.py 文件中进行数据库配置。
       1. 安装 MySQL：参考https://zhuanlan.zhihu.com/p/654087404。
-      2. 新建数据库：`CREATE DATABASE CLASS_WEBSITE DEFAULT CHARACTER SET = 'utf8mb4';`
-         - ！！！注意：数据库的名称较之前版本有变更。
-      3. 创建表`student_info`：相应语句位于`static/data/create_tables.sql`
+         - 初始化用户密码时，需要设置为：`123456`。
+      2. 使用 IDE 的数据库扩展，与本地的数据库建立连接。
+         - 如果你的 root 用户的密码不是`123456`，请修改为`123456`，以免不得不修改配置文件。
+      3. 新建数据库：`CREATE DATABASE CLASS_WEBSITE DEFAULT CHARACTER SET = 'utf8mb4';`
+         - ！！！注意：数据库的名称为`CLASS_WEBSITE`，较之前版本有变更。
+      4. 创建表`student_info`：相应语句位于`static/data/create_tables.sql`
          - 说明：第一次运行应用时，程序会自动创建大部分表，只有这个表需要手动创建。
          - 数据源：出于保护隐私需要，学生信息不提供给所有开发者。如要使用“学生信息管理”功能，可自行为`student_info`表插入数据。
 
 ## 使用方法
 
-1. 切换分支到 master：`git checkout master`。
-   - master 为主分支，包含成熟的应用。
-   - 请不要随意提交更新至 master。
-2. 在 run.py 文件中，设置运行环境。
+1. 使你的版本最新：`git fetch <remote>`，其中`<remote>`为你设置的连接的远程仓库的名称，一般为`origin`。
+2. 分支操作：
+   1. 如果你是用户，请切换分支到 master：`git checkout master`。
+      - master 为主分支，包含成熟的应用。
+      - 请不要随意提交更新至 master。
+   2. 如果你是开发者，请切换分支到 dev：`git checkout dev`。
+3. 在 run.py 文件中，设置运行环境。
    - 修改变量`branch`，如果是生产环境，则设置为`"main"`；如果是开发环境，则设置为`"dev"`。
-3. 启动 run.py，即可在本地/局域网部署网站。
+4. 启动 run.py，即可在本地/局域网部署网站。
    - 通过终端启动应用：`python run.py`。
    - 关闭应用：按快捷键`Ctrl+C`。
 
@@ -115,7 +127,7 @@ Class-Website-of-DUT/
 
 # 贡献指南
 
-## 如何为项目做出贡献？
+## 对于组织成员，如何为项目做出贡献？
 
 登录github：参考https://blog.csdn.net/emem_0724/article/details/148242376。
 
@@ -128,10 +140,18 @@ Class-Website-of-DUT/
    1. 查看项目的问题跟踪器，找到你可以解决的问题。
    2. 注意项目的未来计划和里程碑，看看哪些功能你可以贡献。
 3. 贡献代码
-   1. 切换分支为 dev：`git checkout dev`。
-   2. 确保你的代码为最新：`git fetch https://github.com/DUT-AIIC2502/Class-Website-of-DUT.git`。
-   3. 在本地开发和测试你的代码。
-   4. 提交 Pull Request：`git push origin dev`。
+   1. 在任何操作之前，确保你的代码与仓库同步：
+      1. 访问远程仓库，从中拉取所有你还没有的数据：`git fetch origin`。
+         - 执行完成后，你将会拥有那个远程仓库中所有分支的引用，可以随时合并或查看。 
+      2. 切换到你要进行工作的分支：`git checkout <分支名>`。
+         - 详细参考“约定与最佳实现-提交与分支策略” 
+      3. 进行分支合并：`git merge origin/<相应的远程分支名>`。
+         - 此时，解决可能出现的冲突（如有）
+           1. 按提示修改冲突文件并执行：`git add <冲突文件>`，将所有冲突文件`add`到暂存区后，`git commit`提交更新（`commit`的语法自行查找）。
+           2. 再次推送：`git push origin <分支名>`。
+   2. 在本地开发和测试你的代码。
+      - 如果编译器报错，找不到某个包。那么，有相当大的可能是因为最近的更新新增了包，请重新执行`pip install -r requirements.txt`。
+   3. 提交代码：`git push origin <你要提交到的分支名>`。
 
 ### 约定与最佳实践
 
@@ -174,7 +194,21 @@ $env:HTTP_PROXY="http://127.0.0.1:7890"
   - 遵循 PEP8，函数/模块命名使用 snake_case，类使用 PascalCase。
   - 在重大改动前在 dev 分支开发并通过测试后发 PR 到主干分支（dev -> main/master）。
 - 提交与分支策略：
-  - 保持 master/main 用于生产，dev 用于日常开发。Feature 分支以 feature/xxx 命名。
+  1. `master`分支，即主分支。
+     - 用于生产，需要非常稳定的代码。
+     - 除管理员外，禁止向`master`分支提交代码。
+  2. `dev`分支，即开发分支，从`master`分支上检出。
+     - 用于日常开发，需要相对稳定的代码。
+     - 开发人员禁止直接向`dev`提交代码，需分别从该分支检出自己的`feature`分支，开发完成后将`feature`分支上的改动`merge`回`dev`分支。
+  3. `feature`分支，即功能分支，从`dev`分支上检出。
+     - 命名规范：以`feature/xxx`命名，其中`xxx`为功能名/其他标志。
+     - 开发人员如要开发新功能，需从该分支检出自己的`feature/xxx`分支，进行开发。
+  5. `release`分支，即发布分支，从`dev`分支上检出。
+     - 用作发版前的测试，可进行简单的 bug 修复。如果 bug 修复比较复杂，可`merge`回`dev`分支后，由其他分支进行 bug 修复。
+     - 此分支测试完成后，需要同时`merge`到`master`和`dev`分支。
+  6. `fix`分支，即补丁分支，由`dev`分支检出，属于临时性分支。
+     - 用作 bug 修复。
+     - bug 修复完后需`merge`回`dev`分支，并将其删除。
 - 文档与注释：
   - 每个蓝图、视图函数和复杂模块要有简短说明，接口和参数在 docs 中记录。
 - 测试覆盖：

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}学习笔记 - {{ book }}{% endblock %}
+{% block special_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+  <!-- 如需代码高亮可引入 highlight.js / codehilite CSS -->
+{% endblock %}
+{% block content %}
+  <div class="container">
+    <a href="{{ url_for('learning_space.study_notes') }}">← 返回</a>
+    <div class="markdown-content">
+      {{ content|safe }}
+    </div>
+  </div>
+
+  <!-- MathJax CDN（支持 $...$ 和 $$...$$）-->
+  <script>
+    window.MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']]},
+      svg: {fontCache: 'global'}
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+{% endblock %}
