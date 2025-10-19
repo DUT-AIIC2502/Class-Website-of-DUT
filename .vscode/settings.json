@@ -1,0 +1,5 @@
+{
+    // 自动激活虚拟环境
+    "python.useEnvironmentsExtension": true,
+    "markdown.validate.enabled": true,
+}

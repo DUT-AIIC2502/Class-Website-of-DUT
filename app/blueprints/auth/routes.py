@@ -342,7 +342,6 @@ def change_password():
 
 
 @auth_bp.route('/user_management/', methods=['GET', 'POST'])
-@role_required('User', 'Root')
 def user_management():
     if request.method == 'GET':
         all_users = User.query.all()

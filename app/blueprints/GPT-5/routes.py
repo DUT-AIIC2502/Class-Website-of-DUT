@@ -19,18 +19,17 @@ def new_function():
 
         enable = current_app.config.get('ENABLE_GPT5', False)
         api_key = current_app.config.get('OPENAI_API_KEY') or None
-        proxy = current_app.config.get('OPENAI_PROXY') or None
 
         if not enable:
             return jsonify({'ok': False, 'error': 'GPT-5 功能未启用（ENABLE_GPT5=False）'}), 400
 
-        svc = OpenAIService(api_key=api_key, model='gpt-5', proxy=proxy)
+        svc = OpenAIService(api_key=api_key, model='gpt-5')
         if not svc.available():
             return jsonify({'ok': False, 'error': 'OpenAI SDK 不可用或未配置 API Key'}), 500
 
         result = svc.chat(prompt or 'Hello from demo')
         if result is None:
-            return jsonify({'ok': False, 'error': '调用 GPT-5 失败或返回为空', 'detail': svc.last_error}), 500
+            return jsonify({'ok': False, 'error': '调用 GPT-5 失败或返回为空'}), 500
 
         return jsonify({'ok': True, 'result': result})
 

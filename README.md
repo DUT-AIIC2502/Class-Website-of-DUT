@@ -138,6 +138,35 @@ Class-Website-of-DUT/
 - 配置与密钥：
   - 在 config.py 中使用类与默认值，敏感变量通过 .env（开发）或环境变量（生产）注入。
   - .env 放在 .gitignore 中，不要提交到版本库。
+
+## 可选功能：启用 GPT-5 (OpenAI)
+
+本项目提供一个演示性后端入口，允许在服务端调用 OpenAI 的 GPT-5 模型：
+
+- 在 `config.py` 中的 `Config` 类有两个相关配置项：`ENABLE_GPT5`（默认 False）和 `OPENAI_API_KEY`。
+- 推荐通过环境变量注入 API Key：在 PowerShell 中运行：
+
+```powershell
+setx OPENAI_API_KEY "<your-api-key>"
+```
+
+- 安装依赖（已在 `requirements.txt` 中添加 `openai`）。
+- 启用后，向 `/new/` 路由发送 POST 请求并包含 `prompt` 字段即可得到 GPT-5 的返回。
+
+如果需要代理（如本地代理 http://127.0.0.1:7890）：
+
+```powershell
+# 会话内生效
+$env:OPENAI_PROXY="http://127.0.0.1:7890"
+
+# 或使用通用代理变量
+$env:HTTPS_PROXY="http://127.0.0.1:7890"
+$env:HTTP_PROXY="http://127.0.0.1:7890"
+```
+
+也可在 `config.py` 的 `Config.OPENAI_PROXY` 中设置（优先级低于环境变量）。
+
+注意：此功能仅为演示用途。请务必不要在公开仓库中提交您的 API Key。
 - 数据库：
   <!-- - 使用迁移工具（Flask-Migrate / Alembic）管理 schema，更改需生成 migration 并提交。 -->
   - 将创建表的 SQL 放到 static/data，说明何时需要手动执行（README 已有说明）。

@@ -95,12 +95,14 @@ def create_app():
     from app.blueprints.auth.routes import auth_bp
     from app.blueprints.info_management.routes import info_management_bp
     from app.blueprints.count_inform.routes import count_inform_bp
+    from app.blueprints.new_blueprint.routes import new_bp
 
     # 注册蓝图
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(info_management_bp)
     app.register_blueprint(count_inform_bp)
+    app.register_blueprint(new_bp)
 
     with app.app_context():
         # 创建表

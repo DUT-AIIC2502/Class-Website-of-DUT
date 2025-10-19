@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Title{% endblock %}
+{% block title %}标题{% endblock %}
 
 {% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
@@ -72,8 +72,7 @@
             if (data.ok) {
                 document.getElementById('prompt-result').textContent = data.result || '';
             } else {
-                const detail = data.detail ? ('\n详情：' + data.detail) : '';
-                document.getElementById('prompt-result').textContent = '错误：' + (data.error || '未知错误') + detail;
+                document.getElementById('prompt-result').textContent = '错误：' + (data.error || '未知错误');
             }
         } catch (e) {
             document.getElementById('prompt-result').textContent = '请求失败：' + (e?.message || e);
