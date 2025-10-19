@@ -150,6 +150,7 @@ Class-Website-of-DUT/
            1. 按提示修改冲突文件并执行：`git add <冲突文件>`，将所有冲突文件`add`到暂存区后，`git commit`提交更新（`commit`的语法自行查找）。
            2. 再次推送：`git push origin <分支名>`。
    2. 在本地开发和测试你的代码。
+      - 如果编译器报错，找不到某个包。那么，有相当大的可能是因为最近的更新新增了包，请重新执行`pip install -r requirements.txt`。
    3. 提交代码：`git push origin <你要提交到的分支名>`。
 
 ### 约定与最佳实践
