@@ -145,13 +145,22 @@ Class-Website-of-DUT/
          - 执行完成后，你将会拥有那个远程仓库中所有分支的引用，可以随时合并或查看。 
       2. 切换到你要进行工作的分支：`git checkout <分支名>`。
          - 详细参考“约定与最佳实现-提交与分支策略” 
+         - 如果需要工作的分支不存在，请执行：`git checkout -b feature/<描述>`
       3. 进行分支合并：`git merge origin/<相应的远程分支名>`。
          - 此时，解决可能出现的冲突（如有）
            1. 按提示修改冲突文件并执行：`git add <冲突文件>`，将所有冲突文件`add`到暂存区后，`git commit`提交更新（`commit`的语法自行查找）。
            2. 再次推送：`git push origin <分支名>`。
    2. 在本地开发和测试你的代码。
       - 如果编译器报错，找不到某个包。那么，有相当大的可能是因为最近的更新新增了包，请重新执行`pip install -r requirements.txt`。
-   3. 提交代码：`git push origin <你要提交到的分支名>`。
+   3. 提交代码：`git push -u origin <你要提交到的分支名>`。
+      - 如果是初次提交，还需要关联分支：`git branch --set-upstream-to=origin/<远程仓库中的分支名> <本地的分支名>`。
+   4. 在 Github 上提交 PR（Pull Request）：推送代码后，打开项目的 GitHub 页面，会看到一个 “Compare & pull request” 的按钮，点击：
+      1. 打开 Github 的仓库页面，找到“Pull Request”界面，点金“Compare & pull request”进入 PR 创建页面。
+      2. 编辑：
+         1. 源分支（head branch）：你修改代码的分支（如 feature/my-change）。
+         2. 目标分支（base branch）：你希望合并进去的分支（如 main）。
+      3. 
+   5. 
 
 ### 约定与最佳实践
 
