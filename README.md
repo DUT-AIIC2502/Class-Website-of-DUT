@@ -152,15 +152,25 @@ Class-Website-of-DUT/
            2. 再次推送：`git push origin <分支名>`。
    2. 在本地开发和测试你的代码。
       - 如果编译器报错，找不到某个包。那么，有相当大的可能是因为最近的更新新增了包，请重新执行`pip install -r requirements.txt`。
-   3. 提交代码：`git push -u origin <你要提交到的分支名>`。
+   3. 在本地提交代码：
+      -  在提交前，确保自己的git已经忽略不需要提交的文件。具体的操作方法，请参考：https://www.cnblogs.com/FBsharl/p/19094102，或https://zhuanlan.zhihu.com/p/52885189。
+      1. 将修改后的文件添加到暂存区：`git add .`。
+      2. 将暂存区的文件提交：
+         1. 基本方法：`git commit`，之后会进入备注的编辑区。
+            1. 键入`i`，进入输入模式，编辑备注。此时最下方有`-- insert --`字样。
+               - 备注的规则：第一行写简介，如果还要写详细信息，需要再空一行，然后开始写详细信息。
+            2. 键入`Esc`，退出输入模式。
+            3. 键入`:wq`，保存备注，退出编辑区。
+         2. 简化方法：`git commit -m "<这是你的备注信息>"`，可略去编辑备注的操作。
+   4. 提交代码到 github（你自己的开发分支）：`git push -u origin <你要提交到的分支名>`。
       - 如果是初次提交，还需要关联分支：`git branch --set-upstream-to=origin/<远程仓库中的分支名> <本地的分支名>`。
-   4. 在 Github 上提交 PR（Pull Request）：推送代码后，打开项目的 GitHub 页面，会看到一个 “Compare & pull request” 的按钮，点击：
+   5. 在 Github 上提交 PR（Pull Request）：推送代码后，打开项目的 GitHub 页面，会看到一个 “Compare & pull request” 的按钮，点击：
       1. 打开 Github 的仓库页面，找到“Pull Request”界面，点金“Compare & pull request”进入 PR 创建页面。
       2. 编辑：
          1. 源分支（head branch）：你修改代码的分支（如 feature/my-change）。
          2. 目标分支（base branch）：你希望合并进去的分支（如 main）。
       3. 
-   5. 
+   6. 
 
 ### 约定与最佳实践
 
