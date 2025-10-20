@@ -153,7 +153,9 @@ Class-Website-of-DUT/
    2. 在本地开发和测试你的代码。
       - 如果编译器报错，找不到某个包。那么，有相当大的可能是因为最近的更新新增了包，请重新执行`pip install -r requirements.txt`。
    3. 在本地提交代码：
-      -  在提交前，确保自己的git已经忽略不需要提交的文件。具体的操作方法，请参考："https://www.cnblogs.com/FBsharl/p/19094102"，或"https://zhuanlan.zhihu.com/p/52885189"。
+      -  在提交前，确保自己的git已经忽略不需要提交的文件。具体的操作方法，请参考：
+         1. https://www.cnblogs.com/FBsharl/p/19094102
+         2. https://zhuanlan.zhihu.com/p/52885189
       1. 将修改后的文件添加到暂存区：`git add .`。
       2. 将暂存区的文件提交：
          1. 基本方法：`git commit`，之后会进入备注的编辑区。
