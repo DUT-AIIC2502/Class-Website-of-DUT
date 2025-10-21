@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}学习笔记{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_study_notes.css') }}">
     {% block special_css %} {% endblock %}
 
     <!-- MathJax 配置与脚本（v3） -->
@@ -20,40 +21,6 @@
         };
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-    <!-- 笔记使用的样式 -->
-    <style>
-        .content-wrapper {
-        display: grid;
-        grid-template-columns: 260px 1fr;
-        gap: 24px;
-        align-items: start;
-        margin-top: 100px;
-        }
-        .toc-aside {
-        position: sticky;
-        top: 100px; /* 视 header 高度调整 */
-        max-height: calc(100vh - 100px);
-        overflow: auto;
-        padding-right: 8px;
-        border-right: 1px solid #eee;
-        }
-        .toc-aside .toc { font-size: 14px; line-height: 1.6; }
-        .toc-aside .toc ul { list-style: none; padding-left: 12px; }
-        .toc-aside .toc a { color: #555; text-decoration: none; }
-        .toc-aside .toc a.active { color: #1e80ff; font-weight: 600; }
-        .article { min-width: 0; }
-        /* 标题锚点偏移，避免被顶部导航遮住 */
-        #article-content h1, #article-content h2, #article-content h3, #article-content h4 {
-        scroll-margin-top: 110px;
-        }
-        /* codehilite 基础样式（可换成你自己的高亮 CSS） */
-        .codehilite { background: #0b0e14; color: #e6e1cf; padding: 16px; border-radius: 8px; overflow: auto; }
-        .codehilite pre { margin: 0; }
-        @media (max-width: 992px) {
-        .content-wrapper { grid-template-columns: 1fr; }
-        .toc-aside { position: static; border-right: none; }
-        }
-    </style>
 </head>
 <body>
     <!-- 导航栏 -->

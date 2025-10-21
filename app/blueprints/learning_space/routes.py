@@ -56,8 +56,8 @@ def study_notes_of_book(book):
 
         # 读取 markdown 文件
         if 1 == 1:
-            path = os.path.join(MD_DIR, fname)
-            # 检查文件是否存在
+            # 修正：使用传入的 md_dir，而不是未定义的 MD_DIR
+            path = os.path.join(md_dir, fname)
             if not os.path.exists(path):
                 return Markup("<p>未找到文档。</p>"), Markup("")
 
@@ -65,7 +65,7 @@ def study_notes_of_book(book):
             with open(path, 'r', encoding='utf-8') as f:
                 text = f.read()
 
-        # 使用 markdown 转换，启用 fenced_code、codehilite 等扩展
+        # 使用 markdown 转换，启用 fenced_code、codehilit 等扩展和 callout 相关扩展
         if 1 == 1:
             md = Markdown(
                 extensions=[
@@ -76,7 +76,11 @@ def study_notes_of_book(book):
                     'sane_lists',
                     'attr_list',
                     'md_in_html',
-                    'pymdownx.arithmatex' # LaTeX 包装（配合 MathJax）
+                    'pymdownx.arithmatex',  # 数学公式支持
+                    # 新增：Callout/提示块支持
+                    'admonition',           # !!! note / !!! warning / !!! tip ...
+                    'pymdownx.details',     # ??? note 折叠式提示块
+                    'pymdownx.superfences'  # 让提示块内可嵌套代码块等
                 ],
                 extension_configs={
                     'pymdownx.arithmatex': {'generic': True},
@@ -91,27 +95,36 @@ def study_notes_of_book(book):
                 }
             )
             html = md.convert(text)
-            toc_html_raw = md.toc  # <div class="toc">...</div>
+            toc_html_raw = md.toc
 
-        # 清理 HTML
+        # 清理 HTML：允许 callout 所需标签与 class
         if 1 == 1:
             # 定义允许的 HTML 标签
             allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + [
-                'h1', 'h2', 'h3', 'h4', 'h5', 'h6', # 标题
-                'pre', 'code',  # 代码块与行内代码
-                'table', 'thead', 'tbody', 'tr', 'th', 'td', # 表格
-                'span', 'div',  # 保留 codehilite 与 arithmatex 的包装
-                'ul', 'ol', 'li' # 目录需要
+                'p',  # 关键：允许段落标签，否则会被转义为文本 “<p>”
+                'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                'pre', 'code',
+                'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                'span', 'div',
+                'ul', 'ol', 'li',
+                'details', 'summary',
+                'br', 'hr'  # 可选
             ]
+            # 去重，保持稳定
+            allowed_tags = sorted(set(allowed_tags))
+
             # 扩展允许的 HTML 属性
             allowed_attrs = dict(bleach.sanitizer.ALLOWED_ATTRIBUTES)
             allowed_attrs.update({
                 'code': ['class'],
                 'pre':  ['class'],
                 'span': ['class'],
-                'div':  ['class'],
+                'div':  ['class'],     # admonition 会生成 <div class="admonition note"> ...
+                'p':    ['class'],     # <p class="admonition-title">Title</p>
                 'a':    ['href', 'title', 'rel'],
-                'h1': ['id'], 'h2': ['id'], 'h3': ['id'], 'h4': ['id'], 'h5': ['id'], 'h6': ['id']  # TOC 锚点
+                'h1': ['id'], 'h2': ['id'], 'h3': ['id'], 'h4': ['id'], 'h5': ['id'], 'h6': ['id'],
+                'details': ['class', 'open'],
+                'summary': ['class']
             })
             # 清理 HTML
             clean_html = bleach.clean(html, tags=allowed_tags, attributes=allowed_attrs)
@@ -128,7 +141,7 @@ def study_notes_of_book(book):
             if 1 == 1:
                 notes_list = ['math_analysis', ]
 
-            MD_DIR = os.path.join(os.path.dirname(__file__), 'templates', 'learning_space', 'md')  # 放.md的目录（可自定义）
+            MD_DIR = os.path.join(os.path.dirname(__file__), 'templates', 'learning_space', 'md')
 
             # 根据指定的书籍显示对应的笔记页面
             if book in notes_list:

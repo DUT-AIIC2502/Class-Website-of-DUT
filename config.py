@@ -20,9 +20,8 @@ class Config(object):
     SCHEDULER_EXECUTORS = {'default': {'type': 'threadpool', 'max_workers': 10}}  # 配置执行器
 
     # 其他配置
-    # DEBUG = True
     SESSION_KEY = '123456'
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=10)
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
 
 
 # 开发服务器运行参数
