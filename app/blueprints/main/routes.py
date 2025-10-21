@@ -60,7 +60,7 @@ def setup_app_hooks(state):
         else:
             if session.get('user_id') is None:
                 session.clear()  # 关键：清除遗留的会话数据
-                return redirect(url_for('main.home'))
+                return f"<script>alert('会话已过期，请重新登录。');window.open('{ url_for('main.home') }','_top');</script>"
 
         g.new_log = Logs()
         g.param = {}

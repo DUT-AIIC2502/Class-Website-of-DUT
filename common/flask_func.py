@@ -2,7 +2,6 @@ from flask import session
 from flask_login import current_user
 from sqlalchemy import and_, text
 import pickle
-# from typing import Any, Optional
 
 from ext import db
 
