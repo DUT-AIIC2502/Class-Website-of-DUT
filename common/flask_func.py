@@ -2,94 +2,109 @@ from flask import session
 from flask_login import current_user
 from sqlalchemy import and_, text
 import pickle
+# from typing import Any, Optional
 
 from ext import db
 
 
 def is_session_key_empty(key):
-    """检查session中特定键是否为空"""
+    """检查 session 键是否为空；不把数字 0 或 False 当作“空”"""
     if key not in session:
         return True
 
-    value = session[key]
+    value = session.get(key, None)
 
-    # 检查各种空值情况
+    # None
     if value is None:
         return True
-    elif isinstance(value, str) and value.strip() == '':
-        return True
-    elif isinstance(value, (list, dict)) and len(value) == 0:
-        return True
-    elif value == '' or value == 0 or value is False:
+
+    # 空字符串或仅空白
+    if isinstance(value, str) and value.strip() == '':
         return True
 
+    # 空的容器类型
+    if isinstance(value, (list, dict, set, tuple)) and len(value) == 0:
+        return True
+
+    # 注意：不把 0 或 False 视为空值
     return False
 
 
 def get_session_value(key, default=None):
-    """安全获取session值，如果为空返回默认值"""
+    """安全获取 session 值；当键不存在或“空值”时返回默认值"""
     if is_session_key_empty(key):
         return default
     return session[key]
 
 
 def load_session_value(value, default=None):
+    """从 pickled bytes 还原；异常时返回默认值，避免抛错"""
     if value is None:
         return default
-    else:
-        result = pickle.loads(value)
-        return result
+    try:
+        if isinstance(value, (bytes, bytearray)):
+            return pickle.loads(value)
+        # 非 bytes 一律返回默认值，避免执行任意反序列化
+        return default
+    except Exception:
+        return default
 
 
 def get_user_info():
-    """获取用户的各种信息，用于渲染网页"""
+    """获取用户信息（与 session 双重校验，避免过期后残留显示）"""
     user_info = {}
-    if current_user.is_authenticated:
 
-        """获取用户的最高等级"""
-        if 1 == 1:
-            user_roles = [role.name for role in current_user.roles]
-            user_level = {
-                "Root": 4,
-                "Admin": 3,
-                "User": 2,
-                "Guest": 1
-            }
+    # 要求：session 中存在 user_id 且与 current_user 一致
+    session_user_id = session.get('user_id')
+    if not session_user_id:
+        return user_info
+    if not current_user.is_authenticated:
+        return user_info
 
-            # 使用 max() 和 key 参数来找到最重要的任务
-            # key=lambda task: user_level[task] 的意思是：
-            # 对于 todo_list 中的每一个 task（任务），
-            # 使用 user_level[task] 得到它的重要性数值，
-            # 然后 max() 函数就根据这些数值进行比较。
-            user_top_role = max(user_roles, key=lambda task: user_level[task])
+    # 若两者不一致，认为会话失效/脏数据，不返回任何用户信息
+    try:
+        if str(session_user_id) != str(getattr(current_user, 'student_id', None)):
+            return user_info
+    except Exception:
+        return user_info
 
-        """将用户信息以 dict 的形式储存"""
-        if 1 == 1:
-            user_info = {
-                'id': current_user.id,
-                'user_id': current_user.student_id,  # 这里的 user_id 实际上为学号
-                'user_name': current_user.real_name,
-                'telephone': current_user.telephone,
-                'email': current_user.email,
-                'create_time': current_user.create_time,
-                'status': current_user.status,
-                'user_top_role': user_top_role,
-                'user_roles': user_roles
-            }
+    # 角色与最高等级容错
+    user_roles = []
+    try:
+        user_roles = [role.name for role in getattr(current_user, 'roles', []) if hasattr(role, 'name')]
+    except Exception:
+        user_roles = []
 
+    user_level = {"Root": 4, "Admin": 3, "User": 2, "Guest": 1}
+    user_top_role = 'Guest'
+    if user_roles:
+        # 过滤未知 role，防止 KeyError
+        valid_roles = [r for r in user_roles if r in user_level]
+        if valid_roles:
+            user_top_role = max(valid_roles, key=lambda r: user_level[r])
+
+    user_info = {
+        'id': getattr(current_user, 'id', None),
+        'user_id': getattr(current_user, 'student_id', None),  # 实为学号
+        'user_name': getattr(current_user, 'real_name', None),
+        'telephone': getattr(current_user, 'telephone', None),
+        'email': getattr(current_user, 'email', None),
+        'create_time': getattr(current_user, 'create_time', None),
+        'status': getattr(current_user, 'status', None),
+        'user_top_role': user_top_role,
+        'user_roles': user_roles
+    }
     return user_info
 
 
 def get_services():
-    """获取数据库中储存的所有服务"""
+    """获取数据库中储存的所有服务；异常时返回空列表，确保类型一致"""
     try:
         sql = "SELECT * FROM services"
         services_result = db.session.execute(text(sql))
-        services = [dict(row) for row in services_result.mappings()]
-    except:
-        services = {}
-
-    return services
+        return [dict(row) for row in services_result.mappings()]
+    except Exception:
+        return []
 
 
 def dynamic_query_builder(model, fields_to_select, filters):
@@ -129,19 +144,17 @@ def dynamic_query_builder(model, fields_to_select, filters):
             'like': lambda col, val: col.like(f'%{val}%'),
         }
 
-        for field_name, value_info in filters.items():
-            # 安全地获取列对象，如果字段不存在会抛出 AttributeError
+        conditions = []
+        for field_name, value_info in (filters or {}).items():
             column = getattr(model, field_name)
 
             # 检查是简单查询还是复杂查询
             if isinstance(value_info, dict) and 'op' in value_info and 'value' in value_info:
                 op = value_info['op']
                 value = value_info['value']
-                if op in op_mapping:
-                    # 调用 lambda 函数生成表达式并添加到 conditions 列表
-                    conditions.append(op_mapping[op](column, value))
-                else:
+                if op not in op_mapping:
                     raise ValueError(f"不支持的操作符: {op}")
+                conditions.append(op_mapping[op](column, value))
             else:
                 # 默认使用 '==' 操作
                 conditions.append(column == value_info)

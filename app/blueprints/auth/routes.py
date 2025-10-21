@@ -63,9 +63,9 @@ def login():
             if not is_value:
                 return f"<script> alert('密码错误！请重新输入。');window.open('{ url_for('auth.login') }');</script>"
 
-            print("密码验证通过。")
             # 登录用户，'remember=True' 实现“记住我”功能, 这会将会话信息写入浏览器
             login_user(retrieved_user, remember=True)
+            session['user_id'] = retrieved_user.student_id
 
         """更新登录日志"""
         if 1 == 1:

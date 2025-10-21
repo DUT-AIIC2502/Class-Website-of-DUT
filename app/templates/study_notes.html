@@ -20,18 +20,18 @@
         };
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-    <!-- 侧边栏样式 -->
+    <!-- 笔记使用的样式 -->
     <style>
         .content-wrapper {
         display: grid;
         grid-template-columns: 260px 1fr;
         gap: 24px;
         align-items: start;
-        margin-top: 24px;
+        margin-top: 100px;
         }
         .toc-aside {
         position: sticky;
-        top: 80px; /* 视 header 高度调整 */
+        top: 100px; /* 视 header 高度调整 */
         max-height: calc(100vh - 100px);
         overflow: auto;
         padding-right: 8px;
@@ -44,7 +44,7 @@
         .article { min-width: 0; }
         /* 标题锚点偏移，避免被顶部导航遮住 */
         #article-content h1, #article-content h2, #article-content h3, #article-content h4 {
-        scroll-margin-top: 90px;
+        scroll-margin-top: 110px;
         }
         /* codehilite 基础样式（可换成你自己的高亮 CSS） */
         .codehilite { background: #0b0e14; color: #e6e1cf; padding: 16px; border-radius: 8px; overflow: auto; }

@@ -2,7 +2,7 @@ import sys
 import traceback
 import datetime
 
-from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app, send_file
+from flask import Blueprint, redirect, render_template, session, request, jsonify, g, current_app, send_file, url_for
 from io import BytesIO  # 用于将二进制数据转换为文件流
 from pathlib import Path
 from sqlalchemy import text
@@ -54,6 +54,14 @@ def setup_app_hooks(state):
 
     @app.before_request
     def before():
+        # 验证 session 是否过期，如果过期，清空并跳转至主页
+        if "/home/" in request.url or "/auth/" in request.url or "/static/" in request.url:
+            pass
+        else:
+            if session.get('user_id') is None:
+                session.clear()  # 关键：清除遗留的会话数据
+                return redirect(url_for('main.home'))
+
         g.new_log = Logs()
         g.param = {}
         if request:
@@ -74,6 +82,11 @@ def setup_app_hooks(state):
         正常请求处理完成后执行
         记录日志
         """
+        # 禁止缓存，防止浏览器展示过期页面中的旧用户信息
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+
         # 如果 g.new_log 不存在直接返回
         if not getattr(g, 'new_log', None):
             return response
@@ -136,12 +149,11 @@ def setup_app_hooks(state):
         else:
             print("请求正常执行。")
 
-    """
-    以下函数用来渲染模板
-    """
-
     @app.context_processor
     def inject_global_params():
+        """
+        在模板中注入全局变量 services 和 user_info
+        """
         if db:
             result_services = db.session.execute(text(
                 f"""
@@ -167,10 +179,13 @@ def setup_app_hooks(state):
                 services = {}
 
             if result_user_info is not None:
-                user_info = get_user_info()
+                # 仅在已登录时返回用户信息
+                if session.get('user_id'):
+                    user_info = get_user_info()
+                else:
+                    user_info = {}
             else:
                 user_info = {}
-
         else:
             services = {}
             user_info = {}
@@ -194,7 +209,8 @@ def main():
 @main_bp.route('/home/')
 def home():
     """初始化某些数据"""
-    if 1 == 1:
+    # 仅在已登录时初始化
+    if session.get('user_id'):
         # 表名
         session["table_name"] = "student_info"
         # 班级名
@@ -261,7 +277,6 @@ def create_tables():
 @main_bp.route('/icon/<int:image_id>')
 def get_icon(image_id):
     """
-    这是关键的路由！
     它根据提供的 image_id 从数据库中获取图片数据，
     并将其作为图片文件发送给浏览器。
     """
