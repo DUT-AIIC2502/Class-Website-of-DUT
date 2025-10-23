@@ -144,6 +144,7 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
+input[type="date"],
 textarea,
 select {
     width: 100%;
@@ -154,12 +155,14 @@ select {
     font-size: 16px;
     transition: var(--transition);
     background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus,
+input[type="date"]:focus,
 textarea:focus,
 select:focus {
     border-color: var(--primary);
@@ -530,5 +533,75 @@ code {
 
     .variant-container {
         grid-template-columns: 1fr;
+    }
+}
+
+/* 校验态反馈，与现有调色板一致 */
+input[type="date"]:invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.15);
+}
+
+/* 禁用态（与整体风格统一） */
+input[type="date"]:disabled {
+    background: #f3f4f6;
+    color: #9aa0a6;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* date 输入框美化（与整体风格一致，并优化日历图标交互） */
+input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    padding-right: 44px; /* 为日历图标预留空间，避免文本重叠 */
+    background-color: rgba(255, 255, 255, 0.9);
+    cursor: text;
+}
+
+/* WebKit（日历图标样式与交互） */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    color: var(--primary);
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 6px;
+    margin-right: 6px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(26, 115, 232, 0.12); /* 与 --primary 相匹配的浅色悬停底色 */
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:active {
+    background-color: rgba(26, 115, 232, 0.2);
+}
+
+/* WebKit（日期内部文本可读性增强） */
+input[type="date"]::-webkit-datetime-edit {
+    padding: 0 4px;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: var(--dark);
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+    opacity: 0.6; /* 分隔符“/”、“-”淡化 */
+}
+
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field {
+    color: var(--dark);
+}
+
+/* Firefox：保留原生图标，仅做间距与可读性修正 */
+@supports (-moz-appearance: none) {
+    input[type="date"] {
+        padding-right: 16px; /* Firefox 图标占位更小 */
     }
 }

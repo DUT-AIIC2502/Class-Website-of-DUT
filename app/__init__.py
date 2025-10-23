@@ -96,6 +96,7 @@ def create_app():
     from app.blueprints.info_management.routes import info_management_bp
     from app.blueprints.count_inform.routes import count_inform_bp
     from app.blueprints.learning_space.routes import learning_space_bp
+    from app.blueprints.notices.routes import notices_bp
 
     # 注册蓝图
     app.register_blueprint(main_bp)
@@ -103,6 +104,7 @@ def create_app():
     app.register_blueprint(info_management_bp)
     app.register_blueprint(count_inform_bp)
     app.register_blueprint(learning_space_bp)
+    app.register_blueprint(notices_bp)
 
     with app.app_context():
         # 创建表

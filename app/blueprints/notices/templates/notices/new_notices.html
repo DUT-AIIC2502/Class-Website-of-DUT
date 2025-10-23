@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}发布通知{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>发布新通知</h1>
+
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>1. 从消息源复制原消息，粘贴到输入框，并提交。</p>
+            <p>2. 检查并修改自动生成的标题、主题和时间等信息。</p>
+        </div>
+
+        <!-- 表单 -->
+        <form method="post" action="/notices/new_notices/">
+            
+            <div class="card">
+                <h3>输入原来的消息</h3>
+                <!-- 输入原来的消息 -->
+                <div class="form-group">
+                    <label for="origin_message">原消息：</label>
+                    <textarea id="origin_message" name="origin_message" rows="5" placeholder="请输入原消息">{{ origin_message }}</textarea>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message" required
+                    {% if origin_message %}readonly{% endif %}>提交原消息</button>
+                </div>
+            </div>
+            
+            {% if key_info %}
+                <div class="card">
+                    <h3>编辑关键信息，以生成格式化的消息</h3>
+                    
+                    <!-- 通知标题：用作卡片的标题 -->
+                    <div class="form-group">
+                        <label for="title">通知标题：</label>
+                        <input type="text" id="title" name="title" placeholder="请输入通知标题" required>
+                    </div>
+                    
+                    <!-- 标签 -->
+                    <div class="form-group">
+                        <label for="tags">标签：</label>
+                        <input type="text" id="tags" name="tags" placeholder="请输入标签" required>
+                    </div>
+
+                    {% if key_info.theme %}
+                        <!-- 通知主题 -->
+                        <div class="form-group">
+                            <label for="theme">主题：</label>
+                            <input type="text" id="theme" name="theme" placeholder="请输入通知主题" required>
+                        </div>
+                    {% endif %}
+
+                    <!-- 开始时间 -->
+                    <div class="form-group">
+                        <label for="start_time">开始时间：</label>
+                        <input type="date" id="start_time" name="start_time" required> 
+                    </div>
+
+                    {% if key_info.end_time %}
+                    <!-- 结束时间 -->
+                        <div class="form-group">
+                            <label for="end_time">结束时间：</label>
+                            <input type="date" id="end_time" name="end_time">
+                            <p>（可选）</p>
+                        </div>
+                    {% endif %}
+
+                    {% if not key_info.start_time %}
+                        <!-- 原始时间文本 -->
+                        <div class="form-group">
+                            <label for="raw_time_text">原始时间文本：</label>
+                            <input type="text" id="raw_time_text" name="raw_time_text" placeholder="请输入原始时间文本" required>
+                        </div>
+                    {% endif %}
+                    
+                    {% if key_info.location %}
+                        <!-- 地点 -->
+                        <div class="form-group">
+                            <label for="location">地点：</label>
+                            <input type="text" id="location" name="location" placeholder="请输入地点" required>
+                        </div>
+                    {% endif %}
+                    
+                    {% if key_info.participants %}
+                        <!-- 参与人员 -->
+                        <div class="form-group">
+                            <label for="participants">参与人员：</label>
+                            <input type="text" id="participants" name="participants" placeholder="请输入参与人员" required>
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.organizer %}
+                        <!-- 组织者 -->
+                        <div class="form-group">
+                            <label for="organizer">组织者：</label>
+                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" required>
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.contact %}
+                        <!-- 联系方式 -->
+                        <div class="form-group">
+                            <label for="contact">联系方式：</label>
+                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" required>
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.deadline %}
+                        <!-- 报名截止时间 -->
+                        <div class="form-group">
+                            <label for="deadline">报名截止时间：</label>
+                            <input type="date" id="deadline" name="deadline" required>
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.details %}
+                        <!-- 详细说明 -->
+                        <div class="form-group">
+                            <label for="details">详细说明：</label>
+                            <textarea id="details" name="details" rows="5" placeholder="请输入详细说明" required></textarea>
+                        </div>
+                    {% endif %}
+
+                    <!-- 其他信息 -->
+                    <div class="form-group">
+                        <label for="other_info">其他信息：</label>
+                        <textarea id="other_info" name="other_info" rows="5" placeholder="请输入其他信息"></textarea>
+                        <p>（可选）</p>
+                    </div>
+
+                    <!-- 生成通知按钮 -->
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" name="method" value="generate_notice">生成通知</button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- 预览并编辑信息 -->
+            <div class="card">
+                <h3>预览生成的通知</h3>
+                <div class="form-group">
+                    <label for="preview">通知内容预览（可编辑）：</label>
+                    <textarea id="preview" name="preview" rows="10">{{ message_to_send }}</textarea>
+                </div>
+
+                <!-- 发布通知按钮 -->
+                <div class="form-group">
+                    <button class="btn btn-secondary" type="submit" name="method" value="publish_notice">发布通知</button>
+                </div>
+            </div>
+        </div>
+    </h1>
+{% endblock %}
