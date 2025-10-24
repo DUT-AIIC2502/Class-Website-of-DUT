@@ -31,8 +31,7 @@
 
                 <!-- 提交按钮 -->
                 <div class="form-group">
-                    <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message"
-                    {% if origin_message %}disabled{% endif %}>提交原消息</button>
+                    <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message">提交原消息</button>
                 </div>
             </div>
             
@@ -43,7 +42,7 @@
                     <!-- 通知标题：用作卡片的标题 -->
                     <div class="form-group">
                         <label for="title">通知标题：</label>
-                        <input type="text" id="title" name="title" placeholder="请输入通知标题" required>
+                        <input type="text" id="title" name="title" placeholder="请输入通知标题" required value="{{key_info.title}}">
                     </div>
                     
                     <!-- 标签 -->
@@ -56,21 +55,21 @@
                         <!-- 通知主题 -->
                         <div class="form-group">
                             <label for="theme">主题：</label>
-                            <input type="text" id="theme" name="theme" placeholder="请输入通知主题" required>
+                            <input type="text" id="theme" name="theme" placeholder="请输入通知主题" required value="{{key_info.theme}}">
                         </div>
                     {% endif %}
 
                     <!-- 开始时间 -->
                     <div class="form-group">
                         <label for="start_time">开始时间：</label>
-                        <input type="date" id="start_time" name="start_time" required> 
+                        <input type="date" id="start_time" name="start_time" required value="{{key_info.start_time}}">
                     </div>
 
                     {% if key_info.end_time %}
                     <!-- 结束时间 -->
                         <div class="form-group">
                             <label for="end_time">结束时间：</label>
-                            <input type="date" id="end_time" name="end_time">
+                            <input type="date" id="end_time" name="end_time" value="{{key_info.end_time}}">
                             <p>（可选）</p>
                         </div>
                     {% endif %}
@@ -79,7 +78,7 @@
                         <!-- 原始时间文本 -->
                         <div class="form-group">
                             <label for="raw_time_text">原始时间文本：</label>
-                            <input type="text" id="raw_time_text" name="raw_time_text" placeholder="请输入原始时间文本" required>
+                            <input type="text" id="raw_time_text" name="raw_time_text" placeholder="请输入原始时间文本" required value="{{key_info.raw_time_text}}">
                         </div>
                     {% endif %}
                     
@@ -87,7 +86,7 @@
                         <!-- 地点 -->
                         <div class="form-group">
                             <label for="location">地点：</label>
-                            <input type="text" id="location" name="location" placeholder="请输入地点" required>
+                            <input type="text" id="location" name="location" placeholder="请输入地点" required value="{{key_info.location}}">
                         </div>
                     {% endif %}
                     
@@ -95,7 +94,7 @@
                         <!-- 参与人员 -->
                         <div class="form-group">
                             <label for="participants">参与人员：</label>
-                            <input type="text" id="participants" name="participants" placeholder="请输入参与人员" required>
+                            <input type="text" id="participants" name="participants" placeholder="请输入参与人员" required value="{{key_info.participants}}">
                         </div>
                     {% endif %}
 
@@ -103,7 +102,7 @@
                         <!-- 组织者 -->
                         <div class="form-group">
                             <label for="organizer">组织者：</label>
-                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" required>
+                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" required value="{{key_info.organizer}}">
                         </div>
                     {% endif %}
 
@@ -111,7 +110,7 @@
                         <!-- 联系方式 -->
                         <div class="form-group">
                             <label for="contact">联系方式：</label>
-                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" required>
+                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" required value="{{key_info.contact}}">
                         </div>
                     {% endif %}
 
@@ -119,7 +118,7 @@
                         <!-- 报名截止时间 -->
                         <div class="form-group">
                             <label for="deadline">报名截止时间：</label>
-                            <input type="date" id="deadline" name="deadline" required>
+                            <input type="date" id="deadline" name="deadline" required value="{{key_info.deadline}}">
                         </div>
                     {% endif %}
 
@@ -127,7 +126,7 @@
                         <!-- 详细说明 -->
                         <div class="form-group">
                             <label for="details">详细说明：</label>
-                            <textarea id="details" name="details" rows="5" placeholder="请输入详细说明" required></textarea>
+                            <textarea id="details" name="details" rows="5" placeholder="请输入详细说明" required>{{key_info.details}}</textarea>
                         </div>
                     {% endif %}
 
