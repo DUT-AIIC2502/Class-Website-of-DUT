@@ -3,6 +3,7 @@ import json
 import re
 import httpx
 import pickle
+from datetime import datetime
 
 from flask import Blueprint, request, redirect, render_template, jsonify, session, url_for
 from pydantic import BaseModel, Field  # 修正：补充 Field 导入
@@ -38,6 +39,45 @@ def home():
     return render_template('notices/home.html')
 
 
+def _split_iso_datetime(iso_str: str):
+    """
+    将 ISO8601 时间字符串拆分为 (YYYY-MM-DD, HH:MM)。
+    解析失败返回 ("", "")。支持带 Z 的 UTC 标记。
+    """
+    if not iso_str or not isinstance(iso_str, str):
+        return "", ""
+    s = iso_str.strip()
+    if s.endswith("Z"):
+        s = s[:-1] + "+00:00"
+    try:
+        dt = datetime.fromisoformat(s)
+        return dt.date().isoformat(), dt.strftime("%H:%M")
+    except Exception:
+        # 如果是只有日期的情形
+        try:
+            d = datetime.fromisoformat(s + "T00:00:00").date()
+            return d.isoformat(), ""
+        except Exception:
+            return "", ""
+
+
+def _inject_datetime_inputs(key_info: dict) -> dict:
+    """
+    在 key_info 中注入 HTML 表单可直接使用的日期/时间字段：
+    - start_date_input, start_time_input
+    - end_date_input, end_time_input
+    - deadline_date_input, deadline_time_input
+    """
+    ki = dict(key_info or {})
+    sd, st = _split_iso_datetime(ki.get("start_time"))
+    ed, et = _split_iso_datetime(ki.get("end_time"))
+    dd, dtm = _split_iso_datetime(ki.get("deadline"))
+    ki["start_date_input"], ki["start_time_input"] = sd, st
+    ki["end_date_input"], ki["end_time_input"] = ed, et
+    ki["deadline_date_input"], ki["deadline_time_input"] = dd, dtm
+    return ki
+
+
 @notices_bp.route('/new_notices/', methods=['GET', 'POST'])
 def new_notices():
     if request.method == 'GET':
@@ -45,8 +85,6 @@ def new_notices():
         if 1 == 1:
             origin_message = get_session_value('origin_message', default='')
             key_info = load_session_value(get_session_value('key_info', default={}))
-            if key_info is not None:
-                key_info = json.loads(key_info)
 
         return render_template('notices/new_notices.html', origin_message=origin_message, key_info=key_info)
     
@@ -59,8 +97,11 @@ def new_notices():
                 origin_message = form_get.get('origin_message', '').strip()
                 if origin_message:
                     try:
-                        key_info = get_key_info(origin_message)
+                        key_info = get_key_info(origin_message) # json
+                        key_info = json.loads(key_info)         # dict
                         print("提取的关键信息：", key_info)
+                        # 注入表单可用的日期/时间字段
+                        key_info = _inject_datetime_inputs(key_info)
                     except Exception as e:
                         return f"<script>alert('解析超时或失败，请稍后重试（{type(e).__name__}）。');window.history.back();</script>"
                 else:

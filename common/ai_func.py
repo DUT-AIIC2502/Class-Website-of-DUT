@@ -23,8 +23,6 @@ def get_key_info(text: str) -> dict:
         api_key = os.getenv("VOLCENGINE_API_KEY")
         endpoint_id = os.getenv("VOLCENGINE_ENDPOINT_ID")
 
-        api_url = f"{base_url.rstrip('/')}/chat/completions"
-
     # 初始化客户端
     if 1 == 1:
         # 初始化客户端：禁用系统代理，必要时仅使用显式配置的代理
@@ -53,8 +51,8 @@ def get_key_info(text: str) -> dict:
             "- theme: 活动主题，若无可留空\n"
             "- start_time: ISO 8601，如 2025-10-23T15:00:00+08:00；若只给出日期，时间可用 00:00:00\n"
             "- end_time: ISO 8601；若无则为 null\n"
-            "- location: 活动地点，无则空字符串\n"
-            "- participants: 参与人员（人群或名单）\n"
+            "- location: 活动地点，无则为 null\n"
+            "- participants: 参与人员（人群，如全班同学、全体师生等；或着，具体名单，如xxx、xxx等），无则为 null\n"
             "- organizer: 组织者，无则为 null\n"
             "- contact: 联系方式（电话/微信/邮箱），无则为 null\n"
             "- deadline: 报名截止时间（ISO 8601），无则为 null\n"

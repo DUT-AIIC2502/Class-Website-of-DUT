@@ -4,6 +4,16 @@
 
 {% block special_css %}
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+    <style>
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        textarea,
+        select {
+            max-width: 800px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -37,7 +47,7 @@
             
             {% if key_info %}
                 <div class="card">
-                    <h3>编辑关键信息，以生成格式化的消息</h3>
+                    <h2>编辑关键信息，以生成格式化的消息</h2>
                     
                     <!-- 通知标题：用作卡片的标题 -->
                     <div class="form-group">
@@ -61,16 +71,22 @@
 
                     <!-- 开始时间 -->
                     <div class="form-group">
-                        <label for="start_time">开始时间：</label>
-                        <input type="date" id="start_time" name="start_time" required value="{{key_info.start_time}}">
+                        <label for="start_date">开始时间：</label>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <input type="date" id="start_date" name="start_date" required value="{{ key_info.start_date_input or '' }}">
+                            <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                        </div>
                     </div>
 
                     {% if key_info.end_time %}
                     <!-- 结束时间 -->
                         <div class="form-group">
-                            <label for="end_time">结束时间：</label>
-                            <input type="date" id="end_time" name="end_time" value="{{key_info.end_time}}">
-                            <p>（可选）</p>
+                            <label for="end_date">结束时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="end_date" name="end_date" value="{{ key_info.end_date_input or '' }}">
+                                <input type="time" id="end_time" name="end_time" value="{{ key_info.end_time_input or '' }}">
+                            </div>
+                             <p>（可选）</p>
                         </div>
                     {% endif %}
 
@@ -117,8 +133,11 @@
                     {% if key_info.deadline %}
                         <!-- 报名截止时间 -->
                         <div class="form-group">
-                            <label for="deadline">报名截止时间：</label>
-                            <input type="date" id="deadline" name="deadline" required value="{{key_info.deadline}}">
+                            <label for="deadline_date">报名截止时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
+                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
+                            </div>
                         </div>
                     {% endif %}
 
@@ -126,14 +145,14 @@
                         <!-- 详细说明 -->
                         <div class="form-group">
                             <label for="details">详细说明：</label>
-                            <textarea id="details" name="details" rows="5" placeholder="请输入详细说明" required>{{key_info.details}}</textarea>
+                            <textarea id="details" name="details" rows="10" placeholder="请输入详细说明" required>{{key_info.details}}</textarea>
                         </div>
                     {% endif %}
 
                     <!-- 其他信息 -->
                     <div class="form-group">
                         <label for="other_info">其他信息：</label>
-                        <textarea id="other_info" name="other_info" rows="5" placeholder="请输入其他信息"></textarea>
+                        <textarea id="other_info" name="other_info" rows="10" placeholder="请输入其他信息"></textarea>
                         <p>（可选）</p>
                     </div>
 
