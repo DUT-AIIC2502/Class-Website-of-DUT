@@ -1,4 +1,4 @@
-from app.blueprints.notices.routes import extract_notice_json
+from common.get_key_info_func import get_key_info
 
 long_text = "未来书院形象片演员招募通知 \n" \
 "亲爱的同学们：\n" \
@@ -15,7 +15,8 @@ long_text = "未来书院形象片演员招募通知 \n" \
 "我们期待你的加入！请尽快扫描下方二维码进入招募群，并修改群昵称为“姓名+报名时段”（如：王小明-上午场）。名额有限，先到先得！\n" \
 "用镜头记录美好，未来书院因你更精彩！\n" \
 "\n" \
-"有机会登上学院、学院及其他官方平台的大屏幕，快快报名参加吧！\n" \
+"有机会登上学院、学院及其他官方平台的大屏幕，快快报名参加吧！\n"
 
-result = extract_notice_json(long_text)
-print(result)
+if __name__ == "__main__":
+    result = get_key_info(long_text)
+    print(result)
