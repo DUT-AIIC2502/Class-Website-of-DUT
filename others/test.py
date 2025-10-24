@@ -1,4 +1,4 @@
-from common.get_key_info_func import get_key_info
+from common.ai_func import get_key_info
 
 long_text = "未来书院形象片演员招募通知 \n" \
 "亲爱的同学们：\n" \

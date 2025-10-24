@@ -2,7 +2,10 @@ import os
 import re
 import json
 import requests
+import httpx
+
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
@@ -15,11 +18,31 @@ def get_key_info(text: str) -> dict:
     """
 
     # 获取环境变量，包括API地址、API密钥和模型名称
-    base_url = os.getenv("VOLCENGINE_BASE_URL")
-    api_key = os.getenv("VOLCENGINE_API_KEY")
-    endpoint_id = os.getenv("VOLCENGINE_ENDPOINT_ID")
+    if 1 == 1:
+        base_url = os.getenv("VOLCENGINE_BASE_URL")
+        api_key = os.getenv("VOLCENGINE_API_KEY")
+        endpoint_id = os.getenv("VOLCENGINE_ENDPOINT_ID")
 
-    api_url = f"{base_url.rstrip('/')}/chat/completions"
+        api_url = f"{base_url.rstrip('/')}/chat/completions"
+
+    # 初始化客户端
+    if 1 == 1:
+        # 初始化客户端：禁用系统代理，必要时仅使用显式配置的代理
+        http_proxy = os.getenv("VOLCENGINE_HTTP_PROXY")
+        https_proxy = os.getenv("VOLCENGINE_HTTPS_PROXY")
+        proxies = None
+        if http_proxy or https_proxy:
+            proxies = {"http": http_proxy or https_proxy, "https": https_proxy or http_proxy}
+
+        client = OpenAI(
+            base_url=base_url,
+            api_key=api_key,
+            http_client=httpx.Client(
+                timeout=30.0,
+                trust_env=False,   # 关键：不读取系统/终端里的 HTTP(S)_PROXY
+                # proxies=proxies,   # 仅当你在 .env 中显式设置才走代理
+            ),
+        )
 
     # 构造提示词
     if 1 == 1:
@@ -51,26 +74,23 @@ def get_key_info(text: str) -> dict:
             "请按上述字段与要求输出 JSON 对象。"
         )
     
-    # 构建请求头和请求体
+    # 创建非流式请求（向模型发送请求）
     if 1 == 1:
-        payload = {
-            "model": endpoint_id,
-            "messages": [
-                {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
-                {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
-            ],
-            "temperature": 0.2,
-            "top_p": 0.9,
-        }
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json; charset=utf-8"
-        }
+        try:
+            print("向模型发送请求...")
+            completion = client.chat.completions.create(
+                model=endpoint_id,  # 火山方舟上创建的推理接入点ID
+                messages=[
+                    {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+                    {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
+                ],
+                reasoning_effort="minimal"  # 模型推理努力程度（中等，控制推理深度）
+            )
+            print("请求已发送，等待响应...")
+        except TimeoutError:
+            print("请求超时，请稍后重试。")
+        except Exception as e:
+            print("发生错误：", e)
 
-    # 发送POST请求到火山引擎API
-    if 1 == 1:
-        response = requests.post(api_url, headers=headers, json=payload)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {"error": "Failed to retrieve key information"}
+    # 处理响应
+    return completion.choices[0].message.content
