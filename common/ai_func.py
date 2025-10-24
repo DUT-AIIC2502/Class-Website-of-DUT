@@ -82,7 +82,7 @@ def get_key_info(text: str) -> dict:
                     {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
                     {"role": "user", "content": [{"type": "text", "text": user_prompt}]},
                 ],
-                reasoning_effort="minimal"  # 模型推理努力程度（中等，控制推理深度）
+                reasoning_effort="medium"  # 模型推理努力程度
             )
             print("请求已发送，等待响应...")
         except TimeoutError:
