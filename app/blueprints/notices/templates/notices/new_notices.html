@@ -43,13 +43,15 @@
                 <!-- 输入原来的消息 -->
                 <div class="form-group">
                     <label for="origin_message">原消息：</label>
-                    <textarea id="origin_message" name="origin_message" rows="5" placeholder="请输入原消息">{{ origin_message }}</textarea>
+                    <textarea id="origin_message" name="origin_message" rows="5" placeholder="请输入原消息" {% if origin_message %}readonly{% endif %}>{{ origin_message }}</textarea>
                 </div>
 
-                <!-- 提交按钮 -->
-                <div class="form-group">
-                    <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message">提交原消息</button>
-                </div>
+                {% if not origin_message %}
+                    <!-- 提交按钮 -->
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message">提交原消息</button>
+                    </div>
+                {% endif %}
             </div>
             
             {% if key_info %}
@@ -66,7 +68,10 @@
                     <!-- 标签 -->
                     <div class="form-group">
                         <label for="tags">标签：</label>
-                        <input type="text" id="tags" name="tags" placeholder="请输入标签" required>
+                        <select id="tags" name="tags">
+                            <option value='activity'>活动通知</option>
+                            <option value='course'>课程通知</option>
+                        </select>
                     </div>
 
                     {% if key_info.theme %}
@@ -138,6 +143,14 @@
                         </div>
                     {% endif %}
 
+                    {% if key_info.registration %}
+                        <!-- 报名方式 -->
+                        <div class="form-group">
+                            <label for="registration">报名方式：</label>
+                            <input type="text" id="registration" name="registration" placeholder="请输入报名方式" required value="{{key_info.registration}}">
+                        </div>
+                    {% endif %}
+
                     {% if key_info.deadline %}
                         <!-- 报名截止时间 -->
                         <div class="form-group">
@@ -164,10 +177,12 @@
                         <p>（可选）</p>
                     </div>
 
-                    <!-- 生成通知按钮 -->
-                    <div class="form-group">
-                        <button class="btn btn-primary" type="submit" name="method" value="generate_notice">生成通知</button>
-                    </div>
+                    {% if not message_to_send %}
+                        <!-- 生成通知按钮 -->
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit" name="method" value="generate_notice">生成通知</button>
+                        </div>
+                    {% endif %}
                 </div>
             {% endif %}
             

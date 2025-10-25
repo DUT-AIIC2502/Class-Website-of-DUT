@@ -25,20 +25,12 @@ def get_key_info(text: str) -> dict:
 
     # 初始化客户端
     if 1 == 1:
-        # 初始化客户端：禁用系统代理，必要时仅使用显式配置的代理
-        http_proxy = os.getenv("VOLCENGINE_HTTP_PROXY")
-        https_proxy = os.getenv("VOLCENGINE_HTTPS_PROXY")
-        proxies = None
-        if http_proxy or https_proxy:
-            proxies = {"http": http_proxy or https_proxy, "https": https_proxy or http_proxy}
-
         client = OpenAI(
             base_url=base_url,
             api_key=api_key,
             http_client=httpx.Client(
                 timeout=30.0,
                 trust_env=False,   # 关键：不读取系统/终端里的 HTTP(S)_PROXY
-                # proxies=proxies,   # 仅当你在 .env 中显式设置才走代理
             ),
         )
 
@@ -50,16 +42,16 @@ def get_key_info(text: str) -> dict:
             "- title: 通知标题，简要概括。\n"
             "- theme: 活动主题，若无可留空。\n"
             "- start_time: ISO 8601，如 2025-10-23T15:00:00+08:00；若只给出日期，时间可用 00:00:00；若出现多个时间段，则为 null。\n"
-            "- end_time: ISO 8601；若无则为 null。\n"
+            "- end_time: ISO 8601；要求同start_time，若无则为 null。\n"
             "- location: 活动地点，无则为 null。\n"
             "- participants: 参与人员（人群，如全班同学、全体师生等；或着，具体名单，如xxx、xxx等），无则为 null。\n"
             "- organizer: 组织者，无则为 null。\n"
             "- contact: 联系方式（电话/微信/邮箱），无则为 null。\n"
+            "- registration: 报名方式（如到梦空间报名、班长处报名），无则为 null。\n"
             "- deadline: 报名截止时间（ISO 8601），无则为 null。\n"
             "- raw_time_text: 原文中与时间相关的关键短语，尽量原样摘录，找不到则为 null。\n"
             "- notes: 备注或注意事项，无则为 null。\n"
-            "- details: 详细说明，使用单个字符串，按行分点（用换行分隔），行首使用“- ”标志。要求不与以上字段重复，且剔除无用信息（如客套话等）。\n"
-            "- confidence: 0~1 的置信度（浮点数）。\n"
+            "- details: 详细说明，一定要使用单个字符串，而非列表。按行分点（用换行分隔），行首使用“- ”标志。要求不与以上字段重复，且剔除无用信息（如客套话等）。\n"
             "规则：\n"
             "1) 严格输出一个 JSON 对象，不要添加解释或多余文本。\n"
             "2) 所有日期时间尽量解析为含 +08:00 时区的 ISO 8601；实在无法解析则置为 null 并在 notes 中说明。\n"
