@@ -39,6 +39,64 @@ def home():
     return render_template('notices/home.html')
 
 
+@notices_bp.route('/new_notices/', methods=['GET', 'POST'])
+def new_notices():
+    if request.method == 'GET':
+        # 获取 session 中的值
+        if 1 == 1:
+            origin_message = get_session_value('origin_message', default='')
+            key_info = load_session_value(get_session_value('key_info', default={}))
+
+        return render_template('notices/new_notices.html', origin_message=origin_message, key_info=key_info)
+    
+    elif request.method == 'POST':
+        form_get = request.form.to_dict()
+
+        if form_get['method'] == "submit_origin_message":
+            # 解析原始信息，提取关键信息
+            if 1 == 1:
+                origin_message = form_get.get('origin_message', '').strip()
+                if origin_message:
+                    try:
+                        key_info = get_key_info(origin_message) # json
+                        key_info = json.loads(key_info)         # dict
+                        print("提取的关键信息：", key_info)
+                        # 注入表单可用的日期/时间字段
+                        key_info = _inject_datetime_inputs(key_info)
+                    except Exception as e:
+                        return f"<script>alert('解析超时或失败，请稍后重试（{type(e).__name__}）。');window.history.back();</script>"
+                else:
+                    return f"<script>alert('请输入活动通知文本！');window.history.back();</script>"
+                
+            # 存入 session
+            if 1 == 1:
+                session['origin_message'] = origin_message
+                session['key_info'] = pickle.dumps(key_info)
+        
+        elif form_get['method'] == "generate_notice":
+            # 读取 session 中的关键信息
+            if 1 == 1:
+                key_info = load_session_value(get_session_value('key_info', default={}))
+
+            # 通过 key_info 生成通知
+            if 1 == 1:
+                notice_str = ""
+                order = 0
+                for key, value in key_info.items():
+                    order += 1
+                    if isinstance(value, str) and value.strip():
+                        if key == "details" or key == "notes":
+                            lines = value.strip().splitlines()
+                            notice_str += f"{order}. {key}:\n"
+                            for line in lines:
+                                notice_str += f"    {line.strip()}\n"
+                        else:
+                            notice_str += f"{order}. {key}: {value}\n"
+                print("生成的通知内容：", notice_str)
+
+        return redirect(url_for('notices.new_notices'))
+
+
 def _split_iso_datetime(iso_str: str):
     """
     将 ISO8601 时间字符串拆分为 (YYYY-MM-DD, HH:MM)。
@@ -76,63 +134,3 @@ def _inject_datetime_inputs(key_info: dict) -> dict:
     ki["end_date_input"], ki["end_time_input"] = ed, et
     ki["deadline_date_input"], ki["deadline_time_input"] = dd, dtm
     return ki
-
-
-@notices_bp.route('/new_notices/', methods=['GET', 'POST'])
-def new_notices():
-    if request.method == 'GET':
-        # 获取 session 中的值
-        if 1 == 1:
-            origin_message = get_session_value('origin_message', default='')
-            key_info = load_session_value(get_session_value('key_info', default={}))
-
-        return render_template('notices/new_notices.html', origin_message=origin_message, key_info=key_info)
-    
-    elif request.method == 'POST':
-        form_get = request.form.to_dict()
-
-        if form_get['method'] == "submit_origin_message":
-            # 解析原始信息，提取关键信息
-            if 1 == 1:
-                origin_message = form_get.get('origin_message', '').strip()
-                if origin_message:
-                    try:
-                        key_info = get_key_info(origin_message) # json
-                        key_info = json.loads(key_info)         # dict
-                        print("提取的关键信息：", key_info)
-                        # 注入表单可用的日期/时间字段
-                        key_info = _inject_datetime_inputs(key_info)
-                    except Exception as e:
-                        return f"<script>alert('解析超时或失败，请稍后重试（{type(e).__name__}）。');window.history.back();</script>"
-                else:
-                    return f"<script>alert('请输入活动通知文本！');window.history.back();</script>"
-                
-            # 存入 session
-            if 1 == 1:
-                session['origin_message'] = origin_message
-                session['key_info'] = pickle.dumps(key_info)
-
-        
-        elif form_get['method'] == "generate_notice":
-            pass
-
-        return redirect(url_for('notices.new_notices'))
-
-
-# -------- 数据结构 --------
-class NoticeInfo(BaseModel):
-    title: str = Field(default="", description="通知标题（简要概括）")
-    theme: str = Field(default="", description="活动主题")
-    start_time: Optional[str] = Field(default=None, description="ISO 8601，如 2025-10-23T15:00:00+08:00")
-    end_time: Optional[str] = Field(default=None, description="ISO 8601")
-    location: str = Field(default="", description="地点")
-    participants: str = Field(default="", description="参与人员（人群或名单）")
-    organizer: Optional[str] = None
-    contact: Optional[str] = None
-    deadline: Optional[str] = None
-    raw_time_text: Optional[str] = Field(default=None, description="原文中的时间短语")
-    notes: Optional[str] = None
-    details: str = Field(default="", description="详细说明（分点展示的单条字符串，每行一个要点）")
-    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-
-
