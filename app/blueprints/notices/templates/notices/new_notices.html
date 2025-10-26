@@ -72,8 +72,11 @@
         <!-- 使用说明 -->
         <div class="instructions">
             <h3>使用说明</h3>
-            <p>1. 从消息源复制原消息，粘贴到输入框，并提交。</p>
-            <p>2. 检查并修改自动生成的标题、主题和时间等信息。</p>
+            <p>1. 从消息源复制原消息，粘贴到输入框，并点击【提交原消息】。</p>
+            <p>2. 选择合适的【标签】，然后检查并修改自动生成的标题、主题和时间等信息。完成后点击【生成通知】。</p>
+            <p>3. 在预览界面检查通知内容，必要时可进行编辑。确认无误后点击【发布通知】。</p>
+
+            <a href="/notices/"><button class="btn btn-primary" type="button">返回通知管理</button></a>
         </div>
 
         <!-- 表单 -->
@@ -127,13 +130,24 @@
                     {% endif %}
 
                     <!-- 开始时间 -->
-                    <div class="form-group">
-                        <label for="start_date">开始时间：</label>
-                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                            <input type="date" id="start_date" name="start_date" required value="{{ key_info.start_date_input or '' }}">
-                            <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                    {% if key_info.start_time %}
+                        <div class="form-group">
+                            <label for="start_date">开始时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="start_date" name="start_date" value="{{ key_info.start_date_input or '' }}">
+                                <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                            </div>
                         </div>
-                    </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label for="start_date">截止时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="start_date" name="start_date" value="{{ key_info.start_date_input or '' }}">
+                                <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                            </div>
+                            <p>（将在截止时间前 3h 进行提醒。如果没有具体时间，默认为当天的早上 7:00）</p>
+                        </div>
+                    {% endif %}
 
                     {% if key_info.end_time %}
                     <!-- 结束时间 -->
@@ -144,6 +158,17 @@
                                 <input type="time" id="end_time" name="end_time" value="{{ key_info.end_time_input or '' }}">
                             </div>
                              <p>（可选）</p>
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.deadline %}
+                        <!-- 报名截止时间 -->
+                        <div class="form-group">
+                            <label for="deadline_date">报名截止时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
+                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
+                            </div>
                         </div>
                     {% endif %}
 
@@ -195,17 +220,6 @@
                         </div>
                     {% endif %}
 
-                    {% if key_info.deadline %}
-                        <!-- 报名截止时间 -->
-                        <div class="form-group">
-                            <label for="deadline_date">报名截止时间：</label>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
-                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
-                            </div>
-                        </div>
-                    {% endif %}
-
                     {% if key_info.details %}
                         <!-- 详细说明 -->
                         <div class="form-group">
@@ -225,6 +239,7 @@
                         <!-- 生成通知按钮 -->
                         <div class="form-group">
                             <button class="btn btn-primary" type="submit" name="method" value="generate_notice">生成通知</button>
+                            <a href="/notices/"><button class="btn btn-warning" type="button">取消发布</button></a>
                         </div>
                     {% endif %}
                 </div>
@@ -244,6 +259,7 @@
                     <!-- 发布通知按钮 -->
                     <div class="form-group">
                         <button class="btn btn-secondary" type="submit" name="method" value="publish_notice">发布通知</button>
+                        <a href="/notices/"><button class="btn btn-warning" type="button">取消发布</button></a>
                     </div>
                 </div>
             </form>
