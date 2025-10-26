@@ -9,20 +9,62 @@
         input[type="email"],
         input[type="password"],
         input[type="number"],
-        textarea,
-        select {
+        textarea {
             max-width: 800px;
         }
 
         input[type="date"],
-        input[type="time"] {
+        input[type="time"],
+        select {
             width: 50%;
             max-width: 200px;
         }
+
+        /* 等待遮罩与加载动画 */
+        .loading-overlay[hidden] { display: none !important; }  /* 强制隐藏 */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(2px);
+        }
+        .loading-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid #e5e7eb;
+            border-top-color: var(--primary, #1a73e8);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }   /* 旋转动画 */
     </style>
 {% endblock %}
 
 {% block content %}
+    <!-- 提取关键信息时的等待遮罩 -->
+    <div id="loading-overlay" class="loading-overlay" hidden aria-hidden="true">
+        <div class="loading-card" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <div>
+                <div style="font-weight:600;">正在提取关键信息</div>
+                <div style="font-size:12px;color:#6b7280;">这通常需要 10-20 秒，请稍候…</div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
 
         <h1>发布新通知</h1>
@@ -35,8 +77,7 @@
         </div>
 
         <!-- 表单 -->
-        <form method="post" action="/notices/new_notices/">
-            
+        <form method="post" action="/notices/new_notices/#form2" id="form1">
             <div class="card">
                 <h2>通知原文</h2>
                 <h3>输入原来的消息</h3>
@@ -53,8 +94,11 @@
                     </div>
                 {% endif %}
             </div>
-            
-            {% if key_info %}
+        </form>
+
+        {% if key_info %}
+            <form method="post" action="/notices/new_notices/#form3" id="form2">
+                <!-- 提取到的关键信息 -->
                 <div class="card">
                     <h2>关键信息</h2>
                     <h3>检查并修改关键信息</h3>
@@ -184,12 +228,14 @@
                         </div>
                     {% endif %}
                 </div>
-            {% endif %}
+            </form>
+        {% endif %}
             
-            {% if message_to_send %}
+        {% if message_to_send %}
+            <form method="post" action="/notices/new_notices/" id ="form3">
                 <!-- 预览并编辑信息 -->
                 <div class="card">
-                    <h3>预览生成的通知</h3>
+                    <h2>通知预览与发布</h2>
                     <div class="form-group">
                         <label for="preview">通知内容预览（可编辑）：</label>
                         <textarea id="preview" name="preview" rows="10">{{ message_to_send }}</textarea>
@@ -200,7 +246,26 @@
                         <button class="btn btn-secondary" type="submit" name="method" value="publish_notice">发布通知</button>
                     </div>
                 </div>
-            {% endif %}
-        </div>
-    </h1>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- 提交时显示等待遮罩，仅对“提交原消息”生效 -->
+    <script>
+    (function(){
+        const form = document.getElementById('form1');
+        const overlay = document.getElementById('loading-overlay');
+        if (!form || !overlay) return;
+
+        form.addEventListener('submit', function(e){
+            // 识别触发提交的按钮（现代浏览器有 e.submitter；降级用 activeElement）
+            const submitter = e.submitter || document.activeElement;
+            if (submitter && submitter.name === 'method' && submitter.value === 'submit_origin_message') {
+                overlay.hidden = false;
+                // // 禁用按钮防止重复提交
+                // form.querySelectorAll('button, input[type="submit"]').forEach(el => el.disabled = true);
+            }
+        }, { capture: true });
+    })();
+    </script>
 {% endblock %}

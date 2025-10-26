@@ -133,11 +133,17 @@ def new_notices():
 
                 if form_get.get('details'):
                     order += 1
-                    message_to_send += f"{order}. 详细说明：{form_get.get('details')}\n"
+                    message_to_send += f"{order}. 详细说明：\n"
+                    details_lines = form_get.get('details').strip().splitlines()
+                    for line in details_lines:
+                        message_to_send += f"        {line}\n"
 
                 if form_get.get('other_info'):
                     order += 1
-                    message_to_send += f"{order}. 其他信息：{form_get.get('other_info')}\n"
+                    message_to_send += f"{order}. 其他信息：\n"
+                    other_info_lines = form_get.get('other_info').strip().splitlines()
+                    for line in other_info_lines:
+                        message_to_send += f"        {line}\n"
 
             # 将文本上传至 session，供显示使用
             if 1 == 1:
