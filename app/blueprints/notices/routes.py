@@ -93,19 +93,21 @@ def new_notices():
                     order += 1
                     message_to_send += f"{order}. 主题：{form_get.get('theme')}\n"
 
-                # 将时间信息处理为易读的字符串
-                if form_get.get('start_date'):
-                    start_datetime = _get_datetime_str(form_get.get('start_date'), form_get.get('start_time'))
-                if form_get.get('end_date'):
-                    end_datetime = _get_datetime_str(form_get.get('end_date'), form_get.get('end_time'))
-                # 拼接时间信息
-                order += 1
-                if form_get.get('start_date') and form_get.get('end_date'):
-                    message_to_send += f"{order}. 时间：{start_datetime} - {end_datetime}\n"
-                elif form_get.get('start_date'):
-                    message_to_send += f"{order}. 开始时间：{start_datetime}\n"
-                else:
-                    message_to_send += f"{order}. 时间：{form_get['raw_time_text']}\n"
+                # 处理时间信息
+                if 1 == 1:
+                    # 将时间信息处理为易读的字符串
+                    if form_get.get('start_date'):
+                        start_datetime = _get_datetime_str(form_get.get('start_date'), form_get.get('start_time'))
+                    if form_get.get('end_date'):
+                        end_datetime = _get_datetime_str(form_get.get('end_date'), form_get.get('end_time'))
+                    # 拼接时间信息
+                    order += 1
+                    if form_get.get('start_date') and form_get.get('end_date'):
+                        message_to_send += f"{order}. 时间：{start_datetime} - {end_datetime}\n"
+                    elif form_get.get('start_date'):
+                        message_to_send += f"{order}. 开始时间：{start_datetime}\n"
+                    else:
+                        message_to_send += f"{order}. 时间：{form_get['raw_time_text']}\n"
 
                 if form_get.get('location'):
                     order += 1
@@ -151,7 +153,7 @@ def new_notices():
                 session['message_to_send'] = message_to_send
 
         elif form_get['method'] == 'publish_notice':
-            group_id = "277864656"
+            group_id = form_get['group']
 
             message_str = form_get['preview']
             message_dict = [

@@ -140,37 +140,23 @@
                         </div>
                     {% else %}
                         <div class="form-group">
-                            <label for="start_date">截止时间：</label>
+                            <label for="inform_date">提醒时间：</label>
                             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <input type="date" id="start_date" name="start_date" value="{{ key_info.start_date_input or '' }}">
-                                <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                                <input type="date" id="inform_date" name="inform_date">
+                                <input type="time" id="inform_time" name="inform_time">
                             </div>
-                            <p>（将在截止时间前 3h 进行提醒。如果没有具体时间，默认为当天的早上 7:00）</p>
+                            <p>（将在指定时间进行提醒。如果没有具体时间，默认为当天的早上 7:00）</p>
                         </div>
                     {% endif %}
 
-                    {% if key_info.end_time %}
                     <!-- 结束时间 -->
-                        <div class="form-group">
-                            <label for="end_date">结束时间：</label>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <input type="date" id="end_date" name="end_date" value="{{ key_info.end_date_input or '' }}">
-                                <input type="time" id="end_time" name="end_time" value="{{ key_info.end_time_input or '' }}">
-                            </div>
-                             <p>（可选）</p>
+                    <div class="form-group">
+                        <label for="end_date">（选填）结束时间：</label>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <input type="date" id="end_date" name="end_date" value="{{ key_info.end_date_input or '' }}">
+                            <input type="time" id="end_time" name="end_time" value="{{ key_info.end_time_input or '' }}">
                         </div>
-                    {% endif %}
-
-                    {% if key_info.deadline %}
-                        <!-- 报名截止时间 -->
-                        <div class="form-group">
-                            <label for="deadline_date">报名截止时间：</label>
-                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
-                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
-                            </div>
-                        </div>
-                    {% endif %}
+                    </div>
 
                     {% if not key_info.start_time %}
                         <!-- 原始时间文本 -->
@@ -180,35 +166,31 @@
                         </div>
                     {% endif %}
                     
-                    {% if key_info.location %}
-                        <!-- 地点 -->
-                        <div class="form-group">
-                            <label for="location">地点：</label>
-                            <input type="text" id="location" name="location" placeholder="请输入地点" required value="{{key_info.location}}">
-                        </div>
-                    {% endif %}
+                    <!-- 地点 -->
+                    <div class="form-group">
+                        <label for="location">（选填）地点：</label>
+                        <input type="text" id="location" name="location" placeholder="请输入地点" value="{{key_info.location}}">
+                    </div>
                     
-                    {% if key_info.participants %}
-                        <!-- 参与人员 -->
-                        <div class="form-group">
-                            <label for="participants">参与人员：</label>
-                            <input type="text" id="participants" name="participants" placeholder="请输入参与人员" required value="{{key_info.participants}}">
-                        </div>
-                    {% endif %}
+                    <!-- 参与人员 -->
+                    <div class="form-group">
+                        <label for="participants">（选填）参与人员：</label>
+                        <input type="text" id="participants" name="participants" placeholder="请输入参与人员" value="{{key_info.participants}}">
+                    </div>
 
                     {% if key_info.organizer %}
                         <!-- 组织者 -->
                         <div class="form-group">
-                            <label for="organizer">组织者：</label>
-                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" required value="{{key_info.organizer}}">
+                            <label for="organizer">（选填）组织者：</label>
+                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" value="{{key_info.organizer}}">
                         </div>
                     {% endif %}
 
                     {% if key_info.contact %}
                         <!-- 联系方式 -->
                         <div class="form-group">
-                            <label for="contact">联系方式：</label>
-                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" required value="{{key_info.contact}}">
+                            <label for="contact">（选填）联系方式：</label>
+                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" value="{{key_info.contact}}">
                         </div>
                     {% endif %}
 
@@ -220,19 +202,27 @@
                         </div>
                     {% endif %}
 
-                    {% if key_info.details %}
-                        <!-- 详细说明 -->
+                    <!-- {% if key_info.deadline %}
+                        <!- 报名截止时间 ->
                         <div class="form-group">
-                            <label for="details">详细说明：</label>
-                            <textarea id="details" name="details" rows="10" placeholder="请输入详细说明" required>{{key_info.details}}</textarea>
+                            <label for="deadline_date">报名截止时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
+                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
+                            </div>
                         </div>
-                    {% endif %}
+                    {% endif %} -->
+
+                    <!-- 详细说明 -->
+                    <div class="form-group">
+                        <label for="details">（选填）详细说明：</label>
+                        <textarea id="details" name="details" rows="10" placeholder="请输入详细说明">{{key_info.details}}</textarea>
+                    </div>
 
                     <!-- 其他信息 -->
                     <div class="form-group">
-                        <label for="other_info">其他信息：</label>
+                        <label for="other_info">（选填）其他信息：</label>
                         <textarea id="other_info" name="other_info" rows="10" placeholder="请输入其他信息"></textarea>
-                        <p>（可选）</p>
                     </div>
 
                     {% if not message_to_send %}
@@ -256,9 +246,21 @@
                         <textarea id="preview" name="preview" rows="10">{{ message_to_send }}</textarea>
                     </div>
 
+                    <div class="form-group">
+                        <label for="group">发送到群聊：</label>
+                        <select id="group" name="group">
+                            <option value='783263423'>通知群</option>
+                            <option value='1065283072'>学习群</option>
+                            <option value='277864656'>测试群</option>
+                        </select>
+                    </div>
+
                     <!-- 发布通知按钮 -->
                     <div class="form-group">
-                        <button class="btn btn-secondary" type="submit" name="method" value="publish_notice">发布通知</button>
+                        <button class="btn btn-secondary" type="submit" name="method" value="publish_notice"
+                            onclick="return confirm('确定要发布通知吗?\n该通知会被同步发送至相应QQ群聊。');">
+                                发布通知
+                        </button>
                         <a href="/notices/"><button class="btn btn-warning" type="button">取消发布</button></a>
                     </div>
                 </div>
