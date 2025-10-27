@@ -3,12 +3,13 @@ import pickle
 from datetime import datetime
 
 from flask import Blueprint, request, redirect, render_template, jsonify, session, url_for
-from pydantic import BaseModel, Field  # 修正：补充 Field 导入
+# from pydantic import BaseModel, Field  # 修正：补充 Field 导入
 from dotenv import load_dotenv
-from typing import Optional
+# from typing import Optional
 
 from common.flask_func import get_session_value, load_session_value
 from common.ai_func import get_key_info
+from common.send_message import send_group_msg
 
 load_dotenv()
 
@@ -148,6 +149,24 @@ def new_notices():
             # 将文本上传至 session，供显示使用
             if 1 == 1:
                 session['message_to_send'] = message_to_send
+
+        elif form_get['method'] == 'publish_notice':
+            group_id = "277864656"
+
+            message_str = form_get['preview']
+            message_dict = [
+                {
+                    "type": "text",
+                    "data": {
+                        "text": message_str,
+                    }
+                }
+            ]
+
+            status = send_group_msg(group_id, message_dict)
+            print("发送状态：", status)
+
+            return f"<script>alert('活动通知已发送！');window.location.href='{url_for('notices.home')}';</script>"
 
         return redirect(url_for('notices.new_notices'))
 

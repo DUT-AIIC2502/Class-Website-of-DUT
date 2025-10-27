@@ -99,7 +99,7 @@
             </div>
         </form>
 
-        {% if key_info %}
+        {% if key_info and not message_to_send %}
             <form method="post" action="/notices/new_notices/#form3" id="form2">
                 <!-- 提取到的关键信息 -->
                 <div class="card">
