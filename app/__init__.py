@@ -11,10 +11,10 @@ from models import ScheduleFunctions
 
 def create_app():
     """应用工厂"""
-    print("--- 调试信息 ---")
-    print(f"当前工作目录 (os.getcwd()): {os.getcwd()}")
-    print(f"Python 模块搜索路径 (sys.path): {sys.path}")
-    print("------------------")
+    # print("--- 调试信息 ---")
+    # print(f"当前工作目录 (os.getcwd()): {os.getcwd()}")
+    # print(f"Python 模块搜索路径 (sys.path): {sys.path}")
+    # print("------------------")
 
     def add_jobs_from_config(config):
         """从配置中加载并添加任务到调度器"""

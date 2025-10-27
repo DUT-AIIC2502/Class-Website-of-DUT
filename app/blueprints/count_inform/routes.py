@@ -7,7 +7,7 @@ from flask_login import current_user
 from ext import db, base
 from common.flask_func import get_session_value, load_session_value
 from decorators import role_required
-from common.send_message import send_qq_message
+from common.QQ_operation import send_qq_message
 
 count_inform_bp = Blueprint('count_inform', __name__,
                             url_prefix='/count_inform',

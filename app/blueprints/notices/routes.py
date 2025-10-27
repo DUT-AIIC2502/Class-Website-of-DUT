@@ -1,15 +1,18 @@
+import re
 import json
 import pickle
-from datetime import datetime
+import time
+import random
 
-from flask import Blueprint, request, redirect, render_template, jsonify, session, url_for
-# from pydantic import BaseModel, Field  # 修正：补充 Field 导入
+from flask import Blueprint, request, redirect, render_template, url_for, session, g
+from flask_login import current_user
 from dotenv import load_dotenv
-# from typing import Optional
 
+from ext import db, base
 from common.flask_func import get_session_value, load_session_value
 from common.ai_func import get_key_info
-from common.send_message import send_group_msg
+from common.QQ_operation import send_group_msg, send_private_msg
+from .helpers import _inject_datetime_inputs, _get_datetime_str
 
 load_dotenv()
 
@@ -22,6 +25,26 @@ notices_bp = Blueprint('notices', __name__,
 - origin_message：用户提交的原始活动通知文本（字符串）
 - key_info：提取出的关键信息（pickled bytes）
 """
+
+
+@notices_bp.before_request
+def before():
+    # 获取表对应的 ORM 类
+    table_name = get_session_value('table_name')
+    if table_name in db.metadata.tables.keys():
+        StudentInfo = getattr(base.classes, table_name)
+        g.info_table = StudentInfo
+
+        """获取包含所有学生的列表"""
+        if 1 == 1:
+            retrieved_students = db.session.query(StudentInfo).with_entities(StudentInfo.id, StudentInfo.name, StudentInfo.QQ_id).all()
+            all_students = []  # 包括学生的id、姓名、QQ号
+            for student in retrieved_students:
+                all_students.append([student.id, student.name, student.QQ_id])
+
+            g.all_students = all_students
+    else:
+        return "你查找的表不存在。"
 
 
 @notices_bp.route('/', methods=['GET', 'POST'])
@@ -66,7 +89,7 @@ def new_notices():
                     except Exception as e:
                         return f"<script>alert('解析超时或失败，请稍后重试（{type(e).__name__}）。');window.history.back();</script>"
                 else:
-                    return f"<script>alert('请输入活动通知文本！');window.history.back();</script>"
+                    return "<script>alert('请输入活动通知文本！');window.history.back();</script>"
                 
             # session 操作
             if 1 == 1:
@@ -156,6 +179,8 @@ def new_notices():
             group_id = form_get['group']
 
             message_str = form_get['preview']
+            user = current_user.real_name if current_user.is_authenticated else "匿名用户"
+            message_str = f"【来自：{user}】{message_str}"
             message_dict = [
                 {
                     "type": "text",
@@ -173,76 +198,144 @@ def new_notices():
         return redirect(url_for('notices.new_notices'))
 
 
-def _split_iso_datetime(iso_str: str):
-    """
-    将 ISO8601 时间字符串（如"2025-10-23T15:00:00+08:00"）拆分为 (YYYY-MM-DD, HH:MM)。
-    解析失败返回 ("", "")。支持带 Z 的 UTC 标记。
-    """
-
-    # 预处理数据
+@notices_bp.route('/private_message/', methods=['GET', 'POST'])
+def private_message():
     if 1 == 1:
-        # 处理 None 或非字符串输入
-        if not iso_str or not isinstance(iso_str, str):
-            return "", ""
-        s = iso_str.strip() # 去除首尾空白
-        # 处理 UTC 标记
-        if s.endswith("Z"):
-            s = s[:-1] + "+00:00"
+        """声明使用到的 session 键"""
+        chose_students = load_session_value(get_session_value('chose_students'), {})
+        not_chose_students = load_session_value(get_session_value('not_chose_students'), g.all_students)
 
-    # 解析并拆分为字符串
-    try:
-        dt = datetime.fromisoformat(s)
-        return dt.date().isoformat(), dt.strftime("%H:%M")  
-    except Exception:
-        # 如果是只有日期的情形
-        try:
-            d = datetime.fromisoformat(s + "T00:00:00").date()
-            return d.isoformat(), ""
-        except Exception:
-            return "", ""
+    if request.method == 'GET':
+        return render_template(
+            'notices/private_message.html',
+            **load_session_value(get_session_value('form_get'), {}),
+            chose_students=chose_students,
+            not_chose_students=not_chose_students
+        )
+
+    elif request.method == 'POST':
+        def exchange_students(s_ids, original_list, changed_list, original_status=1):
+            """
+            将选中的学生移出原来的组。
+
+            :param original_status: 状态
+            :param s_ids: 待移出的学生的 id 列表。
+            :param original_list: 该学生原来所在的列表。
+            :param changed_list: 该学生将去的列表。
+            :return: None
+            """
+
+            new_original_list = original_list
+            new_changed_list = changed_list
+            for index in range(len(original_list)):
+                for s_id in s_ids:
+                    new_original_list = [s for s in new_original_list if s[0] != s_id]
+                    if s_id == original_list[index][0]:
+                        new_changed_list.append(original_list[index])
+
+            if original_status == 0:
+                session['chose_students'] = pickle.dumps(new_original_list)
+                session['not_chose_students'] = pickle.dumps(new_changed_list)
+            else:
+                session['not_chose_students'] = pickle.dumps(new_original_list)
+                session['chose_students'] = pickle.dumps(new_changed_list)
+
+            return None
+
+        """获取并上传表单提交的数据"""
+        if 1 == 1:
+            form_get = request.form.to_dict()
+            session['form_get'] = pickle.dumps(form_get)
+
+        if 'one' in form_get['method']:
+            student_ids_str = re.findall(r"\d+", form_get['method'])
+            student_ids = [int(student_id) for student_id in student_ids_str]
+            if "remove_one" in form_get['method']:
+                exchange_students(student_ids, chose_students, not_chose_students, 0)
+            elif "add_one" in form_get['method']:
+                exchange_students(student_ids, not_chose_students, chose_students, 1)
+
+        elif 'chose' in form_get['method']:
+            if "remove" in form_get['method']:
+                student_ids_str = request.form.getlist('students_to_remove')
+                student_ids = [int(student_id) for student_id in student_ids_str]
+                exchange_students(student_ids, chose_students, not_chose_students, 0)
+            elif "add" in form_get['method']:
+                student_ids_str = request.form.getlist('students_to_add')
+                student_ids = [int(student_id) for student_id in student_ids_str]
+                exchange_students(student_ids, not_chose_students, chose_students, 1)
+
+        elif form_get['method'] == 'send_message':
+            if len(chose_students) == 0:
+                return f"<script>alert('请选择要发送信息的同学！');window.history.back();</script>"
+
+            # 组织并发送消息
+            message_str = f"【来自：{current_user.real_name}】{form_get['message']}"
+            message = [
+                {
+                    "type": "text",
+                    "data": {
+                        "text": message_str,
+                    }
+                }
+            ]
+
+            for student in chose_students:
+                # 在发送私人消息前加入随机等待，防止短时间大量请求（随机 0.5 - 1.5 秒）
+                delay = random.uniform(0.5, 1.5)
+                time.sleep(delay)
+                send_private_msg(student[2], message)
+
+        return redirect(f"{url_for('notices.private_message')}#result")
 
 
-def _inject_datetime_inputs(key_info: dict) -> dict:
-    """
-    在 key_info 中注入 HTML 表单可直接使用的日期/时间字段：
-    - start_date_input, start_time_input
-    - end_date_input, end_time_input
-    - deadline_date_input, deadline_time_input
-    """
-    ki = dict(key_info or {})
-    sd, st = _split_iso_datetime(ki.get("start_time"))
-    ed, et = _split_iso_datetime(ki.get("end_time"))
-    dd, dtm = _split_iso_datetime(ki.get("deadline"))
-    ki["start_date_input"], ki["start_time_input"] = sd, st
-    ki["end_date_input"], ki["end_time_input"] = ed, et
-    ki["deadline_date_input"], ki["deadline_time_input"] = dd, dtm
-    return ki
+@notices_bp.route('/private_message/relay/', methods=['GET', 'POST'])
+def relay():
+    if request.method == 'GET':
+        return render_template("notices/relay.html")
 
+    elif request.method == 'POST':
+        form_get = request.form.to_dict()
 
-def _get_datetime_str(date: str, time: str) -> str:
-    """
-    根据 HTML 表单的日期和时间输入，生成可读性强的日期时间字符串。
-    若仅有日期则返回仅含日期的字符串；若两者皆无则返回空字符串。
-    """
-    if date and time:
-        date_list = date.split("-")
-        time_list = time.split(":")
-        date_now_year = datetime.now().year
-        if date_list[0] == str(date_now_year):
-            date = f"{int(date_list[1])}月{int(date_list[2])}日"
-        else:
-            date = f"{int(date_list[0])}年{int(date_list[1])}月{int(date_list[2])}日"
-        time = f"{int(time_list[0])}:{int(time_list[1]):02d}"
+        """将接受的 message 转化为学生列表，并比对交集"""
+        if 1 == 1:
+            have_students_name = re.findall(r"\d+\.([\u4e00-\u9fa5]{2,4})", form_get['message'], flags=0)
 
-        return f"{date} {time}"
-    
-    elif date:
-        date_list = date.split("-")
-        date_now_year = datetime.now().year
-        if date_list[0] == str(date_now_year):
-            date = f"{int(date_list[1])}月{int(date_list[2])}日"
-        else:
-            date = f"{int(date_list[0])}年{int(date_list[1])}月{int(date_list[2])}日"
-        return date
-    else:
-        return ""
+            # 获取所有学生的姓名
+            all_students = g.all_students
+            all_students_name = [row[1] for row in all_students]
+
+            # 转化为集合，方便比较
+            # 警告！！！此步骤会丢失重名的同学
+            all_students_name_set = set(all_students_name)
+            have_students_name_set = set(have_students_name)
+
+            common_set = have_students_name_set & all_students_name_set
+
+        """将结果转化为id+姓名的二维数组"""
+        if 1 == 1:
+            common_students = []
+            index_to_pop = []
+            # 根据子集保存
+            for element in common_set:
+                for index in range(len(all_students)):
+                    if element == all_students[index][1]:
+                        common_students.append(all_students[index])
+                        index_to_pop.append(index)
+            # 删除
+            index_to_pop.sort()
+            index_to_pop = sorted(index_to_pop, reverse=True)
+            for index in index_to_pop:
+                all_students.pop(index)
+            missing_students = all_students
+
+        """将结果上传至session"""
+        if 1 == 1:
+            if form_get['method'] == 'yes':
+                session['chose_students'] = pickle.dumps(common_students)
+                session['not_chose_students'] = pickle.dumps(missing_students)
+            elif form_get['method'] == 'no':
+                session['chose_students'] = pickle.dumps(missing_students)
+                session['not_chose_students'] = pickle.dumps(common_students)
+
+        return redirect(url_for('notices.private_message'))
