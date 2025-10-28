@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}发布通知{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+    <style>
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        textarea {
+            max-width: 800px;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        select {
+            width: 50%;
+            max-width: 200px;
+        }
+
+        /* 等待遮罩与加载动画 */
+        .loading-overlay[hidden] { display: none !important; }  /* 强制隐藏 */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(2px);
+        }
+        .loading-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid #e5e7eb;
+            border-top-color: var(--primary, #1a73e8);
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }   /* 旋转动画 */
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- 提取关键信息时的等待遮罩 -->
+    <div id="loading-overlay" class="loading-overlay" hidden aria-hidden="true">
+        <div class="loading-card" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <div>
+                <div style="font-weight:600;">正在提取关键信息</div>
+                <div style="font-size:12px;color:#6b7280;">这通常需要 10-20 秒，请稍候…</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <h1>发布新通知</h1>
+
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h3>使用说明</h3>
+            <p>1. 从消息源复制原消息，粘贴到输入框，并点击【提交原消息】。</p>
+            <p>2. 选择合适的【标签】，然后检查并修改自动生成的标题、主题和时间等信息。完成后点击【生成通知】。</p>
+            <p>3. 在预览界面检查通知内容，必要时可进行编辑。确认无误后点击【发布通知】。</p>
+
+            <a href="/notices/"><button class="btn btn-primary" type="button">返回通知管理</button></a>
+        </div>
+
+        <!-- 表单 -->
+        <form method="post" action="/notices/new_notices/#form2" id="form1">
+            <div class="card">
+                <h2>通知原文</h2>
+                <h3>输入原来的消息</h3>
+                <!-- 输入原来的消息 -->
+                <div class="form-group">
+                    <label for="origin_message">原消息：</label>
+                    <textarea id="origin_message" name="origin_message" rows="5" placeholder="请输入原消息" {% if origin_message %}readonly{% endif %}>{{ origin_message }}</textarea>
+                </div>
+
+                {% if not origin_message %}
+                    <!-- 提交按钮 -->
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit" name="method" value="submit_origin_message">提交原消息</button>
+                    </div>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if key_info and not message_to_send %}
+            <form method="post" action="/notices/new_notices/#form3" id="form2">
+                <!-- 提取到的关键信息 -->
+                <div class="card">
+                    <h2>关键信息</h2>
+                    <h3>检查并修改关键信息</h3>
+                    
+                    <!-- 通知标题：用作卡片的标题 -->
+                    <div class="form-group">
+                        <label for="title">通知标题：</label>
+                        <input type="text" id="title" name="title" placeholder="请输入通知标题" required value="{{key_info.title}}">
+                    </div>
+                    
+                    <!-- 标签 -->
+                    <div class="form-group">
+                        <label for="tags">标签：</label>
+                        <select id="tags" name="tags">
+                            <option value='activity'>活动通知</option>
+                            <option value='course'>课程通知</option>
+                        </select>
+                    </div>
+
+                    {% if key_info.theme %}
+                        <!-- 通知主题 -->
+                        <div class="form-group">
+                            <label for="theme">主题：</label>
+                            <input type="text" id="theme" name="theme" placeholder="请输入通知主题" required value="{{key_info.theme}}">
+                        </div>
+                    {% endif %}
+
+                    <!-- 开始时间 -->
+                    {% if key_info.start_time %}
+                        <div class="form-group">
+                            <label for="start_date">开始时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="start_date" name="start_date" value="{{ key_info.start_date_input or '' }}">
+                                <input type="time" id="start_time" name="start_time" value="{{ key_info.start_time_input or '' }}">
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="form-group">
+                            <label for="inform_date">提醒时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="inform_date" name="inform_date">
+                                <input type="time" id="inform_time" name="inform_time">
+                            </div>
+                            <p>（将在指定时间进行提醒。如果没有具体时间，默认为当天的早上 7:00）</p>
+                        </div>
+                    {% endif %}
+
+                    <!-- 结束时间 -->
+                    <div class="form-group">
+                        <label for="end_date">（选填）结束时间：</label>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <input type="date" id="end_date" name="end_date" value="{{ key_info.end_date_input or '' }}">
+                            <input type="time" id="end_time" name="end_time" value="{{ key_info.end_time_input or '' }}">
+                        </div>
+                    </div>
+
+                    {% if not key_info.start_time %}
+                        <!-- 原始时间文本 -->
+                        <div class="form-group">
+                            <label for="raw_time_text">原始时间文本：</label>
+                            <input type="text" id="raw_time_text" name="raw_time_text" placeholder="请输入原始时间文本" required value="{{key_info.raw_time_text}}">
+                        </div>
+                    {% endif %}
+                    
+                    <!-- 地点 -->
+                    <div class="form-group">
+                        <label for="location">（选填）地点：</label>
+                        <input type="text" id="location" name="location" placeholder="请输入地点" value="{{key_info.location}}">
+                    </div>
+                    
+                    <!-- 参与人员 -->
+                    <div class="form-group">
+                        <label for="participants">（选填）参与人员：</label>
+                        <input type="text" id="participants" name="participants" placeholder="请输入参与人员" value="{{key_info.participants}}">
+                    </div>
+
+                    {% if key_info.organizer %}
+                        <!-- 组织者 -->
+                        <div class="form-group">
+                            <label for="organizer">（选填）组织者：</label>
+                            <input type="text" id="organizer" name="organizer" placeholder="请输入组织者" value="{{key_info.organizer}}">
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.contact %}
+                        <!-- 联系方式 -->
+                        <div class="form-group">
+                            <label for="contact">（选填）联系方式：</label>
+                            <input type="text" id="contact" name="contact" placeholder="请输入联系方式" value="{{key_info.contact}}">
+                        </div>
+                    {% endif %}
+
+                    {% if key_info.registration %}
+                        <!-- 报名方式 -->
+                        <div class="form-group">
+                            <label for="registration">报名方式：</label>
+                            <input type="text" id="registration" name="registration" placeholder="请输入报名方式" required value="{{key_info.registration}}">
+                        </div>
+                    {% endif %}
+
+                    <!-- {% if key_info.deadline %}
+                        <!- 报名截止时间 ->
+                        <div class="form-group">
+                            <label for="deadline_date">报名截止时间：</label>
+                            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                                <input type="date" id="deadline_date" name="deadline_date" value="{{ key_info.deadline_date_input or '' }}">
+                                <input type="time" id="deadline_time" name="deadline_time" value="{{ key_info.deadline_time_input or '' }}">
+                            </div>
+                        </div>
+                    {% endif %} -->
+
+                    <!-- 详细说明 -->
+                    <div class="form-group">
+                        <label for="details">（选填）详细说明：</label>
+                        <textarea id="details" name="details" rows="10" placeholder="请输入详细说明">{{key_info.details}}</textarea>
+                    </div>
+
+                    <!-- 其他信息 -->
+                    <div class="form-group">
+                        <label for="other_info">（选填）其他信息：</label>
+                        <textarea id="other_info" name="other_info" rows="10" placeholder="请输入其他信息"></textarea>
+                    </div>
+
+                    {% if not message_to_send %}
+                        <!-- 生成通知按钮 -->
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit" name="method" value="generate_notice">生成通知</button>
+                            <a href="/notices/"><button class="btn btn-warning" type="button">取消发布</button></a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+        {% endif %}
+            
+        {% if message_to_send %}
+            <form method="post" action="/notices/new_notices/" id ="form3">
+                <!-- 预览并编辑信息 -->
+                <div class="card">
+                    <h2>通知预览与发布</h2>
+                    <div class="form-group">
+                        <label for="preview">通知内容预览（可编辑）：</label>
+                        <textarea id="preview" name="preview" rows="10">{{ message_to_send }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="group">发送到群聊：</label>
+                        <select id="group" name="group">
+                            <option value='783263423'>通知群</option>
+                            <option value='1065283072'>学习群</option>
+                            <option value='277864656'>测试群</option>
+                        </select>
+                    </div>
+
+                    <!-- 发布通知按钮 -->
+                    <div class="form-group">
+                        <button class="btn btn-secondary" type="submit" name="method" value="publish_notice"
+                            onclick="return confirm('确定要发布通知吗?\n该通知会被同步发送至相应QQ群聊。');">
+                                发布通知
+                        </button>
+                        <a href="/notices/"><button class="btn btn-warning" type="button">取消发布</button></a>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- 提交时显示等待遮罩，仅对“提交原消息”生效 -->
+    <script>
+    (function(){
+        const form = document.getElementById('form1');
+        const overlay = document.getElementById('loading-overlay');
+        if (!form || !overlay) return;
+
+        form.addEventListener('submit', function(e){
+            // 识别触发提交的按钮（现代浏览器有 e.submitter；降级用 activeElement）
+            const submitter = e.submitter || document.activeElement;
+            if (submitter && submitter.name === 'method' && submitter.value === 'submit_origin_message') {
+                overlay.hidden = false;
+                // // 禁用按钮防止重复提交
+                // form.querySelectorAll('button, input[type="submit"]').forEach(el => el.disabled = true);
+            }
+        }, { capture: true });
+    })();
+    </script>
+{% endblock %}

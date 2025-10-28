@@ -253,12 +253,14 @@ class ScheduleFunctions(db.Model):
 class Services(db.Model):
     __tablename__ = 'services'
     id: int = Column(Integer, primary_key=True, autoincrement=True)
+    order: int = Column(Integer, nullable=False, comment="显示顺序，数字越小越靠前")
     url: str = Column(String(64), nullable=False, comment="url路径")
     name: str = Column(String(64), nullable=False, comment="该url对应的功能")
     full_name: str = Column(String(64), nullable=False, comment="该url对应的功能全称")
     description: str = Column(String(255), comment="描述")
-    mimetype = db.Column(String(16))  # 存储图片的 MIME 类型，如 'image/png'
-    icon = Column(LargeBinary(16777216), comment="图标")
+    file_name: str = Column(String(255), comment="图标文件名")
+    # mimetype = db.Column(String(16))  # 存储图片的 MIME 类型，如 'image/png'
+    # icon = Column(LargeBinary(16777216), comment="图标")
 
 
 
