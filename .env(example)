@@ -1,0 +1,11 @@
+VOLCENGINE_API_KEY=<你的火山引擎的API>
+VOLCENGINE_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
+VOLCENGINE_ENDPOINT_ID=<你的模型的接口>
+
+NAPCAT_API_TOKEN=<你的NapCat的网站服务器API>
+
+NO_PROXY=127.0.0.1,localhost
+
+TZ=Asia/Shanghai
+
+METHOD=<开发方式（dev或master）>
