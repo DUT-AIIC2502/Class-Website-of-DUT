@@ -108,3 +108,37 @@ def exchange_students(s_ids, original_list, changed_list, original_status=1):
         session['chose_students'] = pickle.dumps(new_changed_list)
 
     return None
+
+
+def get_common_students(name_list):
+    # 获取所有学生的姓名
+    all_students = g.all_students
+    all_students_name = [row[1] for row in all_students]
+
+    # 转化为集合，方便比较
+    # 警告！！！此步骤会丢失重名的同学
+    all_students_name_set = set(all_students_name)
+    have_students_name_set = set(name_list)
+
+    # 获取交集
+    common_set = have_students_name_set & all_students_name_set
+
+    # 将结果转化为id+姓名的二维数组
+    if 1 == 1:
+        common_students = []
+        index_to_pop = []
+        # 根据子集保存
+        for element in common_set:
+            # 根据姓名找到对应的学生信息
+            for index in range(len(all_students)):
+                if element == all_students[index][1]:
+                    common_students.append(all_students[index])
+                    index_to_pop.append(index)
+        # 删除 all_students 中的已找到学生，剩下的即为缺失学生
+        index_to_pop.sort()
+        index_to_pop = sorted(index_to_pop, reverse=True)
+        for index in index_to_pop:
+            all_students.pop(index)
+        missing_students = all_students
+
+    return common_students, missing_students
