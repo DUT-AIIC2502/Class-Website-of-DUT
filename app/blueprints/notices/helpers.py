@@ -3,7 +3,7 @@
 
 import pickle
 from datetime import datetime
-from flask import session
+from flask import session, g
 
 
 def _split_iso_datetime(iso_str: str):
