@@ -1,4 +1,9 @@
+# app/blueprints/notices/helpers.py
+# Helper functions for the notices blueprint
+
+import pickle
 from datetime import datetime
+from flask import session
 
 
 def _split_iso_datetime(iso_str: str):
@@ -74,3 +79,32 @@ def _get_datetime_str(date: str, time: str) -> str:
         return date
     else:
         return ""
+
+
+def exchange_students(s_ids, original_list, changed_list, original_status=1):
+    """
+    将选中的学生移出原来的组。
+
+    :param original_status: 状态
+    :param s_ids: 待移出的学生的 id 列表。
+    :param original_list: 该学生原来所在的列表。
+    :param changed_list: 该学生将去的列表。
+    :return: None
+    """
+
+    new_original_list = original_list
+    new_changed_list = changed_list
+    for index in range(len(original_list)):
+        for s_id in s_ids:
+            new_original_list = [s for s in new_original_list if s[0] != s_id]
+            if s_id == original_list[index][0]:
+                new_changed_list.append(original_list[index])
+
+    if original_status == 0:
+        session['chose_students'] = pickle.dumps(new_original_list)
+        session['not_chose_students'] = pickle.dumps(new_changed_list)
+    else:
+        session['not_chose_students'] = pickle.dumps(new_original_list)
+        session['chose_students'] = pickle.dumps(new_changed_list)
+
+    return None
