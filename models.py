@@ -115,7 +115,7 @@ class User(UserMixin, db.Model):
     password_hash: str = Column(String(255), nullable=False)
     telephone: str = Column(String(32))
     email: str = Column(String(64))
-    create_time: datetime = Column(DateTime, default=datetime.now)
+    create_time: datetime = Column(DateTime, default=datetime.now())
     status: bool = Column(Boolean, default=0, comment="0:禁用, 1:启用")
 
     roles: Mapped[List[Role]] = relationship('Role', secondary=users_roles,
@@ -160,7 +160,7 @@ class LoginLogs(db.Model):
     id: int = Column(Integer, primary_key=True, autoincrement=True)
     user_id: int = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     ip_address: str = Column(String(64))
-    login_time: datetime = Column(DateTime, default=datetime.now)
+    login_time: datetime = Column(DateTime, default=datetime.now())
 
     def __init__(self, user_id, ip_address):
         self.user_id = user_id
@@ -174,15 +174,15 @@ class CAPTCHA(db.Model):
     user_name: str = Column(String(64))
     operation: str = Column(String(32))
     value: str = Column(String(32), nullable=False)
-    create_time: datetime = Column(DateTime, default=datetime.now)
+    create_time: datetime = Column(DateTime, default=datetime.now())
 
-    def __init__(self, user, operation):
+    def __init__(self, user_id, real_name, operation):
         # 生成随机的6位验证码
         random_int = random.randint(100000, 999999)
 
         # 生成数据
-        self.user_id = user.id
-        self.user_name = user.real_name
+        self.user_id = user_id
+        self.user_name = real_name
         self.operation = operation
         self.value = str(random_int)
 
@@ -207,7 +207,7 @@ class Logs(db.Model):
     req_ip_address: str = Column(String(64))        # 请求IP地址
     # 操作相关信息
     oper_function: str = Column(String(64))         # 操作名称，一般为函数名
-    oper_time: datetime = Column(DateTime, default=datetime.now)  # 操作时间（自动生成）
+    oper_time: datetime = Column(DateTime, default=datetime.now())  # 操作时间（自动生成）
     oper_param: str = Column(Text)                  # 操作参数，包括 session、form_get，使用 jsonify 格式化
     # 错误信息
     error_short_desc: str = Column(String(255))     # 错误简短描述
