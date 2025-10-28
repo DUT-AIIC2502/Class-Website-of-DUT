@@ -132,3 +132,71 @@ def relay():
                 session['not_chose_students'] = pickle.dumps(common_students)
 
         return redirect(url_for('notices.private_message'))
+    
+
+@notices_bp.route('/private_message/names/', methods=['GET', 'POST'])
+def names():
+    if request.method == 'GET':
+        return render_template("notices/names.html")
+    
+    elif request.method == 'POST':
+        form_get = request.form.to_dict()
+
+        # 获取分隔符
+        if 1 == 1:
+            if form_get['delimiter'] == 'line_break':
+                delimiter = '\n'
+            elif form_get['delimiter'] == 'comma':
+                delimiter = '，'
+
+        # 提取消息中的姓名，得到名单列表
+        if 1 == 1:
+            print(form_get['message'])
+            names_list = form_get['message'].split(delimiter)
+            print(names_list)
+            # 去除空字符串和换行符
+            names_list = [name.strip() for name in names_list if name.strip() != '']
+            print(names_list)
+
+            common_students, missing_students = get_common_students(names_list)
+        
+        # 将结果上传至session
+        if 1 == 1:
+            session['chose_students'] = pickle.dumps(common_students)
+            session['not_chose_students'] = pickle.dumps(missing_students)
+
+        return redirect(url_for('notices.private_message'))
+    
+
+def get_common_students(name_list):
+    # 获取所有学生的姓名
+    all_students = g.all_students
+    all_students_name = [row[1] for row in all_students]
+
+    # 转化为集合，方便比较
+    # 警告！！！此步骤会丢失重名的同学
+    all_students_name_set = set(all_students_name)
+    have_students_name_set = set(name_list)
+
+    # 获取交集
+    common_set = have_students_name_set & all_students_name_set
+
+    # 将结果转化为id+姓名的二维数组
+    if 1 == 1:
+        common_students = []
+        index_to_pop = []
+        # 根据子集保存
+        for element in common_set:
+            # 根据姓名找到对应的学生信息
+            for index in range(len(all_students)):
+                if element == all_students[index][1]:
+                    common_students.append(all_students[index])
+                    index_to_pop.append(index)
+        # 删除 all_students 中的已找到学生，剩下的即为缺失学生
+        index_to_pop.sort()
+        index_to_pop = sorted(index_to_pop, reverse=True)
+        for index in index_to_pop:
+            all_students.pop(index)
+        missing_students = all_students
+
+    return common_students, missing_students
