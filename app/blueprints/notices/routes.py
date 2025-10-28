@@ -24,6 +24,10 @@ notices_bp = Blueprint('notices', __name__,
 使用到 session 的键：
 - origin_message：用户提交的原始活动通知文本（字符串）
 - key_info：提取出的关键信息（pickled bytes）
+- message_to_send：生成的活动通知文本（字符串）
+- table_name：学生信息表的表名（字符串）
+- chose_students：已选择发送私人消息的学生列表（pickled bytes，二维数组，每个元素为[id, name, QQ_id]）
+- not_chose_students：未选择发送私人消息的学生列表（pickled bytes，二维数组，每个元素为[id, name, QQ_id]）
 """
 
 
@@ -54,6 +58,8 @@ def home():
         session.pop('origin_message', None)
         session.pop('key_info', None)
         session.pop('message_to_send', None)
+        session.pop('chose_students', None)
+        session.pop('not_chose_students', None)
 
     if request.method == 'POST':
         # 处理表单提交
@@ -200,9 +206,9 @@ def new_notices():
 
 @notices_bp.route('/private_message/', methods=['GET', 'POST'])
 def private_message():
+    # 获取 session 中的已选择和未选择学生列表，默认为空列表和所有学生列表
     if 1 == 1:
-        """声明使用到的 session 键"""
-        chose_students = load_session_value(get_session_value('chose_students'), {})
+        chose_students = load_session_value(get_session_value('chose_students'), [])
         not_chose_students = load_session_value(get_session_value('not_chose_students'), g.all_students)
 
     if request.method == 'GET':
@@ -284,7 +290,9 @@ def private_message():
                 # 在发送私人消息前加入随机等待，防止短时间大量请求（随机 0.5 - 1.5 秒）
                 delay = random.uniform(0.5, 1.5)
                 time.sleep(delay)
-                send_private_msg(student[2], message)
+                result = send_private_msg(student[2], message)
+
+            return f"<script> alert('{result}');window.open('{url_for('notices.private_message')}');</script>"
 
         return redirect(f"{url_for('notices.private_message')}#result")
 
@@ -339,3 +347,5 @@ def relay():
                 session['not_chose_students'] = pickle.dumps(common_students)
 
         return redirect(url_for('notices.private_message'))
+    
+

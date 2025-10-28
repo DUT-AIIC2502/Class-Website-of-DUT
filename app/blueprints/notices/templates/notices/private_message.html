@@ -22,12 +22,12 @@
 
         <!-- 信息途径选取 -->
         <div class="card" id="result">
-            <h2>选择信息来源</h2>
+            <h2>快速选中同学</h2>
 
             <div class="services">
                 <!-- QQ接龙 -->
                 <div class="service-card">
-                    <a href="/count_inform/relay/">
+                    <a href="/notices/private_message/relay/">
                         <div class="service-icon">
                             <img src="{{ url_for('static', filename='images/notices/private_message/QQ_relay.png') }}" alt="图标"
                                 width="60" height="60">
@@ -38,20 +38,20 @@
 
                 <!-- 多行人名 -->
                 <div class="service-card">
-                    <a href="/count_inform/rows_of_names/">
+                    <a href="/notices/private_message/names/">
                         <div class="service-icon">
-                            <img src="{{ url_for('static', filename='images/rows_of_names.png') }}" alt="图标"
+                            <img src="{{ url_for('static', filename='images/notices/private_message/names.png') }}" alt="图标"
                                 width="60" height="60">
                         </div>
-                        <h3>多行人名</h3>
+                        <h3>人名文本</h3>
                     </a>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <h2>对选中项进行操作</h2>
-            <form method="post" action="/count_inform/">
+            <h2>选择待私信的同学</h2>
+            <form method="post" action="/notices/private_message/">
 
                 <div class="table-container">
                     <table style="width: 40%">
@@ -80,11 +80,8 @@
                                 </tr>
                             {% endfor %}
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <button class="btn btn-primary" name="method"
-                                            value="remove_chose">移除选中的同学</button>
+                                <td colspan="3" style="text-align: right;">
+                                    <button class="btn btn-primary" name="method" value="remove_chose">移除选中的同学</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -116,11 +113,8 @@
                                 </tr>
                             {% endfor %}
                             <tr>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <button class="btn btn-primary" name="method"
-                                            value="add_chose">加入选中的同学</button>
+                                <td colspan="3" style="text-align: right;">
+                                    <button class="btn btn-primary" name="method" value="add_chose">加入选中的同学</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -131,20 +125,8 @@
                 <div class="form-group">
                     <label for="message">待发送的消息：</label>
                     <input type="text" id="message" name="message" value="{{ message }}" placeholder="请输入消息">
-                    <p style="font-size: small">（备注：你发送的消息将自动带上两个消息头——【自动消息】【来自：xxx】）</p>
+                    <p style="font-size: small">（备注：你发送的消息将自动带上两个消息头——【来自：xxx】）</p>
                 </div>
-
-                <!-- <div class="form-group">
-                    <label class="radio-container" for="by_admin">
-                        <input type="radio" name="send_way" id="by_admin" value="by_admin" checked>
-                        <span class="radio-checkmark"></span>由管理员发送
-                    </label>
-                    <label class="radio-container" for="by_myself">
-                        <input type="radio" name="send_way" id="by_myself" value="by_myself">
-                        <span class="radio-checkmark"></span>自己发送
-                        <p style="font-size: small">（请确选中的学生中不含你本人）</p>
-                    </label>
-                </div> -->
 
                 <div class="form-group">
                     <button class="btn btn-primary" name="method" value="send_message"
