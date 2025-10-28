@@ -1,6 +1,14 @@
+import os
 import time
-from pywinauto import Application, Desktop
+import requests
+import json
 import pyperclip
+from dotenv import load_dotenv
+from pywinauto import Application, Desktop
+
+load_dotenv()
+
+napcat_api_token = os.getenv("NAPCAT_API_TOKEN")
 
 
 def diagnosis():
@@ -151,3 +159,97 @@ def send_qq_message(contact_name: str, message: str, qq_window_title="QQ"):
         if 1 == 1:
             input_box.type_keys("{ENTER}")
             print("消息发送成功！\n")
+
+
+def delete_msg(msg_id):
+    try:
+        headers = {
+            "Authorization": napcat_api_token,  # Token
+            "Content-Type": "application/json"
+        }
+        # 使用post上报的请求体
+        json_data = {
+            "message_id": msg_id
+        }
+
+        response = requests.post('http://127.0.0.1:3001/delete_msg', headers=headers, json=json_data)
+        status_code = response.status_code
+        # 消息撤回状态返回
+        if status_code == 200:
+            body = json.loads(response.text)
+            status = body["status"]
+            if status == "ok":
+                return json.dumps({"status":"success","data":None})
+            else:
+                message = body['message']
+                return json.dumps({"status":"error","data":str(message)})
+        else:
+            return json.dumps({"status":"fatal","data":str(status_code)})
+    except:
+        return json.dumps({"status":"fatal","data":"Connection Refused"})
+    
+
+def send_group_msg(group_id, msg):
+    try:
+        # 使用post上报的请求头
+        headers = {
+            "Authorization": napcat_api_token,  # Token
+            "Content-Type": "application/json"
+        }
+        # 使用post上报的请求体
+        json_data = {
+            "group_id": group_id,
+            "message": msg
+        }
+
+        response = requests.post('http://127.0.0.1:3001/send_group_msg', headers=headers, json=json_data)
+        status_code = response.status_code
+
+        # 消息发送状态返回
+        if status_code == 200:
+            body = json.loads(response.text)
+            status = body["status"]
+            if status == "ok":
+                data = body['data']
+                msg_id = data['message_id']
+                return json.dumps({"status":"success","data":str(msg_id)})
+            else:
+                message = body['message']
+                return json.dumps({"status":"error","data":str(message)})
+        else:
+            return json.dumps({"status":"fatal","data":str(status_code)})
+    except:
+        return json.dumps({"status":"fatal","data":"Connection Refused"})
+
+
+def send_private_msg(user_id, msg):
+    try:
+        # 使用post上报的请求头
+        headers = {
+            "Authorization": napcat_api_token,  # Token
+            "Content-Type": "application/json"
+        }
+        # 使用post上报的请求体
+        json_data = {
+            "user_id": user_id,
+            "message": msg
+        }
+
+        response = requests.post('http://127.0.0.1:3001/send_private_msg', headers=headers, json=json_data)
+        status_code = response.status_code
+
+        # 消息发送状态返回
+        if status_code == 200:
+            body = json.loads(response.text)
+            status = body["status"]
+            if status == "ok":
+                data = body['data']
+                msg_id = data['message_id']
+                return json.dumps({"status":"success","data":str(msg_id)})
+            else:
+                message = body['message']
+                return json.dumps({"status":"error","data":str(message)})
+        else:
+            return json.dumps({"status":"fatal","data":str(status_code)})
+    except:
+        return json.dumps({"status":"fatal","data":"Connection Refused"})
