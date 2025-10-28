@@ -24,26 +24,28 @@
         <div class="card" id="result">
             <h2>选择信息来源</h2>
 
-            <!-- QQ接龙 -->
-            <div class="service service-card">
-                <a href="/count_inform/relay/">
-                    <div class="service-icon">
-                        <img src="{{ url_for('static', filename='images/QQ_relay.png') }}" alt="图标"
-                             width="60" height="60">
-                    </div>
-                    <h3>QQ接龙</h3>
-                </a>
-            </div>
+            <div class="services">
+                <!-- QQ接龙 -->
+                <div class="service-card">
+                    <a href="/count_inform/relay/">
+                        <div class="service-icon">
+                            <img src="{{ url_for('static', filename='images/notices/private_message/QQ_relay.png') }}" alt="图标"
+                                width="60" height="60">
+                        </div>
+                        <h3>QQ接龙</h3>
+                    </a>
+                </div>
 
-            <!-- 多行人名 -->
-            <div class="service service-card">
-                <a href="/count_inform/rows_of_names/">
-                    <div class="service-icon">
-                        <img src="{{ url_for('static', filename='images/rows_of_names.png') }}" alt="图标"
-                             width="60" height="60">
-                    </div>
-                    <h3>多行人名</h3>
-                </a>
+                <!-- 多行人名 -->
+                <div class="service-card">
+                    <a href="/count_inform/rows_of_names/">
+                        <div class="service-icon">
+                            <img src="{{ url_for('static', filename='images/rows_of_names.png') }}" alt="图标"
+                                width="60" height="60">
+                        </div>
+                        <h3>多行人名</h3>
+                    </a>
+                </div>
             </div>
         </div>
 
