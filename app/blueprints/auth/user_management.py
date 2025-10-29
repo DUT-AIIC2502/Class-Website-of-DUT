@@ -2,7 +2,7 @@ from . import auth_bp
 from .helpers import get_top_role
 
 import re
-from flask import render_template, request, session, redirect, url_for
+from flask import render_template, request, redirect, url_for
 
 from models import User, Role
 from ext import db
@@ -42,12 +42,15 @@ def user_management():
         if form_get['method'] in ('insert_user', 'delete_choose'):
 
             if form_get['method'] == 'insert_user':
-                pass
+                return redirect(url_for('auth.register'))
 
             elif form_get['method'] == 'delete_choose':
                 pass
 
         else:
+            """
+            处理用户信息
+            """
             # 根据学号，查找该用户信息
             student_id = re.findall(r'\d+', form_get['method'])
             user = User.query.filter_by(student_id=student_id).first()
