@@ -91,8 +91,8 @@ def create_app():
     login_manager.init_app(app)
 
     # 导入蓝图
-    from app.blueprints.main.routes import main_bp
-    from app.blueprints.auth.routes import auth_bp
+    from app.blueprints.main import main_bp
+    from app.blueprints.auth import auth_bp
     from app.blueprints.info_management.routes import info_management_bp
     from app.blueprints.learning_space.routes import learning_space_bp
     from app.blueprints.notices import notices_bp
