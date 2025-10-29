@@ -45,7 +45,7 @@ def setup_app_hooks(state):
                 return f"<script>alert('会话已过期，请重新登录。');window.open('{ url_for('main.home') }','_top');</script>"
 
         # 初始化日志对象和参数字典，排除静态文件请求
-        if 'statics' not in request.url:
+        if 'static' not in request.url:
             g.new_log = Logs()  # 初始化日志对象
             g.param = {}        # 初始化参数字典
             if request:

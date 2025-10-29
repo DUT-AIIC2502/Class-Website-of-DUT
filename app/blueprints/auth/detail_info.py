@@ -29,7 +29,7 @@ def detail_info():
             elif session['whether_readonly'] == 0:
                 if_readonly = ''
 
-        return render_template("auth/user_detail_info.html", **user_info, if_readonly=if_readonly)
+        return render_template("auth/detail_info.html", **user_info, if_readonly=if_readonly)
 
     elif request.method == 'POST':
         form_get = request.form.to_dict()
@@ -78,16 +78,13 @@ def detail_info():
                     session['user_info'] = user_info_str
 
             elif form_get['method'] == 'delete':
-                if session['auth_to_delete'] == 0:
-                    session['auth_to_delete'] = 1
-                    return f"<script> alert('警告！你确定要注销账户吗？如果确定，请再次点击以注销。')" \
-                           f";window.open('{ url_for('auth.detail_info') }');</script>"
-                elif session['auth_to_delete'] == 1:
-                    logout_user()
-                    session['user_info'] = None
-
-                    db.session.delete(current_user)
-                    db.session.commit()
-                    return "<script> alert('注销成功！');window.open('/home/');</script>"
+                """注销账户"""
+                db.session.delete(current_user)
+                db.session.commit()
+                
+                logout_user()
+                session['user_info'] = None
+                
+                return "<script> alert('注销成功！');window.open('/home/');</script>"
 
             return redirect(url_for("auth.detail_info"))
