@@ -22,6 +22,7 @@ class Config(object):
     # 其他配置
     SESSION_KEY = '123456'
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
+    ADMIN_QQ = '3447962290'  # 管理员 QQ 号，用于接收验证码等重要信息
 
 
 # 开发服务器运行参数

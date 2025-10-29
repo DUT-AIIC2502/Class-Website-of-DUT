@@ -61,10 +61,10 @@ def setup_app_hooks(state):
             # 如果没有 table_name，通常说明会话已经过期或未初始化
             # 但有些流程（如注册/改密）会使用独立的 session 键（如 captcha_id）
             # 因此只有在既没有 table_name 且也没有这些关键键时才清空会话
-            keep_keys = ('captcha_id', 'captcha_time_key', 'form_get', 'user_id')  # 如需保留其他键可加入
+            keep_keys = ('captcha_id', 'captcha_time_key', 'form_get', 'user_id', 'table_name')  # 如需保留其他键可加入
             has_keep_key = any(session.get(k) is not None for k in keep_keys)
 
-            if session.get('table_name') is None and not has_keep_key:
+            if not has_keep_key:
                 session.clear()  # 关键：清除遗留的会话数据
                 return f"<script>alert('会话已过期，请重新登录。');window.open('{ url_for('main.home') }','_top');</script>"
 
