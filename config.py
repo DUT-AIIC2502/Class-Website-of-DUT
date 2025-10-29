@@ -17,11 +17,13 @@ class Config(object):
     # 调度器的配置
     SCHEDULER_API_ENABLED = True  # 启用 API
     SCHEDULER_TIMEZONE = 'Asia/Shanghai'  # 设置时区
-    SCHEDULER_EXECUTORS = {'default': {'type': 'threadpool', 'max_workers': 10}}  # 配置执行器
+    SCHEDULER_EXECUTORS = {'default': {'type': 'threadpool', 'max_workers': 20}}  # 配置执行器
+
+    # session 配置
+    SESSION_KEY = '123456'
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=48)  # Session 有效期为 48 小时
 
     # 其他配置
-    SESSION_KEY = '123456'
-    PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
     ADMIN_QQ = '3447962290'  # 管理员 QQ 号，用于接收验证码等重要信息
 
 

@@ -17,27 +17,26 @@ def login():
         return render_template('auth/login.html')
 
     elif request.method == 'POST':
-        print("收到登录请求。")
         form_get = request.form.to_dict()
 
-        """验证用户是否存在"""
+        # 验证用户是否存在
         if 1 == 1:
+            # 根据学号，从数据库中检索用户对象
             user_id = form_get['student_id']
-            print(f"尝试登录的用户学号为 {user_id} 。")
-            # 从数据库中检索用户对象
             retrieved_user = User.query.filter_by(student_id=user_id).first()
-            """验证数据库中存在该用户，并读取需要的信息"""
+
+            # 验证数据库中存在该用户，并读取需要的信息
             if retrieved_user:
                 password_hash = retrieved_user.password_hash+""
             else:
                 return f"<script> alert('不存在该用户！');" \
                        f"window.history.back();</script>"
 
-        """验证用户是否激活"""
+        # 验证用户是否激活
         if int(retrieved_user.status) == 0:
             return "<script> alert('该用户还未激活！');window.open('/home/‘);</script>"
 
-        """验证密码是否正确，更新登录状态"""
+        # 验证密码是否正确，更新登录状态
         if 1 == 1:
             password = form_get['password']
             is_value = check_password_hash(password_hash, password)
@@ -49,7 +48,7 @@ def login():
             login_user(retrieved_user, remember=True)
             session['user_id'] = retrieved_user.student_id
 
-        """更新登录日志"""
+        # 更新登录日志
         if 1 == 1:
             new_login_logs = LoginLogs(
                 user_id=retrieved_user.id,
@@ -58,10 +57,10 @@ def login():
             db.session.add(new_login_logs)
             db.session.commit()
 
-        """清空 session 相关数据"""
+        # 清空 session 相关数据
         if 1 == 1:
             session['form_get'] = None
-            # session['captcha_id'] = None
+            session['captcha_id'] = None
 
         return redirect("/home/")
     
