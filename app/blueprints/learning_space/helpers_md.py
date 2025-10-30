@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import bleach
 from markdown import Markdown
 from markupsafe import Markup
@@ -56,33 +57,126 @@ def get_chapters_for_book(book_slug: str) -> List[Dict]:
     return chapters
 
 
-# 可选：初始化样例数据（开发期）
-def seed_book_limit() -> None:
+def _protect_segments(html: str):
     """
-    示例：构造与当前 math_analysis-limit.md 对应的一棵树
-    book.slug = 'math_analysis'
+    保护 code/pre/script/style 等片段，避免正则替换误伤。
+    返回 (占位后的 html, 占位字典)
     """
-    book = StudyBook.query.filter_by(slug='math_analysis').first()
-    if not book:
-        book = StudyBook(slug='math_analysis', title='数学分析')
-        db.session.add(book)
-        db.session.flush()
+    patterns = [
+        (r'<pre\b[^>]*>[\s\S]*?<\/pre>', 'PRE'),
+        (r'<code\b[^>]*>[\s\S]*?<\/code>', 'CODE'),
+        (r'<script\b[^>]*>[\s\S]*?<\/script>', 'SCRIPT'),
+        (r'<style\b[^>]*>[\s\S]*?<\/style>', 'STYLE'),
+    ]
+    stash = {}
+    idx = 0
+    def repl_factory(tag):
+        nonlocal idx
+        def _repl(m):
+            nonlocal idx
+            key = f"__PLACEHOLDER_{tag}_{idx}__"
+            stash[key] = m.group(0)
+            idx += 1
+            return key
+        return _repl
+    for pat, tag in patterns:
+        html = re.sub(pat, repl_factory(tag), html, flags=re.IGNORECASE)
+    return html, stash
 
-    # 卷
-    vol1 = ChapterNode(book_id=book.id, parent_id=None, title='数学分析（第一册）', slug='introduction', is_page=True, node_type='volume', display_order=1)
-    db.session.add(vol1)
 
-    # 第1章：极限（页面）
-    ch1 = ChapterNode(book_id=book.id, parent=vol1, title='第1章：极限', slug='limit', is_page=True, node_type='chapter', display_order=1)
-    db.session.add(ch1)
+def _restore_segments(html: str, stash: dict):
+    for key, val in stash.items():
+        html = html.replace(key, val)
+    return html
 
-    # 1.1、1.2、1.3（锚点）
-    s11 = ChapterNode(book_id=book.id, parent=ch1, title='1.1 实数', slug='real-numbers', is_page=False, anchor_slug='real-numbers', node_type='section', display_order=1)
-    s12 = ChapterNode(book_id=book.id, parent=ch1, title='1.2 数列极限', slug='sequence-limits', is_page=False, anchor_slug='sequence-limits', node_type='section', display_order=2)
-    s13 = ChapterNode(book_id=book.id, parent=ch1, title='1.3 函数极限', slug='function-limits', is_page=False, anchor_slug='function-limits', node_type='section', display_order=3)
-    db.session.add_all([s11, s12, s13])
 
-    db.session.commit()
+def _fix_unconverted_mark(html: str) -> str:
+    """
+    兜底把未被 pymdownx.mark 识别的 ==…== 转为 <mark>…</mark>。
+    避免替换 code/pre/script/style 内部内容。
+    """
+    html, stash = _protect_segments(html)
+    # 避免跨段落的贪婪匹配
+    html = re.sub(r'==(.+?)==', r'<mark>\1</mark>', html, flags=re.DOTALL)
+    html = _restore_segments(html, stash)
+    return html
+
+
+def _blockquote_to_admonition(html: str) -> str:
+    """
+    将以 @info/@note/@tip 开头的 blockquote 转换为标准 admonition 结构，支持嵌套。
+    兼容两种写法：
+      > @info
+      > 内容...
+    和
+      > @info 自定义标题
+      > 内容...
+    """
+    label_map = {
+        'info': ('info', '信息'),
+        'note': ('note', '笔记'),
+        'tip':  ('tip',  '提示'),
+    }
+
+    # 先处理带标题的版本：@info 标题
+    pat_title = re.compile(
+        r'<blockquote>\s*<p>@(info|note|tip)\s+([^<]+?)</p>\s*([\s\S]*?)</blockquote>',
+        flags=re.IGNORECASE
+    )
+    # 不带标题版本：仅 @info
+    pat_plain = re.compile(
+        r'<blockquote>\s*<p>@(info|note|tip)\s*</p>\s*([\s\S]*?)</blockquote>',
+        flags=re.IGNORECASE
+    )
+
+    def repl_title(m):
+        kind = m.group(1).lower()
+        custom_title = m.group(2).strip()
+        body = m.group(3)
+        cls, _default = label_map.get(kind, ('note', '笔记'))
+        return f'<div class="admonition {cls}"><p class="admonition-title">{custom_title}</p>{body}</div>'
+
+    def repl_plain(m):
+        kind = m.group(1).lower()
+        body = m.group(2)
+        cls, default_title = label_map.get(kind, ('note', '笔记'))
+        return f'<div class="admonition {cls}"><p class="admonition-title">{default_title}</p>{body}</div>'
+
+    # 递归/多轮替换，直到没有可替换的 blockquote（保证嵌套 blockquote 也被转为嵌套 admonition）
+    prev = None
+    while prev != html:
+        prev = html
+        html = re.sub(pat_title, repl_title, html)
+        html = re.sub(pat_plain, repl_plain, html)
+
+    return html
+
+
+def _fix_math_block_dollars(html: str) -> str:
+    """
+    兜底把 html 中仍然保留的 $$…$$ 公式块替换为 arithmatex 块（MathJax v3 友好），
+    以修复某些环境（尤其是引用块里）未正确被扩展捕获的问题。
+    仅处理块级 $$…$$，不处理行内 $…$。
+    """
+    html, stash = _protect_segments(html)
+    # 将 <p>$$\n ... \n$$</p> 等情况统一替换
+    def repl_block(m):
+        expr = m.group(1).strip()
+        # 用 \[ \] 包裹，交由 MathJax 解析
+        return f'<div class="arithmatex">\\[ {expr} \\]</div>'
+    html = re.sub(r'\$\$\s*([\s\S]+?)\s*\$\$', repl_block, html)
+    html = _restore_segments(html, stash)
+    return html
+
+
+def _postprocess_content(content_html: str) -> str:
+    """
+    综合美化与修复：加粗变红、兜底 == 下划线、blockquote -> admonition、修复 $$ 公式块。
+    """
+    content_html = _fix_unconverted_mark(content_html)
+    content_html = _blockquote_to_admonition(content_html)
+    content_html = _fix_math_block_dollars(content_html)
+    return content_html
 
 
 def render_markdown_file(md_dir: str, fname: str) -> tuple[Markup, Markup]:
@@ -141,7 +235,7 @@ def render_markdown_file(md_dir: str, fname: str) -> tuple[Markup, Markup]:
     if 1 == 1:
         # 定义允许的 HTML 标签
         allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + [
-            'p',  # 关键：允许段落标签，否则会被转义为文本 “<p>”
+            'p',
             'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
             'pre', 'code',
             'table', 'thead', 'tbody', 'tr', 'th', 'td',
@@ -149,7 +243,8 @@ def render_markdown_file(md_dir: str, fname: str) -> tuple[Markup, Markup]:
             'ul', 'ol', 'li',
             'details', 'summary',
             'br', 'hr',
-            'mark'   # 允许 <mark>，用于 ==text== 转换
+            'mark',
+            'blockquote'  # 允许 blockquote 通过，便于后续 @info/@note/@tip 转换为 admonition
         ]
         # 去重，保持稳定
         allowed_tags = sorted(set(allowed_tags))
@@ -171,5 +266,8 @@ def render_markdown_file(md_dir: str, fname: str) -> tuple[Markup, Markup]:
         # 清理 HTML
         clean_html = bleach.clean(html, tags=allowed_tags, attributes=allowed_attrs)
         clean_toc = bleach.clean(toc_html_raw, tags=allowed_tags, attributes=allowed_attrs)
+
+    # 美化与修复（在 bleach 清洗之后进行后处理）
+    clean_html = Markup(_postprocess_content(str(clean_html)))
 
     return Markup(clean_html), Markup(clean_toc)

@@ -99,29 +99,34 @@
   --mk-bg-soft: #f8f9fa;
 }
 
-/* 1) 下划线与背景高亮
-   默认：==text== → <mark> 下划线（与“== 下划线方式”需求一致）
-   若需背景高亮：==text=={.mark-highlight} 或 <mark class="mark-highlight">text</mark> */
-#article-content u,
-#article-content .underline {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+#article-content strong,
+#article-content b {
+    color:#d1242f;
 }
+
+/* 1) 标记高亮（==text== → <mark>）统一为背景高亮 */
 #article-content mark {
-  background: transparent;
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  padding: 0;
+  background: #fff59d;       /* 柔和黄色背景 */
+  color: #111;
+  padding: 0 .15em;
+  border-radius: 2px;
+  text-decoration: none;      /* 不再使用下划线 */
 }
+
+/* 兼容旧内容：仍然保留 mark-highlight 类，样式与 mark 一致 */
 #article-content mark.mark-highlight,
 #article-content .mark-highlight {
   background: #fff59d;
   color: #111;
-  text-decoration: none;
   padding: 0 .15em;
   border-radius: 2px;
 }
+
+/* 移除以下两块（下划线适配）：
+#article-content u,
+#article-content .underline { ... }
+#article-content mark { text-decoration: underline; ... }
+*/
 
 /* 2) MathJax v3（CHTML）行级/块级公式 */
 #article-content mjx-container[jax="CHTML"] {
@@ -393,7 +398,7 @@
     width: 24px;
     height: 24px;
     margin-right: 10px;
-    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1lc3NhZ2Utc3F1YXJlLW1vcmUtaWNvbiBsdWNpZGUtbWVzc2FnZS1zcXVhcmUtbW9yZSI+PHBhdGggZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjxwYXRoIGQ9Ik04IDEwaC4wMSIvPjxwYXRoIGQ9Ik0xMiAxMGguMDEiLz48cGF0aCBkPSJNMTYgMTBoLjAxIi8+PC9zdmc+");
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1lc3NhZ2Utc3F1YXJlLW1vcmUtaWNvbiBsdWNpZGUtbWVzc2FnZS1zcXVhcmUtbW9yZSI+PHBhdGggZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjxwYXRoIGQ9Ik08IDEwaC4wMSIvPjxwYXRoIGQ9Ik0xMiAxMGguMDEiLz48cGF0aCBkPSJNMTYgMTBoLjAxIi8+PC9zdmc+");
     mask-size: cover;
     background-color: currentColor;
     mask-repeat: no-repeat;

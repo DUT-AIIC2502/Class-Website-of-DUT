@@ -5,8 +5,11 @@ from .helpers_db import get_all_books
 import os
 import pickle
 from flask import request, render_template, redirect, url_for, session
+from markupsafe import Markup
 
 from decorators import role_required
+import re
+
 
 
 @learning_space_bp.route('/study_notes/', methods=['GET', 'POST'])
@@ -42,7 +45,7 @@ def study_notes_of_book(book, chapter_now):
             return redirect(url_for('learning_space.study_notes'))
         if chapter_now is None:
             # 如果没有指定章节，重定向回书籍主页
-            return redirect(url_for('learning_space.study_notes_of_book', book=book, chapter='introduction'))
+            return redirect(url_for('learning_space.study_notes_of_book', book=book, chapter_now='introduction'))
 
         MD_DIR = os.path.join(os.path.dirname(__file__), 'markdowns', book)
 
@@ -50,6 +53,8 @@ def study_notes_of_book(book, chapter_now):
         chapters = get_chapters_for_book(book)
         # 获取当前章节的内容和目录
         content, toc_html = render_markdown_file(MD_DIR, f'{chapter_now}.md')
+
+        
 
         return render_template(
             'learning_space/study_notes_of_book.html',

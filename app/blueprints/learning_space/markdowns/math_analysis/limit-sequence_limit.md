@@ -226,24 +226,20 @@ A@{ shape: circle, label: "完备性公理" } --> 确界原理 --> 单调有界�
 >   > **证明：** 首先证明该数列是递增的。事实上，由二项式定理可得
 >   >
 >   > $$
->   > \begin{equation}
->   >   \begin{align*}  
+>   > \begin{align*}  
 >   >      e_n &= 1+\sum_{k=1}^n C_n^k \cdot \frac{1}{n^k}  \\
 >   >          &= 1+\sum_{k=1}^n \frac{1}{k!} \cdot \frac{n(n-1)(n-2)
 >   > \cdots(n-k-1)}{n^k}  \\
 >   >          &= 1+1+\sum_{k=2}^n \frac{1}{k!} (1-\frac{1}{n})(1-\frac{2}{n})
 >   > \cdots (1-\frac{k-1}{n}), 
->   >   \end{align*}
->   > \end{equation}
+>   > \end{align*}
 >   > $$
 >   >
 >   > $$
->   > \begin{equation}
->   >   \begin{align*}  
+>   > \begin{align*}  
 >   > 	e_{n+1} &= 1+1+\sum_{k=2}^n \frac{1}{k!} (1-\frac{1}{n+1})
 >   > (1-\frac{2}{n+1}) \cdots (1-\frac{k-1}{n+1}) + (\frac{1}{n+1})^{n+1}.
->   >   \end{align*}
->   > \end{equation}
+>   > \end{align*}
 >   > $$
 >   >
 >   > 比较 $e_n$ 和 $e_{n+1}$ 两个表达式的右端和号中的对应项，显然，前者较小。而 $e_{n+1}$ 所多出来的一项 $(\frac{1}{n+1})^{n+1}>0$，故 
