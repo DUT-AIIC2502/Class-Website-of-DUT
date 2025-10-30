@@ -18,23 +18,25 @@
             <!-- <p>如果你有好的笔记资源，欢迎提交分享！</p> -->
         </div>
 
-        <!-- 数学笔记 -->
-        <div class="card" id="result">
-            <h2>数学笔记</h2>
+        {% for books in all_books %}
+            <div class="card">`
+                <h2>{{ books.0 }}</h2>
 
-            <!-- 数学分析 -->
-            <div class="service service-card">
-                <a href="/learning_space/study_notes/math_analysis/">
-                    <div class="service-icon">
-                        <img src="{{ url_for('static', filename='images/learning_space/study_notes/math_analysis.png') }}" alt="图标"
-                             width="60" height="60">
-                    </div>
-                    <h3>数学分析</h3>
-                </a>
+                <div class="services">
+                    {% for book in books.1 %}
+                        <div class="service-card">
+                            <a href="/learning_space/study_notes/{{ book.slug }}/introduction/">
+                                <div class="service-icon">
+                                    <img src="/static/images/learning_space/study_notes/{{ book.slug }}.png" alt="图标"
+                                        width="60" height="60">
+                                </div>
+                                <h3>{{ book.title }}</h3>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-
-        </div>
-
+        {% endfor %}
 
     </div>
 {% endblock %}
