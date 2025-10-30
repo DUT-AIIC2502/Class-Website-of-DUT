@@ -313,10 +313,12 @@ nav ul li a:hover::after {
 
 .services {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 根据最小宽度自动适配列数 */
     gap: 30px;
+    align-items: stretch;
 }
 
+/* 卡片基础样式，保留视觉效果 */
 .service-card {
     background-color: white;
     border-radius: 10px;
@@ -326,6 +328,7 @@ nav ul li a:hover::after {
     text-align: center;
 }
 
+/* 保持 hover 效果 */
 .service-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 30px rgba(0,0,0,0.1);
@@ -685,6 +688,14 @@ footer {
 
 /* 响应式设计 */
 @media (max-width: 992px) {
+    .services {
+        gap: 24px;
+    }
+    .service-card {
+        flex: 1 1 calc(50% - 12px);
+        max-width: calc(50% - 12px);
+    }
+
     .hero h2 {
         font-size: 40px;
     }
@@ -699,6 +710,11 @@ footer {
 }
 
 @media (max-width: 768px) {
+    .service-card {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
     .mobile-toggle {
         display: block;
     }

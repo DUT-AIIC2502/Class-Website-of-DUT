@@ -11,10 +11,10 @@ from models import ScheduleFunctions
 
 def create_app():
     """应用工厂"""
-    print("--- 调试信息 ---")
-    print(f"当前工作目录 (os.getcwd()): {os.getcwd()}")
-    print(f"Python 模块搜索路径 (sys.path): {sys.path}")
-    print("------------------")
+    # print("--- 调试信息 ---")
+    # print(f"当前工作目录 (os.getcwd()): {os.getcwd()}")
+    # print(f"Python 模块搜索路径 (sys.path): {sys.path}")
+    # print("------------------")
 
     def add_jobs_from_config(config):
         """从配置中加载并添加任务到调度器"""
@@ -91,18 +91,18 @@ def create_app():
     login_manager.init_app(app)
 
     # 导入蓝图
-    from app.blueprints.main.routes import main_bp
-    from app.blueprints.auth.routes import auth_bp
+    from app.blueprints.main import main_bp
+    from app.blueprints.auth import auth_bp
     from app.blueprints.info_management.routes import info_management_bp
-    from app.blueprints.count_inform.routes import count_inform_bp
     from app.blueprints.learning_space.routes import learning_space_bp
+    from app.blueprints.notices import notices_bp
 
     # 注册蓝图
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(info_management_bp)
-    app.register_blueprint(count_inform_bp)
     app.register_blueprint(learning_space_bp)
+    app.register_blueprint(notices_bp)
 
     with app.app_context():
         # 创建表

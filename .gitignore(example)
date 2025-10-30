@@ -1,0 +1,10 @@
+/venv/
+/.vscode/
+/.idea/
+
+*.pyc
+*.ps1
+*.log
+
+.gitignore
+.env

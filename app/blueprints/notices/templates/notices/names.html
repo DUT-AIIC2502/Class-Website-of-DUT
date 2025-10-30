@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}人名文本提取{% endblock %}
+
+{% block special_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_info_management.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>人名文本提取</h1>
+
+        <div class="card">
+
+            <form method="post" action="/notices/private_message/names/">
+                <div class="form-group">
+                    <!-- 输入人名文本框 -->
+                    <label for="message">人名文本：
+                        <textarea id="message" name="message" required rows="5" cols="50" placeholder="请输入多行文本..."></textarea>
+                    </label>
+                </div>
+
+                <!-- 选择需要的信息 -->
+                <div class="form-group">
+                    <p>选择分隔符</p>
+                    <label class="radio-container" for="line_break">
+                        <input type="radio" name="delimiter" id="line_break" value="line_break" checked>
+                        <span class="radio-checkmark"></span>换行符
+                    </label>
+                    <label class="radio-container" for="comma">
+                        <input type="radio" name="delimiter" id="comma" value="comma">
+                        <span class="radio-checkmark"></span>逗号
+                    </label>
+                </div>
+
+                <!-- 查询按钮 -->
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit">提取选中的同学</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.querySelector('.auto-resize');
+        textarea.addEventListener('input', () => {
+          textarea.style.height = 'auto';
+          textarea.style.height = (textarea.scrollHeight) + 'px';
+        });
+    </script>
+{% endblock %}

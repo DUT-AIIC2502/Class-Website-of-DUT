@@ -18,8 +18,8 @@
     padding: 20px;
     margin-top: 100px;
 
-    width: 80%;
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1000px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -67,6 +67,7 @@
     font-size: 2.5rem;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 20px;
 }
@@ -144,6 +145,8 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
+input[type="date"],
+input[type="time"],
 textarea,
 select {
     width: 100%;
@@ -154,12 +157,15 @@ select {
     font-size: 16px;
     transition: var(--transition);
     background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
 textarea:focus,
 select:focus {
     border-color: var(--primary);
@@ -530,5 +536,204 @@ code {
 
     .variant-container {
         grid-template-columns: 1fr;
+    }
+}
+
+/* 校验态反馈，与现有调色板一致 */
+input[type="date"]:invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.15);
+}
+
+/* 禁用态（与整体风格统一） */
+input[type="date"]:disabled {
+    background: #f3f4f6;
+    color: #9aa0a6;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* date 输入框美化（与整体风格一致，并优化日历图标交互） */
+input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    padding-right: 44px; /* 为日历图标预留空间，避免文本重叠 */
+    background-color: rgba(255, 255, 255, 0.9);
+    cursor: text;
+}
+
+/* WebKit（日历图标样式与交互） */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    color: var(--primary);
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 6px;
+    margin-right: 6px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(26, 115, 232, 0.12); /* 与 --primary 相匹配的浅色悬停底色 */
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:active {
+    background-color: rgba(26, 115, 232, 0.2);
+}
+
+/* WebKit（日期内部文本可读性增强） */
+input[type="date"]::-webkit-datetime-edit {
+    padding: 0 4px;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    color: var(--dark);
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+    opacity: 0.6; /* 分隔符“/”、“-”淡化 */
+}
+
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field {
+    color: var(--dark);
+}
+
+/* Firefox：保留原生图标，仅做间距与可读性修正 */
+@supports (-moz-appearance: none) {
+    input[type="date"] {
+        padding-right: 16px; /* Firefox 图标占位更小 */
+    }
+}
+
+/* 补齐 time 输入框的基础样式，使其与其他 input 保持一致 */
+input[type="time"] {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
+}
+
+/* 焦点态统一 */
+input[type="time"]:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+/* 校验态与禁用态统一 */
+input[type="time"]:invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.15);
+}
+input[type="time"]:disabled {
+    background: #f3f4f6;
+    color: #9aa0a6;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* 与 date 一致的细化美化：隐藏原生外观并为图标与文本留足空间 */
+input[type="time"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    padding-right: 44px; /* 为时钟图标预留空间 */
+    background-color: rgba(255, 255, 255, 0.9);
+    cursor: text;
+}
+
+/* WebKit（时钟图标与交互） */
+input[type="time"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+    color: var(--primary);
+    opacity: 0.9;
+    cursor: pointer;
+    padding: 6px;
+    margin-right: 6px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(26, 115, 232, 0.12);
+}
+input[type="time"]::-webkit-calendar-picker-indicator:active {
+    background-color: rgba(26, 115, 232, 0.2);
+}
+
+/* WebKit（内部文本可读性增强） */
+input[type="time"]::-webkit-datetime-edit {
+    padding: 0 4px;
+}
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    color: var(--dark);
+}
+input[type="time"]::-webkit-datetime-edit-text {
+    opacity: 0.6; /* 分隔符淡化 */
+}
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field,
+input[type="time"]::-webkit-datetime-edit-second-field,
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+    color: var(--dark);
+}
+
+/* Firefox：间距修正 */
+@supports (-moz-appearance: none) {
+    input[type="time"] {
+        padding-right: 16px;
+    }
+}
+
+/* 日期+时间并排容器（替代行内样式） */
+.datetime-inline {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* 紧凑宽度（桌面端更友好） */
+.date-compact { max-width: 220px; }
+.time-compact { max-width: 160px; }
+
+/* 恢复原生选择器（防止被 earlier appearance:none 关闭） */
+input[type="date"],
+input[type="time"] {
+    -webkit-appearance: auto;
+    appearance: auto;
+}
+
+/* 保持整体风格，但不要遮挡原生日历/时钟 */
+input[type="date"],
+input[type="time"] {
+    padding-right: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* 确保图标可点击、使用系统默认外观 */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    pointer-events: auto;
+    background: initial;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    opacity: 1;
+}
+
+/* 小屏时自动占满 */
+@media (max-width: 600px) {
+    .date-compact,
+    .time-compact {
+        max-width: 100%;
     }
 }

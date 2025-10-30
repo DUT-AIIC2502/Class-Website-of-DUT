@@ -9,6 +9,7 @@ create table CLASS_WEBSITE.student_info
     political_identity varchar(50) null comment '政治身份',
     dormitory          varchar(50) null comment '寝室',
     telephone          varchar(20) null comment '手机号',
+    QQ_id              varchar(50) null comment 'QQ号',
     constraint student_id
         unique (student_id)
 )
