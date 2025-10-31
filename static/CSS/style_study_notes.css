@@ -161,17 +161,32 @@ body {
   padding-left: 1.25em !important;
 }
 
-/* 可选：文章内容内的链接风格 */
-#article-content a { color: var(--accent); text-decoration: underline; }
-#article-content a:hover { text-decoration: none; }
+/* 可选：让嵌套列表与父项有点间距 */
+#article-content li > ul,
+#article-content li > ol {
+  margin-top: .3em;
+}
 
-/* 左侧：分层缩进与可读性增强 */
-.sidebar .nav-list { list-style: none; margin: 0; padding: 0; }
-.sidebar .nav-item { margin: 4px 0; }
-.sidebar .nav-children {
-  margin: 4px 0 4px 12px;         /* 子级整体右移 */
-  padding-left: 10px;             /* 预留竖线内边距 */
-  border-left: 1px dashed var(--card-border);
+/*
+其他美化样式
+*/
+
+/* ---------------------------代码块限制最大高度------------------------------*/
+/* 限制代码块高度，设置超过高度，出现滚动条 */
+.protyle-wysiwyg .code-block {
+    max-height: 800px;
+    overflow: auto;
+
+}
+
+/* 隐藏原始编号 */
+.li[data-subtype="o"] .li[data-subtype="o"] .protyle-action--order {
+    color: transparent !important;
+}
+
+/* 动态生成编号的颜色 */
+.li[data-subtype="o"] .li[data-subtype="o"] .protyle-action::after {
+    color: var(--b3-theme-on-background);
 }
 .sidebar .nav-level-1 > .nav-link,
 .sidebar .nav-level-1 > .nav-group > .nav-link { padding-left: 2px; font-weight: 600; }
