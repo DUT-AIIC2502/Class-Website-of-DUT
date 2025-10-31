@@ -94,7 +94,7 @@ def create_app():
     from app.blueprints.main import main_bp
     from app.blueprints.auth import auth_bp
     from app.blueprints.info_management.routes import info_management_bp
-    from app.blueprints.learning_space.routes import learning_space_bp
+    from app.blueprints.learning_space import learning_space_bp
     from app.blueprints.notices import notices_bp
 
     # 注册蓝图

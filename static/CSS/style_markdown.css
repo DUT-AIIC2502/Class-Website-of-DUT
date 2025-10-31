@@ -1,0 +1,571 @@
+/* === 对 Markdown 的样式调整 === */
+
+/* 限制代码块高度，设置超过高度，出现滚动条 */
+.protyle-wysiwyg .code-block {
+    max-height: 800px;
+    overflow: auto;
+
+}
+
+/* 隐藏原始编号 */
+.li[data-subtype="o"] .li[data-subtype="o"] .protyle-action--order {
+    color: transparent !important;
+}
+
+/* 动态生成编号的颜色 */
+.li[data-subtype="o"] .li[data-subtype="o"] .protyle-action::after {
+    color: var(--b3-theme-on-background);
+}
+
+/* 初始化计数器 */
+.list[data-subtype="o"] {
+    counter-reset: o1 0 o2 0 o3 0 o4 0;
+}
+
+/* 第一层嵌套：阿拉伯数字 (1. 2. 3.) */
+.li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o1;
+    content: counter(o1, decimal) ".";
+    position: absolute;
+    padding: 3px 2px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    margin: -20px 0 0 -8px !important;
+}
+
+/* 第二层嵌套：中文括号 + 阿拉伯数字 (（1） （2） （3）) */
+.li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o2;
+    content: "（" counter(o2, decimal) "）";
+    position: absolute;
+}
+
+/* 第三层嵌套：大写拉丁字母 (A. B. C.) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o3;
+    content: counter(o3, upper-alpha) ".";
+    position: absolute;
+}
+
+/* 第四层嵌套：小写罗马数字 (i. ii. iii.) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o4;
+    content: counter(o4, lower-roman) ".";
+    position: absolute;
+}
+
+/* 循环更深层次嵌套，按四层规则重新开始 */
+
+/* 第一层规则：阿拉伯数字 (循环) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o1;
+    content: counter(o1, decimal) ".";
+    position: absolute;
+}
+
+/* 第二层规则：中文括号 + 阿拉伯数字 (循环) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o2;
+    content: "（" counter(o2, decimal) "）";
+    position: absolute;
+}
+
+/* 第三层规则：大写拉丁字母 (循环) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o3;
+    content: counter(o3, upper-alpha) ".";
+    position: absolute;
+}
+
+/* 第四层规则：小写罗马数字 (循环) */
+.li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] .li[data-subtype="o"] > .protyle-action::after {
+    counter-increment: o4;
+    content: counter(o4, lower-roman) ".";
+    position: absolute;
+}
+
+/* ===================== Markdown 渲染适配（Python-Markdown + pymdownx） ===================== */
+/* 基础区块作用域，避免影响全站其他位置 */
+#article-content {
+  --mk-h1: #0f172a;
+  --mk-h2: #1d4ed8;
+  --mk-h3: #0369a1;
+  --mk-h4: #0f766e;
+  --mk-h5: #a21caf;
+  --mk-h6: #475569;
+  --mk-muted: #475569;
+  --mk-border: #e9ecef;
+  --mk-bg-soft: #f8f9fa;
+}
+
+#article-content strong,
+#article-content b {
+    color:#d1242f;
+}
+
+/* 1) 标记高亮（==text== → <mark>）统一为背景高亮 */
+#article-content mark {
+  background: #fff59d;       /* 柔和黄色背景 */
+  color: #111;
+  padding: 0 .15em;
+  border-radius: 2px;
+  text-decoration: none;      /* 不再使用下划线 */
+}
+
+/* 兼容旧内容：仍然保留 mark-highlight 类，样式与 mark 一致 */
+#article-content mark.mark-highlight,
+#article-content .mark-highlight {
+  background: #fff59d;
+  color: #111;
+  padding: 0 .15em;
+  border-radius: 2px;
+}
+
+/* 移除以下两块（下划线适配）：
+#article-content u,
+#article-content .underline { ... }
+#article-content mark { text-decoration: underline; ... }
+*/
+
+/* 2) MathJax v3（CHTML）行级/块级公式 */
+#article-content mjx-container[jax="CHTML"] {
+  line-height: 1.25;
+  font-size: 1em;
+  color: inherit;
+}
+#article-content mjx-container[jax="CHTML"]:not([display]) {
+  display: inline-block;
+  margin: 0 .15em;
+  vertical-align: baseline;
+}
+#article-content mjx-container[display="true"] {
+  display: block;
+  margin: 1em 0;
+  overflow-x: auto; /* 长公式横向滚动 */
+  overflow-y: hidden;
+}
+
+/* 3) 不同层级标题配色（保持与主站风格协调） */
+#article-content h1 { color: var(--mk-h1); }
+#article-content h2 { color: var(--mk-h2); }
+#article-content h3 { color: var(--mk-h3); }
+#article-content h4 { color: var(--mk-h4); }
+#article-content h5 { color: var(--mk-h5); }
+#article-content h6 { color: var(--mk-h6); }
+
+/* 4) Admonition（pymdownx.admonition / pymdownx.details） */
+#article-content .admonition,
+#article-content details.admonition {
+  border-left: .25em solid #7d8590;
+  background: var(--mk-bg-soft);
+  padding: 10px 12px;
+  margin: 12px 0;
+  border-radius: 4px;
+}
+#article-content .admonition > .admonition-title,
+#article-content details.admonition > summary.admonition-title {
+  font-weight: 600;
+  margin: 0 0 .5em 0;
+  list-style: none;
+  cursor: default;
+  color: inherit;
+}
+#article-content details.admonition > summary.admonition-title::-webkit-details-marker {
+  display: none;
+}
+
+/* 类型配色（与现有 .bq 风格统一） */
+#article-content .admonition.info,
+#article-content .admonition.note { border-color: #1f6feb; background: #1f71eb16; }
+#article-content .admonition.tip { border-color: #238636; background: #23863615; }
+#article-content .admonition.important,
+#article-content .admonition.warning,
+#article-content .admonition.caution { border-color: #e3b341; background: #e3b34115; }
+#article-content .admonition.example { border-color: #8957e5; background: #8957e515; }
+#article-content .admonition.error,
+#article-content .admonition.danger { border-color: #d1242f; background: #d1242f15; }
+#article-content .admonition.question { border-color: #d1242f; background: #d1242f15; }
+
+/* 兼容：普通 blockquote 的基础优化（当未使用 admonition 时更易读） */
+#article-content blockquote {
+  margin: 12px 0;
+  padding: 10px 12px;
+  background: #f8f8f8;
+  border-left: .25em solid #7d8590;
+  color: var(--mk-muted);
+}
+
+/* 5) 有序列表多层编号（小圆点保留在无序列表） */
+#article-content ul { list-style: disc; padding-left: 1.25em; }
+#article-content li + li { margin-top: .2em; }
+
+/* 重置并自定义有序列表编号：1. （1） A. i. 循环四层 */
+#article-content ol { list-style: none; padding-left: 1.75em; counter-reset: o1; }
+#article-content ol > li { position: relative; }
+#article-content ol > li::before {
+  counter-increment: o1;
+  content: counter(o1, decimal) ".";
+  position: absolute; left: -1.75em; width: 1.5em; text-align: right;
+  color: var(--mk-muted);
+}
+
+/* 第二层：（1）（2）… */
+#article-content ol > li > ol { counter-reset: o2; }
+#article-content ol > li > ol > li { position: relative; }
+#article-content ol > li > ol > li::before {
+  counter-increment: o2;
+  content: "（" counter(o2, decimal) "）";
+  position: absolute; left: -1.75em; width: 1.5em; text-align: right;
+  color: var(--mk-muted);
+}
+
+/* 第三层：A. B. C. … */
+#article-content ol > li > ol > li > ol { counter-reset: o3; }
+#article-content ol > li > ol > li > ol > li { position: relative; }
+#article-content ol > li > ol > li > ol > li::before {
+  counter-increment: o3;
+  content: counter(o3, upper-alpha) ".";
+  position: absolute; left: -1.75em; width: 1.5em; text-align: right;
+  color: var(--mk-muted);
+}
+
+/* 第四层：i. ii. iii. … */
+#article-content ol > li > ol > li > ol > li > ol { counter-reset: o4; }
+#article-content ol > li > ol > li > ol > li > ol > li { position: relative; }
+#article-content ol > li > ol > li > ol > li > ol > li::before {
+  counter-increment: o4;
+  content: counter(o4, lower-roman) ".";
+  position: absolute; left: -1.75em; width: 1.5em; text-align: right;
+  color: var(--mk-muted);
+}
+
+/* 6) 表格、内联代码与水平线 */
+#article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: .95em;
+}
+#article-content th, #article-content td {
+  border: 1px solid var(--mk-border);
+  padding: .5em .6em;
+  vertical-align: top;
+}
+#article-content thead th {
+  background: var(--mk-bg-soft);
+  font-weight: 600;
+}
+#article-content :not(pre) > code {
+  background: rgba(2, 6, 23, .06);
+  padding: .15em .35em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .95em;
+}
+#article-content hr {
+  border: none;
+  border-top: 1px solid var(--mk-border);
+  margin: 1.25rem 0;
+}
+
+/* 7) 图片自适应 */
+#article-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 8) 目录锚点偏移（与主样式滚动间距协调） */
+#article-content h1, #article-content h2, #article-content h3, #article-content h4, #article-content h5, #article-content h6 {
+  scroll-margin-top: 110px;
+}
+
+/* ===================== 兼容：已有 .bq* 风格（若你的渲染把 @info 等转成 .bq 块） ===================== */
+/* 保留你原有的 .bq[...] 选择器，无需删除；此处仅确保不与 .admonition 冲突 */
+#article-content .bq { margin: 12px 0; }
+
+/* 结束：Markdown 渲染适配 */
+
+/* === 普通引用块样式 === */
+.bq:not([custom-b]):not([custom-callout]) {
+    background: #f8f8f8;
+    border-radius: 0;
+    margin: 8px 0;
+    padding: 10px 16px;
+    border-left: 0.25em solid #7d8590 !important;
+}
+
+/* === 隐藏普通引用块的黑色伪元素 === */
+.bq:not([data-callout-type]):not([custom-b]):not([custom-callout])::before {
+    display: none !important;
+}
+
+/* === 基础 callout 样式（排除自定义属性）=== */
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) {
+    border-left: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+    padding: 10px !important;
+    color: var(--b3-theme-on-background);
+    position: relative;
+}
+
+.bq[data-callout-type]:not([custom-b]):not([custom-callout])::before,
+.bq[data-callout-type]:not([custom-b]):not([custom-callout])::after,
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) .bq-line {
+    display: none !important;
+    content: none !important;
+}
+
+/* === 标题行样式 === */
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type {
+    margin-bottom: 0.5em;
+}
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    display: inline-flex;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+/* === 只有当元素具有 data-callout-title 和 data-callout-display-name 时才隐藏触发词 === */
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"][data-callout-title="true"][data-callout-display-name] {
+    font-size: 0;
+}
+
+.bq[data-callout-type]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"][data-callout-title="true"][data-callout-display-name]::after {
+    content: attr(data-callout-display-name);
+    font-size: 1rem;
+    margin-left: 0;
+}
+
+/* === 蓝色系——info === */
+.bq[data-callout-type="info"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #1f6feb !important;
+    background-color: #1f71eb16 !important;
+}
+.bq[data-callout-type="info"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #4493f8;
+}
+.bq[data-callout-type="info"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjcxNDI4NTcxNDI4NTcxNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtY2lyY2xlLWFsZXJ0Ij48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPjxsaW5lIHgxPSIxMiIgeDI9IjEyIiB5MT0iOCIgeTI9IjEyIi8+PGxpbmUgeDE9IjEyIiB4Mj0iMTIuMDEiIHkxPSIxNiIgeTI9IjE2Ii8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+
+/* === 蓝色系——Note === */
+.bq[data-callout-type="note"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #1f6feb !important;
+    background-color: #1f71eb16 !important;
+}
+.bq[data-callout-type="note"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #4493f8;
+}
+.bq[data-callout-type="note"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBlbmNpbC1pY29uIGx1Y2lkZS1wZW5jaWwiPjxwYXRoIGQ9Ik0yMS4xNzQgNi44MTJhMSAxIDAgMCAwLTMuOTg2LTMuOTg3TDMuODQyIDE2LjE3NGEyIDIgMCAwIDAgLjUuODNsLTEuMzIxIDQuMzUyYS41LjUgMCAwIDAgLjYyMy42MjJsNC4zNTMtMS4zMmEyIDIgMCAwIDAgLjgzLS40OTd6Ii8+PHBhdGggZD0ibTE1IDUgNCA0Ii8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+}
+
+/* === 蓝色系——Comment === */
+.bq[data-callout-type="comment"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #1f6feb !important;
+    background-color: #1f71eb16 !important;
+}
+.bq[data-callout-type="comment"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #4493f8;
+}
+.bq[data-callout-type="comment"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1lc3NhZ2Utc3F1YXJlLW1vcmUtaWNvbiBsdWNpZGUtbWVzc2FnZS1zcXVhcmUtbW9yZSI+PHBhdGggZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjxwYXRoIGQ9Ik08IDEwaC4wMSIvPjxwYXRoIGQ9Ik0xMiAxMGguMDEiLz48cGF0aCBkPSJNMTYgMTBoLjAxIi8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+}
+
+/* === 绿色系——Tip === */
+.bq[data-callout-type="tip"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #238636 !important;
+    background-color: #23863615 !important;
+}
+.bq[data-callout-type="tip"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #238636;
+}
+.bq[data-callout-type="tip"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjcxNDI4NTcxNDI4NTcxNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtbGlnaHRidWxiIj48cGF0aCBkPSJNMTUgMTRjLjItMSAuNy0xLjcgMS41LTIuNSAxLS45IDEuNS0yLjIgMS41LTMuNUE2IDYgMCAwIDAgNiA4YzAgMSAuMiAyLjIgMS41IDMuNS43LjcgMS4zIDEuNSAxLjUgMi41Ii8+PHBhdGggZD0iTTkgMThoNiIvPjxwYXRoIGQ9Ik0xMCAyMmg0Ii8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 黄色系——Important === */
+.bq[data-callout-type="important"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #e3b341 !important;
+    background-color: #e3b34115 !important;
+}
+.bq[data-callout-type="important"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #e3b341;
+}
+.bq[data-callout-type="important"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjcxNDI4NTcxNDI4NTcxNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtbWVzc2FnZS1zcXVhcmUtd2FybmluZyI+PHBhdGggZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjxwYXRoIGQ9Ik0xMiA3djIiLz48cGF0aCBkPSJNMTIgMTNoLjAxIi8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 黄色系——Warning === */
+.bq[data-callout-type="warning"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #e3b341 !important;
+    background-color: #e3b34115 !important;
+}
+.bq[data-callout-type="warning"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #e3b341;
+}
+.bq[data-callout-type="warning"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjcxNDI4NTcxNDI4NTcxNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtdHJpYW5nbGUtYWxlcnQiPjxwYXRoIGQ9Im0yMS43MyAxOC04LTE0YTIgMiAwIDAgMC0zLjQ4IDBsLTggMTRBMiAyIDAgMCAwIDQgMjFoMTZhMiAyIDAgMCAwIDEuNzMtMyIvPjxwYXRoIGQ9Ik0xMiA9djQiLz48cGF0aCBkPSJNMTIgMTdoLjAxIi8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 黄色系——Caution === */
+.bq[data-callout-type="caution"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #e3b341 !important;
+    background-color: #e3b34115 !important;
+}
+.bq[data-callout-type="caution"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #e3b341;
+}
+.bq[data-callout-type="caution"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxLjcxNDI4NTcxNDI4NTcxNDIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgY2xhc3M9Imx1Y2lkZSBsdWNpZGUtb2N0YWdvbi1hbGVydCI+PHBhdGggZD0iTTEyIDE2aC4wMSIvPjxwYXRoIGQ9Ik0xMiA4djQiLz48cGF0aCBkPSJNMTUuMzEyIDJhMiAyIDAgMCAxIDEuNDE0LjU4Nmw0LjY4OCA0LjY4OEEyIDIgMCAwIDEgMjIgOC42ODh2Ni42MjRhMiAyIDAgMCAxLS41ODYgMS40MTRsLTQuNjg4IDQuNjg4YTIgMiAwIDAgMS0xLjQxNC41ODZIOC42ODhhMiAyIDAgMCAxLTEuNDE0LS41ODZsLTQuNjg4LTQuNjg4QTIgMiAwIDAgMSAyIDE1LjMxMlY4LjY4OGEyIDIgMCAwIDEgLjU4Ni0xLjQxNGw0LjY4OC00LjY4OEEyIDIgMCAwIDEgOC42ODggMnoiLz48L3N2Zz4=");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 紫色系——example === */
+.bq[data-callout-type="example"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #8957e5 !important;
+    background-color: #8957e515 !important;
+}
+.bq[data-callout-type="example"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #8957e5;
+}
+.bq[data-callout-type="example"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxpc3QtaWNvbiBsdWNpZGUtbGlzdCI+PHBhdGggZD0iTTMgMTJoLjAxIi8+PHBhdGggZD0iTTMgMThoLjAxIi8+PHBhdGggZD0iTTMgNmguMDEiLz48cGF0aCBkPSJNOCAxMmgxMyIvPjxwYXRoIGQ9Ik08IDE4aDEzIi8+PHBhdGggZD0iTTggNmgxMyIvPjwvc3ZnPg==");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+}
+
+
+/* === 红色系——error === */
+.bq[data-callout-type="error"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #d1242f !important;
+    background-color: #d1242f15 !important;
+}
+.bq[data-callout-type="error"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #d1242f;
+}
+.bq[data-callout-type="error"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXNoaWVsZC14LWljb24gbHVjaWRlLXNoaWVsZC14Ij48cGF0aCBkPSJNMjAgMTNjMCA1LTMuNSA3LjUtNy42NiA4Ljk1YTEgMSAwIDAgMS0uNjctLjAxQzcuNSAyMC41IDQgMTggNCAxM1Y2YTEgMSAwIDAgMSAxLTFjMiAwIDQuNS0xLjIgNi4yNC0yLjcyYTEuMTcgMS4xNyAwIDAgMSAxLjUyIDBDMTQuNTEgMy44MSAxNyA1IDE5IDVhMSAxIDAgMCAxIDEgMXoiLz48cGF0aCBkPSJtMTQuNSA5LjUtNSA1Ii8+PHBhdGggZD0ibTkuNSA5LjUgNSA1Ii8+PC9zdmc+");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 红色系——question === */
+.bq[data-callout-type="question"]:not([custom-b]):not([custom-callout]) {
+    border-left: .25em solid #d1242f !important;
+    background-color: #d1242f15 !important;
+}
+.bq[data-callout-type="question"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #d1242f;
+}
+.bq[data-callout-type="question"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    mask: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNpcmNsZS1xdWVzdGlvbi1tYXJrLWljb24gbHVjaWRlLWNpcmNsZS1xdWVzdGlvbi1tYXJrIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPjxwYXRoIGQ9Ik05LjA5IDlhMyAzIDAgMCAxIDUuODMgMWMwIDItMyAzLTMgMyIvPjxwYXRoIGQ9Ik0xMiAxN2guMDEiLz48L3N2Zz4=");
+    mask-size: cover;
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    overflow: visible !important;
+}
+
+/* === 默认 callout 样式 === */
+.bq[data-callout-type="default"]:not([custom-b]):not([custom-callout]) {
+    border-left: 0.25em solid #7d8590 !important;
+    background-color: #7d859015 !important;
+}
+.bq[data-callout-type="default"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"] {
+    color: #7d8590;
+}
+.bq[data-callout-type="default"]:not([custom-b]):not([custom-callout]) > div[data-type="NodeParagraph"]:first-of-type > div[contenteditable="true"]::before {
+    display: none;
+}
