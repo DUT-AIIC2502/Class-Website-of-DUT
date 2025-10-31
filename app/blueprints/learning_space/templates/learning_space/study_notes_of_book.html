@@ -31,9 +31,10 @@
                 <h1>学习<span>笔记</span></h1>
             </a>
 
-            <div class="mobile-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
+            <!-- 移动端打开左侧“本书导航” -->
+            <button class="mobile-toggle" type="button" aria-controls="sidebar" aria-expanded="false">
+              ☰ 本书目录
+            </button>
 
             <nav>
                 <ul>
@@ -71,41 +72,30 @@
         </div>
     </header>
 
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" aria-hidden="true">
         <h3 class="sidebar-title">本书导航</h3>
         <ul class="nav-list">
-            {% macro render_chapters(chapters, level=1) %}
-                {% for chapter in chapters %}
+            {% macro render_chapters(nodes, level=1) %}
+                {% for n in nodes %}
                     <li class="nav-item nav-level-{{ level }}">
-                        <!-- 章节链接（如果有路径） -->
-                        {% if chapter.path %}
-                            <a 
-                                href="/learning_space/study_notes/{{ book }}{{ chapter.path }}" 
-                                class="nav-link {% if current_path == chapter.path %}active{% endif %}"
-                            >
-                                {{ chapter.title }}
-                            </a>
-                        {% else %}
-                            <!-- 无路径的分组（如“卷”），仅显示标题并支持折叠 -->
-                            <div class="nav-group" onclick="toggleGroup(this)">
-                                <span class="nav-link">{{ chapter.title }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- 递归渲染子章节 -->
-                        {% if chapter.children %}
-                            <ul class="nav-children">
-                                {{ render_chapters(chapter.children, level+1) }}
-                            </ul>
-                        {% endif %}
+                    {% if n.path %}
+                        <a class="nav-link" href="/learning_space/study_notes/{{ book }}{{ n.path }}">{{ n.title }}</a>
+                    {% else %}
+                        <span class="nav-link">{{ n.title }}</span>
+                    {% endif %}
+                    {% if n.children %}
+                        <ul class="nav-children">
+                            {{ render_chapters(n.children, level+1) }}
+                        </ul>
+                    {% endif %}
                     </li>
                 {% endfor %}
             {% endmacro %}
-
-            <!-- 调用宏渲染所有章节 -->
-            {{ render_chapters(chapters) }}
+            {{ render_chapters(chapters or []) }}
         </ul>
     </aside>
+    <!-- 移动端遮罩 -->
+    <div class="sidebar-mask" id="sidebarMask" aria-hidden="true"></div>
 
     <main>
         <div class="base-container content-wrapper">
@@ -124,14 +114,49 @@
     </main>
 
     <script>
-        // 移动端菜单切换
-        const mobileToggle = document.querySelector('.mobile-toggle');
-        const nav = document.querySelector('nav');
+      // 移动端菜单切换
+      const sidebar = document.getElementById('sidebar');
+      const sidebarMask = document.getElementById('sidebarMask');
+      const mobileToggle = document.querySelector('.mobile-toggle');
+      const mq = window.matchMedia('(max-width: 992px)');
 
-        mobileToggle.addEventListener('click', () => {
-            nav.classList.toggle('active');
-        });
+      function openSidebar() {
+        sidebar.classList.add('show');
+        sidebar.setAttribute('aria-hidden', 'false');
+        sidebarMask.classList.add('active');
+        sidebarMask.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('no-scroll');
+        mobileToggle && mobileToggle.setAttribute('aria-expanded', 'true');
+      }
+      function closeSidebar() {
+        sidebar.classList.remove('show');
+        sidebar.setAttribute('aria-hidden', 'true');
+        sidebarMask.classList.remove('active');
+        sidebarMask.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('no-scroll');
+        mobileToggle && mobileToggle.setAttribute('aria-expanded', 'false');
+      }
 
+      mobileToggle && mobileToggle.addEventListener('click', () => {
+        if (!mq.matches) return; // 仅在移动端使用抽屉
+        if (sidebar.classList.contains('show')) closeSidebar();
+        else openSidebar();
+      });
+
+      sidebarMask.addEventListener('click', closeSidebar);
+      sidebar.addEventListener('click', (e) => {
+        const a = e.target.closest('a.nav-link');
+        if (a && mq.matches) closeSidebar(); // 点击目录项后关闭抽屉
+      });
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mq.matches) closeSidebar();
+      });
+      window.addEventListener('resize', () => {
+        if (!mq.matches) closeSidebar(); // 回到桌面端时复位
+      });
+    </script>
+
+    <script>
         // 滚动时导航栏样式变化
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
@@ -148,11 +173,7 @@
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                nav.classList.remove('active');
-
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
             });
         });
     </script>
