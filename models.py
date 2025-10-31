@@ -2,7 +2,7 @@
 from flask_login import UserMixin, current_user
 from ext import db, login_manager
 # 直接从 sqlalchemy 导入，而不是通过 db 对象调用
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect, Text, LargeBinary
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, inspect, Text, LargeBinary, Index, UniqueConstraint
 from sqlalchemy.orm import relationship, backref, Mapped
 from typing import List
 # 日期类型
@@ -261,6 +261,76 @@ class Services(db.Model):
     file_name: str = Column(String(255), comment="图标文件名")
     # mimetype = db.Column(String(16))  # 存储图片的 MIME 类型，如 'image/png'
     # icon = Column(LargeBinary(16777216), comment="图标")
+
+
+# =============== 学习笔记：书籍与章节结构 ===============
+
+class StudyBook(db.Model):
+    __tablename__ = 'study_books'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    # 建议与 URL 中 <book> 一致，作为稳定标识
+    slug: str = Column(String(64), unique=True, nullable=False, index=True)
+    title: str = Column(String(128), nullable=False)
+    category: str = Column(String(64), nullable=False)  # 书籍类别（如数学、物理、计算机科学）
+    description: str = Column(String(255))
+    display_order: int = Column(Integer, default=0)     # 显示顺序
+    is_published: bool = Column(Boolean, default=True)  # 是否发布
+    created_at: DateTime = Column(DateTime, default=datetime.now)
+    updated_at: DateTime = Column(DateTime, default=datetime.now, onupdate=datetime.now)    # 更新时间
+
+    # 反向：book.nodes
+    nodes: Mapped[list["ChapterNode"]] = relationship(
+        "ChapterNode",
+        backref=backref("book", lazy="joined"),
+        cascade="all, delete-orphan",
+        lazy="dynamic"
+    )
+
+    def __repr__(self):
+        return f"<StudyBook slug={self.slug} title={self.title!r}>"
+
+
+class ChapterNode(db.Model):
+    __tablename__ = 'study_chapter_nodes'
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+
+    # 所属书
+    book_id: int = Column(Integer, ForeignKey('study_books.id', ondelete='CASCADE'), nullable=False, index=True)
+    # 父节点（自引用）
+    parent_id: int | None = Column(Integer, ForeignKey('study_chapter_nodes.id', ondelete='CASCADE'), nullable=True, index=True)
+
+    # 展示标题与排序
+    title: str = Column(String(128), nullable=False)
+    display_order: int = Column(Integer, default=0, index=True)
+
+    # 用于路径/锚点的短标识（仅字母数字与连字符，示例：limit、real-numbers）
+    slug: str = Column(String(128), nullable=False)
+
+    # 是否是页面节点（章节页面），否则为仅锚点/分组节点
+    is_page: bool = Column(Boolean, default=False)
+    # 作为锚点时使用（为空时退回 slug）
+    anchor_slug: str | None = Column(String(128), nullable=True)
+
+    # 可选：类型标记（volume/chapter/section/subsection…）
+    node_type: str = Column(String(32), default='section')
+
+    # 自引用 children
+    children: Mapped[list["ChapterNode"]] = relationship(
+        "ChapterNode",
+        backref=backref("parent", remote_side=[id]),
+        cascade="all, delete-orphan",
+        lazy="select",
+        order_by="ChapterNode.display_order"
+    )
+
+    __table_args__ = (
+        # 同一本书内，父节点下 slug 唯一，便于生成稳定路径
+        UniqueConstraint('book_id', 'parent_id', 'slug', name='uq_book_parent_slug'),
+        Index('ix_book_parent_order', 'book_id', 'parent_id', 'display_order'),
+    )
+
+    def __repr__(self):
+        return f"<ChapterNode book_id={self.book_id} title={self.title!r} slug={self.slug} is_page={self.is_page}>"
 
 
 

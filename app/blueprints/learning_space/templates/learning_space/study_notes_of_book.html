@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}学习笔记{% endblock %}</title>
+    <title>学习笔记 - {{ book }} - {{ chapter_now }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_study_notes.css') }}">
-    {% block special_css %} {% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/style_markdown.css') }}">
 
     <!-- MathJax 配置与脚本（v3） -->
     <script>
         window.MathJax = {
             tex: {
-            inlineMath: [['$', '$'], ['\\(', '\\)']],
-            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
             },
             options: {
-            skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']  // 不处理代码块
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']  // 不处理代码块
             }
         };
     </script>
@@ -38,16 +38,18 @@
             <nav>
                 <ul>
                     <li><a href="/learning_space/">学习空间</a></li>
-
-                    <!-- 下拉列表 -->
-                    <div class="dropdown">
-                        <li><a href="/learning_space/">数学</a></li>
-                        <div class="dropdown-content">
-                            {% for service in services %}
-                                <a href="{{ service.url }}">{{ service.name }}</a>
-                            {% endfor %}
+                    
+                    {% for books in all_books %}
+                        <div class="dropdown">
+                            <li><a href="#">{{ books.0 }}</a></li>
+                            <div class="dropdown-content">
+                                {% for book in books.1 %}
+                                    <a href="/learning_space/study_notes/{{ book.slug }}/introduction/">{{ book.title }}</a>
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
+
                 </ul>
             </nav>
 
@@ -69,24 +71,56 @@
         </div>
     </header>
 
-    <!-- 侧边栏 -->
-    <div class="base-container content-wrapper">
-        <aside class="toc-aside" aria-label="目录">
-            {% if toc_html %}
-                {{ toc_html|safe }}
-            {% else %}
-                <div class="toc"><p>暂无目录</p></div>
-            {% endif %}
-        </aside>
+    <aside class="sidebar" id="sidebar">
+        <h3 class="sidebar-title">本书导航</h3>
+        <ul class="nav-list">
+            {% macro render_chapters(chapters, level=1) %}
+                {% for chapter in chapters %}
+                    <li class="nav-item nav-level-{{ level }}">
+                        <!-- 章节链接（如果有路径） -->
+                        {% if chapter.path %}
+                            <a 
+                                href="/learning_space/study_notes/{{ book }}{{ chapter.path }}" 
+                                class="nav-link {% if current_path == chapter.path %}active{% endif %}"
+                            >
+                                {{ chapter.title }}
+                            </a>
+                        {% else %}
+                            <!-- 无路径的分组（如“卷”），仅显示标题并支持折叠 -->
+                            <div class="nav-group" onclick="toggleGroup(this)">
+                                <span class="nav-link">{{ chapter.title }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- 递归渲染子章节 -->
+                        {% if chapter.children %}
+                            <ul class="nav-children">
+                                {{ render_chapters(chapter.children, level+1) }}
+                            </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% endmacro %}
 
-        <article id="article-content" class="markdown-content article">
-        {{ content|safe }}
-        </article>
-    </div>
+            <!-- 调用宏渲染所有章节 -->
+            {{ render_chapters(chapters) }}
+        </ul>
+    </aside>
 
-    <!-- 页面内容 -->
     <main>
-        {% block content %}{% endblock %}
+        <div class="base-container content-wrapper">
+            <article id="article-content" class="markdown-content article">
+                {{ content|safe }}
+            </article>
+
+            <aside class="toc-aside" aria-label="目录">
+                {% if toc_html %}
+                    {{ toc_html|safe }}
+                {% else %}
+                    <div class="toc"><p>暂无目录</p></div>
+                {% endif %}
+            </aside>
+        </div>
     </main>
 
     <script>
