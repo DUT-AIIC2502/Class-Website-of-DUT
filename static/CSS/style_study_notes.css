@@ -97,6 +97,17 @@ body {
     font-weight: 600;
 }
 
+/* 遮罩与滚动锁定（移动端用） */
+body.no-scroll { overflow: hidden; }
+.sidebar-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.3);
+  z-index: 150;
+  display: none;
+}
+.sidebar-mask.active { display: block; }
+
 /* 移动端：左侧收起，右侧toc 放到内容下方 */
 @media (max-width: 992px) {
     .content-wrapper {
@@ -127,12 +138,37 @@ body {
         background: transparent;
     }
 
+    /* 移动端侧栏抽屉样式 */
     .sidebar {
+        position: fixed;
+        top: 0;                 /* 抽屉从屏幕顶端出现 */
+        left: 0;
+        height: 100vh;
+        width: min(86vw, var(--sidebar-width));
         transform: translateX(-100%);
         transition: transform .25s ease;
         z-index: 200;
+        box-shadow: 2px 0 12px rgba(0,0,0,.15);
+        padding-top: 72px;      /* 预留与头部高度相近的内边距，避免内容顶到顶部 */
+        border-right: 1px solid var(--card-border);
+        background: var(--bg-sidebar);
     }
-    .sidebar.show { transform: translateX(0); }
+     .sidebar.show { transform: translateX(0); }
+
+  .mobile-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: .4rem .6rem;
+    font-size: 15px;
+    border: 1px solid var(--card-border);
+    background: #fff;
+    border-radius: 6px;
+    color: #333;
+  }
+}
+@media (min-width: 993px) {
+  .mobile-toggle { display: none; }
 }
 
 /* 代码高亮及列表样式（保留原有设置，但视觉统一） */
