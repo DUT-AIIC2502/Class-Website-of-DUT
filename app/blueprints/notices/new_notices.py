@@ -10,6 +10,14 @@ from common.ai_func import get_key_info
 from common.QQ_operation import send_group_msg
 
 
+"""
+使用到的 session 中的键：
+- origin_message：原始活动通知文本
+- key_info：提取的关键信息（pickle 序列化后的字典）
+- message_to_send：生成的活动通知文本
+"""
+
+
 @notices_bp.route('/new_notices/', methods=['GET', 'POST'])
 def new_notices():
     if request.method == 'GET':
@@ -139,9 +147,17 @@ def new_notices():
                 }
             ]
 
-            status = send_group_msg(group_id, message_dict)
+            status = json.loads(send_group_msg(group_id, message_dict))
             print("发送状态：", status)
 
-            return f"<script>alert('活动通知已发送！');window.location.href='{url_for('notices.home')}';</script>"
+            if status.get("status") == "success":
+                # 清理 session 中的键
+                session.pop('origin_message', None)
+                session.pop('key_info', None)
+                session.pop('message_to_send', None)
+
+                return f"<script>alert('活动通知已发送！');window.location.href='{url_for('notices.home')}';</script>"
+            else:
+                return f"<script>alert('发送失败：{status.get('data')}');window.open('{url_for('notices.new_notices')}');</script>"
 
         return redirect(url_for('notices.new_notices'))
